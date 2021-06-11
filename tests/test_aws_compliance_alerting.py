@@ -4,5 +4,5 @@ from src.aws_compliance_alerting import AwsComplianceAlertingMain
 
 
 class TestAwsScannerMain(TestCase):
-    def test_main_with_service_usage_cmd(self):
+    def test_main(self):
         AwsComplianceAlertingMain()
