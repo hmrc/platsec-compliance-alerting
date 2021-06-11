@@ -1,10 +1,7 @@
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 
 class S3ConfigCheck:
-    def check_bucket_compliance(self, bucket: Dict[str, Any]) -> List[str]:
-        pass
-
     def is_encrypted(self, bucket: Dict[str, Any]) -> bool:
         return bucket.get("encryption", {}).get("enabled")
 
