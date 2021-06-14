@@ -63,3 +63,7 @@ class TestS3ConfigCheck(TestCase):
     def test_bucket_is_private_undefined(self):
         bucket = {"public_access_block": {}}
         self.assertFalse(S3ConfigCheck().is_private(bucket))
+
+    def test_sensitive_bucket_checks(self):
+        bucket = {}
+        self.assertTrue(S3ConfigCheck().sensitive_bucket_checks(bucket))

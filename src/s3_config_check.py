@@ -13,3 +13,6 @@ class S3ConfigCheck:
 
     def is_private(self, bucket: Dict[str, Any]) -> bool:
         return bucket.get("public_access_block", {}).get("enabled")
+
+    def sensitive_bucket_checks(self, bucket: Dict[str, Any]) -> bool:
+        return True
