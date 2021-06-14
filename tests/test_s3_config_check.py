@@ -1,20 +1,28 @@
 from unittest import TestCase
+from unittest.mock import patch
 
 from src.s3_config_check import S3ConfigCheck
+from src.notification import Notification
 
 
 class TestS3ConfigCheck(TestCase):
-    def test_bucket_is_encrypted(self) -> None:
-        self.assertTrue(S3ConfigCheck().is_encrypted({"encryption": {"enabled": True}}))
+    def test_key_is_enabled(self) -> None:
+        self.assertTrue(S3ConfigCheck()._is_enabled("encryption", {"encryption": {"enabled": True}}))
 
-    def test_bucket_is_not_encrypted(self) -> None:
-        self.assertFalse(S3ConfigCheck().is_encrypted({"encryption": {"enabled": False}}))
+    def test_key_is_disabled(self) -> None:
+        self.assertFalse(S3ConfigCheck()._is_enabled("encryption", {"encryption": {"enabled": False}}))
 
-    def test_bucket_encryption_bucket_missing(self) -> None:
-        self.assertFalse(S3ConfigCheck().is_encrypted({}))
+    def test_key_bucket_missing(self) -> None:
+        self.assertFalse(S3ConfigCheck()._is_enabled("encryption", {}))
 
-    def test_bucket_encryption_undefined(self) -> None:
-        self.assertFalse(S3ConfigCheck().is_encrypted({"encryption": {}}))
+    def test_key_undefined(self) -> None:
+        self.assertFalse(S3ConfigCheck()._is_enabled("encryption", {"encryption": {}}))
+
+    def test_is_encrypted(self) -> None:
+        bucket = {"encryption": {"enabled": True}}
+        with patch("src.s3_config_check.S3ConfigCheck._is_enabled", return_value=True) as mock_enabled:
+            self.assertTrue(S3ConfigCheck().is_encrypted(bucket))
+        mock_enabled.assert_called_once_with("encryption", bucket)
 
     def test_bucket_has_tags(self) -> None:
         bucket = {"data_tagging": {"expiry": "not_unset", "sensitivity": "not_unset"}}
@@ -40,19 +48,47 @@ class TestS3ConfigCheck(TestCase):
     def test_bucket_tags_bucket_missing(self) -> None:
         self.assertFalse(S3ConfigCheck().is_tagged({}))
 
-    def test_bucket_is_private(self) -> None:
-        self.assertTrue(S3ConfigCheck().is_private({"public_access_block": {"enabled": True}}))
+    def test_is_private(self) -> None:
+        bucket = {"public_access_block": {"enabled": True}}
+        with patch("src.s3_config_check.S3ConfigCheck._is_enabled", return_value=True) as mock_enabled:
+            self.assertTrue(S3ConfigCheck().is_private(bucket))
+        mock_enabled.assert_called_once_with("public_access_block", bucket)
 
-    def test_bucket_is_private_bucket_missing(self) -> None:
-        self.assertFalse(S3ConfigCheck().is_private({}))
+    def test_is_mfa_delete(self) -> None:
+        bucket = {"mfa_delete": {"enabled": True}}
+        with patch("src.s3_config_check.S3ConfigCheck._is_enabled", return_value=True) as mock_enabled:
+            self.assertTrue(S3ConfigCheck().is_mfa_delete(bucket))
+        mock_enabled.assert_called_once_with("mfa_delete", bucket)
 
-    def test_bucket_is_not_private(self) -> None:
-        self.assertFalse(S3ConfigCheck().is_private({"public_access_block": {"enabled": False}}))
+    def test_check_bucket_rules_compliant_bucket(self) -> None:
+        bucket = {
+            "name": "a-bucket",
+            "encryption": {"enabled": True},
+            "mfa_delete": {"enabled": True},
+            "public_access_block": {"enabled": True},
+            "data_tagging": {"expiry": "not_unset", "sensitivity": "not_unset"},
+        }
+        notification = S3ConfigCheck().check_bucket_rules(bucket)
+        self.assertEqual(Notification(bucket="a-bucket", findings=set()), notification)
 
-    def test_bucket_is_private_undefined(self):
-        self.assertFalse(S3ConfigCheck().is_private({"public_access_block": {}}))
-
-    def test_sensitive_bucket_checks(self):
-        bucket = {}
-        self.assertTrue(S3ConfigCheck().sensitive_bucket_checks(bucket))
-
+    def test_check_bucket_rules_not_compliant_bucket(self) -> None:
+        bucket = {
+            "name": "another-bucket",
+            "encryption": {"enabled": False},
+            "mfa_delete": {"enabled": False},
+            "public_access_block": {"enabled": False},
+            "data_tagging": {"expiry": "unset", "sensitivity": "unset"},
+        }
+        notification = S3ConfigCheck().check_bucket_rules(bucket)
+        self.assertEqual(
+            Notification(
+                bucket="another-bucket",
+                findings={
+                    "bucket should be encrypted",
+                    "bucket should have mfa-delete",
+                    "bucket should not allow public access",
+                    "bucket should have data expiry and data sensitivity tags",
+                },
+            ),
+            notification,
+        )
