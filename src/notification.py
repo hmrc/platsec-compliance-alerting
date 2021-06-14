@@ -1,8 +1,12 @@
 from dataclasses import dataclass
-from typing import Set
+from typing import FrozenSet, Set
 
 
-@dataclass
+@dataclass(eq=True, unsafe_hash=True)
 class Notification:
     bucket: str
-    findings: Set[str]
+    findings: FrozenSet[str]
+
+    def __init__(self, bucket: str, findings: Set[str]):
+        self.bucket = bucket
+        self.findings = frozenset(findings)

@@ -1,9 +1,16 @@
-from typing import Any, Dict
+from typing import Any, Dict, List, Set
 
 from src.notification import Notification
 
 
 class S3ConfigCheck:
+    def check_buckets(self, reports: List[Dict[str, Any]]) -> Set[Notification]:
+        notifications = set()
+        for report in reports:
+            for bucket in report["results"]["buckets"]:
+                notifications.add(self.check_bucket_rules(bucket))
+        return notifications
+
     def check_bucket_rules(self, bucket: Dict[str, Any]) -> Notification:
         findings = set()
 
@@ -13,13 +20,19 @@ class S3ConfigCheck:
         if not self.is_private(bucket):
             findings.add("bucket should not allow public access")
 
-        if not self.is_mfa_delete(bucket):
-            findings.add("bucket should have mfa-delete")
-
         if not self.is_tagged(bucket):
             findings.add("bucket should have data expiry and data sensitivity tags")
 
+        findings.update(self._check_high_sensitivity_bucket_rules(bucket))
+
         return Notification(bucket=bucket["name"], findings=findings)
+
+    def _check_high_sensitivity_bucket_rules(self, bucket: Dict[str, Any]) -> Set[str]:
+        findings = set()
+        if bucket["data_tagging"]["sensitivity"] == "high":
+            if not self.is_mfa_delete(bucket):
+                findings.add("bucket should have mfa-delete")
+        return findings
 
     def _is_enabled(self, key: str, bucket: Dict[str, Any]) -> bool:
         return bool(bucket.get(key, {}).get("enabled"))
