@@ -3,7 +3,7 @@ from typing import Any, Dict
 
 class S3ConfigCheck:
     def is_encrypted(self, bucket: Dict[str, Any]) -> bool:
-        return bucket.get("encryption", {}).get("enabled")
+        return bool(bucket.get("encryption", {}).get("enabled"))
 
     def is_tagged(self, bucket: Dict[str, Any]) -> bool:
         return "unset" not in [
