@@ -1,6 +1,6 @@
 import os
 
-from src.exceptions import MissingConfigException
+from src.data.exceptions import MissingConfigException
 
 
 class Config:

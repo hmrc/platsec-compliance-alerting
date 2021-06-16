@@ -2,7 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, FrozenSet, List
 
-from src.exceptions import NotificationMappingException
+from src.data.exceptions import NotificationMappingException
 
 
 @dataclass(unsafe_hash=True)

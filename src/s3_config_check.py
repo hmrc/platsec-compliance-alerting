@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Set
 
-from src.notification import Notification
+from src.data.notification import Notification
 
 
 class S3ConfigCheck:

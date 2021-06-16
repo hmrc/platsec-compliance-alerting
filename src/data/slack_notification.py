@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import FrozenSet, Set
 
-from src.notification import Notification
+from src.data.notification import Notification
 
 
 @dataclass(unsafe_hash=True)

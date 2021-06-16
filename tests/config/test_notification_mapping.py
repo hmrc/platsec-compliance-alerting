@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from src.exceptions import NotificationMappingException
-from src.notification_mapping import NotificationMapping
+from src.data.exceptions import NotificationMappingException
+from src.config.notification_mapping import NotificationMapping
 
 
 class TestNotificationMapping(TestCase):

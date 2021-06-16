@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from src.notification_filter_config import NotificationFilterConfig
-from src.exceptions import FilterConfigException
+from src.config.notification_filter_config import NotificationFilterConfig
+from src.data.exceptions import FilterConfigException
 
 
 class TestNotificationFilterConfig(TestCase):

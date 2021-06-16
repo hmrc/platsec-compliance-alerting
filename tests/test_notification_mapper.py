@@ -1,9 +1,9 @@
 from unittest import TestCase
 
-from src.notification import Notification
+from src.data.notification import Notification
 from src.notification_mapper import NotificationMapper
-from src.notification_mapping import NotificationMapping
-from src.slack_notification import SlackNotification
+from src.config.notification_mapping import NotificationMapping
+from src.data.slack_notification import SlackNotification
 
 
 notification_a = Notification("bucket-a")

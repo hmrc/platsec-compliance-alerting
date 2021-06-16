@@ -5,7 +5,7 @@ from botocore.client import BaseClient
 
 from src.clients import aws_client_factory
 from src.clients.aws_client_factory import AwsClientFactory
-from src.exceptions import ClientFactoryException
+from src.data.exceptions import ClientFactoryException
 
 from tests import client_error
 

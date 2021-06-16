@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from src.s3_config_check import S3ConfigCheck
-from src.notification import Notification
+from src.data.notification import Notification
 
 
 class TestS3ConfigCheck(TestCase):

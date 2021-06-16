@@ -2,7 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict
 
-from src.exceptions import FilterConfigException
+from src.data.exceptions import FilterConfigException
 
 
 @dataclass

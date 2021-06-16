@@ -1,8 +1,8 @@
 from typing import Set
 
-from src.notification import Notification
-from src.notification_mapping import NotificationMapping
-from src.slack_notification import SlackNotification
+from src.data.notification import Notification
+from src.config.notification_mapping import NotificationMapping
+from src.data.slack_notification import SlackNotification
 
 
 class NotificationMapper:

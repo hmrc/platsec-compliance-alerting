@@ -3,8 +3,8 @@ import os
 from unittest import TestCase
 from unittest.mock import patch
 
-from src.config import Config
-from src.exceptions import MissingConfigException
+from src.config.config import Config
+from src.data.exceptions import MissingConfigException
 
 
 class TestConfig(TestCase):

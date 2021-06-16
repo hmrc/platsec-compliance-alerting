@@ -1,7 +1,7 @@
 from typing import List, Set
 
-from src.notification import Notification
-from src.notification_filter_config import NotificationFilterConfig
+from src.data.notification import Notification
+from src.config.notification_filter_config import NotificationFilterConfig
 
 
 class NotificationFilter:

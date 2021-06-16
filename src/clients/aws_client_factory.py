@@ -6,7 +6,7 @@ from botocore.exceptions import ClientError, BotoCoreError
 from dataclasses import dataclass
 
 from src.clients.aws_s3_client import AwsS3Client
-from src.exceptions import ClientFactoryException
+from src.data.exceptions import ClientFactoryException
 
 
 @dataclass(frozen=True)
