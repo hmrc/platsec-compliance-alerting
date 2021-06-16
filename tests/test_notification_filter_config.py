@@ -4,7 +4,7 @@ from src.notification_filter_config import NotificationFilterConfig
 from src.exceptions import FilterConfigException
 
 
-class TestFilterConfig(TestCase):
+class TestNotificationFilterConfig(TestCase):
     def test_init_with_all_fields(self) -> None:
         filter_config = NotificationFilterConfig.from_dict(
             {"bucket": "a-bucket", "team": "a-team", "reason": "a-reason"}
