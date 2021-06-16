@@ -3,6 +3,9 @@ name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
 
+[packages]
+boto3 = "==1.17.95"
+
 [dev-packages]
 black = "==21.6b0"
 coverage = "==5.5"
