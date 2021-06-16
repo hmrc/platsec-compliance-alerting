@@ -2,13 +2,17 @@ class ComplianceAlertingException(Exception):
     pass
 
 
+class ClientFactoryException(ComplianceAlertingException):
+    pass
+
+
 class FilterConfigException(ComplianceAlertingException):
     pass
 
 
-class NotificationMappingException(ComplianceAlertingException):
+class MissingConfigException(ComplianceAlertingException):
     pass
 
 
-class MissingConfigException(ComplianceAlertingException):
+class NotificationMappingException(ComplianceAlertingException):
     pass
