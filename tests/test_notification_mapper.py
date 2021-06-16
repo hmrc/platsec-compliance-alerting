@@ -22,5 +22,5 @@ class TestNotificationMapper(TestCase):
     def test_notification_mapper(self) -> None:
         notifications = {notification_a, notification_b, notification_c}
         mappings = {mapping_1, mapping_2}
-        slack_notifications = NotificationMapper().do_map(notifications, mappings)
+        slack_notifications = NotificationMapper().do_map(notifications, mappings, "central")
         self.assertEqual({slack_a, slack_b, slack_c}, slack_notifications)

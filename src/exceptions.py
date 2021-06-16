@@ -8,3 +8,7 @@ class FilterConfigException(ComplianceAlertingException):
 
 class NotificationMappingException(ComplianceAlertingException):
     pass
+
+
+class MissingConfigException(ComplianceAlertingException):
+    pass
