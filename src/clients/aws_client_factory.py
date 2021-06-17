@@ -33,7 +33,7 @@ class AwsClientFactory:
     def _assume_role(account: str, role: str) -> AwsCredentials:
         try:
             credentials_dict = boto3.client(service_name="sts").assume_role(
-                DurationSeconds=600,
+                DurationSeconds=900,
                 RoleArn=f"arn:aws:iam::{account}:role/{role}",
                 RoleSessionName=f"boto3_assuming_{role}",
             )
