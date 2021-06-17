@@ -1,7 +1,7 @@
 ARG PYTHON_VERSION
 
 FROM python:${PYTHON_VERSION}-alpine AS linter-base
-RUN apk add --no-cache shadow~=4.8
+RUN apk add --no-cache shadow
 # UID of current user who runs the build
 ARG user_id
 # GID of current user who runs the build
@@ -29,9 +29,12 @@ RUN groupmod -g 64 dialout \
 FROM linter-base AS pipenv
 RUN apk add --no-cache \
     bash \
+    cargo \
     gcc \
     libc-dev \
+    libffi-dev \
     make \
+    openssl-dev \
     && pip install pipenv==2021.5.29
 USER builder
 # Install Python dependencies so they are cached

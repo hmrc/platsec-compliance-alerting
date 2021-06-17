@@ -2,6 +2,10 @@ class ComplianceAlertingException(Exception):
     pass
 
 
+class AwsClientException(ComplianceAlertingException):
+    pass
+
+
 class ClientFactoryException(ComplianceAlertingException):
     pass
 

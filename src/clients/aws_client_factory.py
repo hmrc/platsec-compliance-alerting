@@ -1,7 +1,7 @@
 import boto3
 
 from botocore.client import BaseClient
-from botocore.exceptions import ClientError, BotoCoreError
+from botocore.exceptions import BotoCoreError, ClientError
 
 from dataclasses import dataclass
 
