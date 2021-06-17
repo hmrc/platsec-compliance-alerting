@@ -10,6 +10,10 @@ class TestNotificationMapping(TestCase):
         self.assertEqual(filter_config.channel, "a-channel")
         self.assertEqual(filter_config.buckets, {"a", "c", "b"})
 
+    def test_init_with_unexpected_fields(self) -> None:
+        with self.assertRaisesRegex(NotificationMappingException, "huh"):
+            NotificationMapping.from_dict({"huh": "huh?"})
+
     def test_init_with_missing_mandatory_fields(self) -> None:
         with self.assertRaisesRegex(NotificationMappingException, "channel"):
             NotificationMapping.from_dict({"buckets": ["a", "b", "c"]})

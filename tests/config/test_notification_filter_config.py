@@ -19,6 +19,10 @@ class TestNotificationFilterConfig(TestCase):
         self.assertEqual(filter_config.team, "unset")
         self.assertEqual(filter_config.reason, "unset")
 
+    def test_init_with_unexpected_fields(self) -> None:
+        with self.assertRaisesRegex(FilterConfigException, "what"):
+            NotificationFilterConfig.from_dict({"what": "wat?"})
+
     def test_init_with_missing_mandatory_fields(self) -> None:
         with self.assertRaisesRegex(FilterConfigException, "bucket"):
             NotificationFilterConfig.from_dict({})
