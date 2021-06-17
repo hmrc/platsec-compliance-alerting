@@ -8,7 +8,7 @@ from src.data.exceptions import AwsClientException
 
 bucket = "test-bucket"
 keys = [f"key_{index}" for index in range(10)]
-obj = "object content"
+obj = '{"a-key": "a-value"}'
 
 
 @mock_s3
@@ -17,10 +17,10 @@ class TestAwsS3Client(TestCase):
         self.client = AwsS3Client(boto3.client("s3", region_name="us-east-1"))
         self.client._s3.create_bucket(Bucket=bucket)
         for key in keys:
-            self.client._s3.put_object(Bucket=bucket, Key=key, Body=f"{key} {obj}")
+            self.client._s3.put_object(Bucket=bucket, Key=key, Body=f"{obj}")
 
     def test_read_object(self) -> None:
-        self.assertEqual("key_0 object content", self.client.read_object(bucket, keys[0]))
+        self.assertEqual({"a-key": "a-value"}, self.client.read_object(bucket, keys[0]))
 
     def test_read_object_failure(self) -> None:
         with self.assertRaisesRegex(AwsClientException, "unexpected-bucket"):

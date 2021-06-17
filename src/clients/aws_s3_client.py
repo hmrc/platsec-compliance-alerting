@@ -1,4 +1,5 @@
 from io import BytesIO
+from json import loads
 from typing import Any, Dict, List
 
 from botocore.client import BaseClient
@@ -10,16 +11,15 @@ class AwsS3Client:
     def __init__(self, boto_s3: BaseClient):
         self._s3 = boto_s3
 
-    def read_object(self, bucket: str, key: str) -> str:
+    def read_object(self, bucket: str, key: str) -> Dict[str, Any]:
         return boto_try(
-            lambda: self._read_object(bucket, key),
-            f"unable to read object '{key}' from bucket '{bucket}'",
+            lambda: dict(loads(self._read_object(bucket, key))), f"failed to read object '{key}' from bucket '{bucket}'"
         )
 
     def list_objects(self, bucket: str, prefix: str = "", max_keys: int = 1000) -> List[str]:
         return boto_try(
             lambda: self._list_objects(bucket, prefix, max_keys),
-            f"unable to list objects{' with prefix ' + prefix if prefix else ''} from bucket '{bucket}'",
+            f"failed to list objects{' with prefix ' + prefix if prefix else ''} from bucket '{bucket}'",
         )
 
     def _read_object(self, bucket: str, key: str) -> str:
