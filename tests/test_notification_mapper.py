@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from src.data.notification import Notification
 from src.notification_mapper import NotificationMapper
-from src.config.notification_mapping import NotificationMapping
+from src.config.notification_mapping_config import NotificationMappingConfig
 from src.data.slack_notification import SlackNotification
 
 
@@ -10,8 +10,8 @@ notification_a = Notification("bucket-a")
 notification_b = Notification("bucket-b")
 notification_c = Notification("bucket-c")
 
-mapping_1 = NotificationMapping("channel-1", ["bucket-b", "bucket-c"])
-mapping_2 = NotificationMapping("channel-2", ["bucket-c", "bucket-a"])
+mapping_1 = NotificationMappingConfig("channel-1", ["bucket-b", "bucket-c"])
+mapping_2 = NotificationMappingConfig("channel-2", ["bucket-c", "bucket-a"])
 
 slack_a = SlackNotification(notification_a, {"central", "channel-2"})
 slack_b = SlackNotification(notification_b, {"central", "channel-1"})

@@ -6,7 +6,7 @@ from src.data.exceptions import NotificationMappingException
 
 
 @dataclass(unsafe_hash=True)
-class NotificationMapping:
+class NotificationMappingConfig:
     channel: str
     buckets: FrozenSet[str]
 
@@ -15,8 +15,8 @@ class NotificationMapping:
         self.buckets = frozenset(buckets)
 
     @staticmethod
-    def from_dict(notification_mapping: Dict[str, Any]) -> NotificationMapping:
+    def from_dict(notification_mapping: Dict[str, Any]) -> NotificationMappingConfig:
         try:
-            return NotificationMapping(**notification_mapping)
+            return NotificationMappingConfig(**notification_mapping)
         except TypeError as err:
             raise NotificationMappingException(err) from None

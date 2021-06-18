@@ -12,6 +12,7 @@ from src.clients.aws_client_factory import AwsClientFactory
 from src.clients.aws_s3_client import AwsS3Client
 from src.config.config import Config
 from src.config.notification_filter_config import NotificationFilterConfig
+from src.config.notification_mapping_config import NotificationMappingConfig
 from src.data.exceptions import AwsClientException, MissingConfigException
 
 from tests.config import _raise
@@ -37,6 +38,11 @@ class TestConfig(TestCase):
         with patch.object(Config, "_fetch_config_files") as mock_fetch:
             Config().get_notification_filters()
         mock_fetch.assert_called_once_with("filters/", NotificationFilterConfig.from_dict)
+
+    def test_get_notification_mappings(self) -> None:
+        with patch.object(Config, "_fetch_config_files") as mock_fetch:
+            Config().get_notification_mappings()
+        mock_fetch.assert_called_once_with("mappings/", NotificationMappingConfig.from_dict)
 
     @patch.dict(environ, {"AWS_ACCOUNT": "99", "CONFIG_BUCKET": "buck", "CONFIG_BUCKET_READ_ROLE": "role"}, clear=True)
     def test_fetch_config_files(self) -> None:

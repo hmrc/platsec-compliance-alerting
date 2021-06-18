@@ -6,6 +6,7 @@ from src import T
 from src.clients.aws_s3_client import AwsS3Client
 from src.clients.aws_client_factory import AwsClientFactory
 from src.config.notification_filter_config import NotificationFilterConfig
+from src.config.notification_mapping_config import NotificationMappingConfig
 from src.data.exceptions import ComplianceAlertingException, MissingConfigException
 
 
@@ -34,6 +35,9 @@ class Config:
 
     def get_notification_filters(self) -> List[NotificationFilterConfig]:
         return self._fetch_config_files("filters/", NotificationFilterConfig.from_dict)
+
+    def get_notification_mappings(self) -> List[NotificationMappingConfig]:
+        return self._fetch_config_files("mappings/", NotificationMappingConfig.from_dict)
 
     def _fetch_config_files(self, prefix: str, mapper: Callable[[Dict[str, str]], T]) -> List[T]:
         s3 = AwsClientFactory().get_s3_client(self.get_aws_account(), self.get_config_bucket_read_role())
