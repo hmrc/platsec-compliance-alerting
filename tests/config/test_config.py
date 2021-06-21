@@ -30,6 +30,9 @@ class TestConfig(TestCase):
             "CENTRAL_CHANNEL": lambda: Config().get_central_channel(),
             "CONFIG_BUCKET": lambda: Config().get_config_bucket(),
             "CONFIG_BUCKET_READ_ROLE": lambda: Config().get_config_bucket_read_role(),
+            "REPORT_BUCKET": lambda: Config().get_report_bucket(),
+            "REPORT_BUCKET_READ_ROLE": lambda: Config().get_report_bucket_read_role(),
+            "S3_AUDIT_REPORT_KEY": lambda: Config().get_s3_audit_report_key(),
         }
         for key, getter in env_map.items():
             self.assertRaisesRegex(MissingConfigException, key, getter)
@@ -66,3 +69,13 @@ class TestConfig(TestCase):
                         filters = Config()._fetch_config_files("a-prefix", lambda d: namedtuple("Obj", "item")(**d))
         self.assertEqual([namedtuple("Obj", "item")(item="val-1")], filters)
         self.assertEqual("boom", err.getvalue().strip())
+
+    @patch.dict(environ, {"AWS_ACCOUNT": "88", "REPORT_BUCKET_READ_ROLE": "read-report"}, clear=True)
+    def test_get_report_s3_client(self) -> None:
+        s3_client = AwsS3Client(Mock())
+
+        def get_s3_client(account: str, role: str) -> AwsS3Client:
+            return s3_client if account == "88" and role == "read-report" else None
+
+        with patch.object(AwsClientFactory, "get_s3_client", side_effect=get_s3_client):
+            self.assertEqual(s3_client, Config().get_report_s3_client())

@@ -26,6 +26,15 @@ class Config:
     def get_config_bucket_read_role(self) -> str:
         return self._get_env("CONFIG_BUCKET_READ_ROLE")
 
+    def get_report_bucket(self) -> str:
+        return self._get_env("REPORT_BUCKET")
+
+    def get_report_bucket_read_role(self) -> str:
+        return self._get_env("REPORT_BUCKET_READ_ROLE")
+
+    def get_s3_audit_report_key(self) -> str:
+        return self._get_env("S3_AUDIT_REPORT_KEY")
+
     @staticmethod
     def _get_env(key: str) -> str:
         try:
@@ -50,3 +59,6 @@ class Config:
         except ComplianceAlertingException as err:
             self._logger.error(err)
             return None
+
+    def get_report_s3_client(self) -> AwsS3Client:
+        return AwsClientFactory().get_s3_client(self.get_aws_account(), self.get_report_bucket_read_role())
