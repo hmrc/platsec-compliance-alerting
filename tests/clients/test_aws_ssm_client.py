@@ -11,7 +11,13 @@ from src.data.exceptions import AwsClientException
 class TestAwsSsmClient(TestCase):
     def setUp(self) -> None:
         self.client = AwsSsmClient(boto3.client("ssm", region_name="us-east-1"))
-        self.client._ssm.put_parameter(Name="test_parameter", Description="A test parameter", Value="test_param_value", Type="SecureString")
 
     def test_get_parameter(self) -> None:
+        self.client._ssm.put_parameter(
+            Name="test_parameter", Description="A test parameter", Value="test_param_value", Type="SecureString"
+        )
         self.assertEqual("test_param_value", self.client.get_parameter("test_parameter"))
+
+    def test_get_parameter_missing_parameter(self) -> None:
+        with self.assertRaisesRegex(AwsClientException, "ParameterNotFound"):
+            self.client.get_parameter("missing_parameter")
