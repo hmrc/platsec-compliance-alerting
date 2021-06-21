@@ -29,6 +29,12 @@ class TestAwsS3Client(TestCase):
         with self.assertRaisesRegex(AwsClientException, "unexpected-key"):
             self.client.read_object(bucket, "unexpected-key")
 
+    def test_read_invalid_object(self) -> None:
+        self.client._s3.put_object(Bucket=bucket, Key="invalid-json", Body='{"key": "value"')
+
+        with self.assertRaisesRegex(AwsClientException, "invalid-json"):
+            self.client.read_object(bucket, "invalid-json")
+
     def test_list_objects(self) -> None:
         self.assertEqual(keys, self.client.list_objects(bucket, max_keys=5))
 
