@@ -9,7 +9,7 @@ from src.slack_notifier import SlackMessage, SlackNotifier, SlackNotifierExcepti
 @httpretty.activate
 class TestSlackNotifier(TestCase):
     def setUp(self) -> None:
-        self.slack_message = SlackMessage(["channel-a", "channel-b"], "a-header", "a-text", "a-title", "#c1e7c6")
+        self.slack_message = SlackMessage(["channel-a", "channel-b"], "a-header", "a-title", "a-text", "#c1e7c6")
         self.api_url = "https://fake-api-url.com/"
         self.slack_notifier = SlackNotifier("user", "token", self.api_url)
 
@@ -26,7 +26,7 @@ class TestSlackNotifier(TestCase):
 
     def test_slack_failure(self) -> None:
         self._register_slack_api_failure(200)
-        with self.assertRaisesRegex(SlackNotifierException, r"['channel\-a', 'channel\-b']"):
+        with self.assertRaisesRegex(SlackNotifierException, "'channel-a', 'channel-b'"):
             self.slack_notifier.send_message(self.slack_message)
 
     def _register_slack_api_success(self) -> None:

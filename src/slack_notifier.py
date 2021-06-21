@@ -10,8 +10,8 @@ from dataclasses import dataclass
 class SlackMessage:
     channels: List[str]
     header: str
-    text: str
     title: str
+    text: str
     color: str = "#36a64f"
 
 
