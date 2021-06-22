@@ -1,4 +1,5 @@
 from base64 import b64encode
+from logging import getLogger
 from typing import Any, Dict, List
 
 import requests
@@ -21,15 +22,23 @@ class SlackNotifierException(Exception):
 
 class SlackNotifier:
     def __init__(self, username: str, token: str, api_url: str):
+        self._logger = getLogger(self.__class__.__name__)
         self._username = username
         self._token = token
         self._api_url = api_url
 
+    def send_messages(self, messages: List[SlackMessage]) -> None:
+        for message in messages:
+            try:
+                self.send_message(message)
+            except SlackNotifierException as ex:
+                self._logger.error(f"unable to send message: {message}. Cause: {ex}")
+
     def send_message(self, message: SlackMessage) -> None:
         try:
             self._handle_response(self._send(message), message.channels)
-        except requests.RequestException as err:
-            raise SlackNotifierException(f"unable to send message to channels {message.channels}: {err}") from None
+        except requests.RequestException as ex:
+            raise SlackNotifierException(f"unable to send message to channels {message.channels}: {ex}") from None
 
     @staticmethod
     def _handle_response(response: Dict[str, Any], channels: List[str]) -> None:

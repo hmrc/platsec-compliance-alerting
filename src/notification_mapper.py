@@ -16,6 +16,7 @@ class NotificationMapper:
                     header="Alert",
                     title=notification.item,
                     text="\n".join(sorted(notification.findings)),
+                    color="#ff4d4d",
                 )
                 for notification in notifications
             ],

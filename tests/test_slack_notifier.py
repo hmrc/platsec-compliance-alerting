@@ -1,5 +1,8 @@
 from unittest import TestCase
 
+from contextlib import redirect_stderr
+from io import StringIO
+
 import httpretty
 import json
 
@@ -18,6 +21,25 @@ class TestSlackNotifier(TestCase):
         self.slack_notifier.send_message(self.slack_message)
         self._assert_headers_correct()
         self._assert_payload_correct()
+
+    def test_send_messages(self) -> None:
+        self._register_slack_api_success()
+        self._register_slack_api_failure(500)
+        self._register_slack_api_success()
+        messages = [
+            SlackMessage(["channel"], "success-header-1", "title", "text"),
+            SlackMessage(["channel"], "failure-header", "title", "text"),
+            SlackMessage(["channel"], "success-header-2", "title", "text"),
+        ]
+        with redirect_stderr(StringIO()) as err:
+            self.slack_notifier.send_messages(messages)
+        self._assert_message_request_sent("success-header-1")
+        self._assert_message_request_sent("success-header-2")
+        self._assert_message_request_sent("failure-header")
+        self.assertIn("failure-header", err.getvalue().strip())
+        self.assertIn("500", err.getvalue().strip())
+        self.assertNotIn("success-header-1", err.getvalue().strip())
+        self.assertNotIn("success-header-2", err.getvalue().strip())
 
     def test_request_failure(self) -> None:
         self._register_slack_api_failure(403)
@@ -70,3 +92,6 @@ class TestSlackNotifier(TestCase):
             },
             json.loads(httpretty.last_request().body),
         )
+
+    def _assert_message_request_sent(self, msg_header: str) -> None:
+        self.assertIn(msg_header, [req.parsed_body["messageDetails"]["text"] for req in httpretty.latest_requests()])
