@@ -7,7 +7,7 @@ from src.data.exceptions import FilterConfigException
 
 @dataclass
 class NotificationFilterConfig:
-    bucket: str
+    item: str
     team: str = "unset"
     reason: str = "unset"
 

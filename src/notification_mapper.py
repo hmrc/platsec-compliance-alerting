@@ -12,9 +12,9 @@ class NotificationMapper:
         return sorted(
             [
                 SlackMessage(
-                    channels=sorted(self._find_channels(notification.bucket, mappings).union({central_channel})),
+                    channels=sorted(self._find_channels(notification.item, mappings).union({central_channel})),
                     header="Alert",
-                    title=notification.bucket,
+                    title=notification.item,
                     text="\n".join(sorted(notification.findings)),
                 )
                 for notification in notifications
@@ -23,5 +23,5 @@ class NotificationMapper:
         )
 
     @staticmethod
-    def _find_channels(bucket: str, mappings: Set[NotificationMappingConfig]) -> Set[str]:
-        return {mapping.channel for mapping in mappings if bucket in mapping.buckets}
+    def _find_channels(item: str, mappings: Set[NotificationMappingConfig]) -> Set[str]:
+        return {mapping.channel for mapping in mappings if item in mapping.items}

@@ -22,5 +22,9 @@ class NotificationMappingException(ComplianceAlertingException):
     pass
 
 
+class UnsupportedAuditException(ComplianceAlertingException):
+    pass
+
+
 class UnsupportedEventException(ComplianceAlertingException):
     pass

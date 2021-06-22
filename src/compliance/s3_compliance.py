@@ -22,7 +22,7 @@ class S3Compliance:
 
         findings.update(self._check_high_sensitivity_bucket_rules(bucket))
 
-        return Notification(bucket=bucket["name"], findings=findings)
+        return Notification(item=bucket["name"], findings=findings)
 
     def _check_high_sensitivity_bucket_rules(self, bucket: Dict[str, Any]) -> Set[str]:
         findings = set()

@@ -8,11 +8,11 @@ from src.data.exceptions import NotificationMappingException
 @dataclass(unsafe_hash=True)
 class NotificationMappingConfig:
     channel: str
-    buckets: FrozenSet[str]
+    items: FrozenSet[str]
 
-    def __init__(self, channel: str, buckets: List[str]):
+    def __init__(self, channel: str, items: List[str]):
         self.channel = channel
-        self.buckets = frozenset(buckets)
+        self.items = frozenset(items)
 
     @staticmethod
     def from_dict(notification_mapping: Dict[str, Any]) -> NotificationMappingConfig:

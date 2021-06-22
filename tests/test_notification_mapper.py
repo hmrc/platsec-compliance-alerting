@@ -6,16 +6,16 @@ from src.notification_mapper import NotificationMapper
 from src.slack_notifier import SlackMessage
 
 
-notification_a = Notification("bucket-a", findings={"item a-1", "item a-2"})
-notification_b = Notification("bucket-b", findings={"item b"})
-notification_c = Notification("bucket-c", findings={"item c"})
+notification_a = Notification("item-a", findings={"item a-1", "item a-2"})
+notification_b = Notification("item-b", findings={"item b"})
+notification_c = Notification("item-c", findings={"item c"})
 
-mapping_1 = NotificationMappingConfig("channel-1", ["bucket-b", "bucket-c"])
-mapping_2 = NotificationMappingConfig("channel-2", ["bucket-c", "bucket-a"])
+mapping_1 = NotificationMappingConfig("channel-1", ["item-b", "item-c"])
+mapping_2 = NotificationMappingConfig("channel-2", ["item-c", "item-a"])
 
-msg_a = SlackMessage(["central", "channel-2"], "Alert", "bucket-a", "item a-1\nitem a-2")
-msg_b = SlackMessage(["central", "channel-1"], "Alert", "bucket-b", "item b")
-msg_c = SlackMessage(["central", "channel-1", "channel-2"], "Alert", "bucket-c", "item c")
+msg_a = SlackMessage(["central", "channel-2"], "Alert", "item-a", "item a-1\nitem a-2")
+msg_b = SlackMessage(["central", "channel-1"], "Alert", "item-b", "item b")
+msg_c = SlackMessage(["central", "channel-1", "channel-2"], "Alert", "item-c", "item c")
 
 
 class TestNotificationMapper(TestCase):

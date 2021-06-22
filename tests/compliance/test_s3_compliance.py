@@ -91,21 +91,21 @@ class TestS3Compliance(TestCase):
         self.assertEqual(
             {
                 Notification(
-                    bucket="mischievous-bucket",
+                    item="mischievous-bucket",
                     findings={
                         "bucket should not allow public access",
                         "bucket should have data expiry and data sensitivity tags",
                     },
                 ),
                 Notification(
-                    bucket="bad-bucket",
+                    item="bad-bucket",
                     findings={
                         "bucket should be encrypted",
                         "bucket should have mfa-delete",
                         "bucket should have data expiry and data sensitivity tags",
                     },
                 ),
-                Notification(bucket="good-bucket", findings=set()),
+                Notification(item="good-bucket", findings=set()),
             },
             notifications,
         )

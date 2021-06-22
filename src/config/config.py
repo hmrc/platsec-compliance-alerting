@@ -33,18 +33,21 @@ class Config:
     def get_s3_audit_report_key(self) -> str:
         return self._get_env("S3_AUDIT_REPORT_KEY")
 
-    @staticmethod
-    def _get_env(key: str) -> str:
-        try:
-            return environ[key]
-        except KeyError:
-            raise MissingConfigException(f"environment variable {key}")
+    def get_report_s3_client(self) -> AwsS3Client:
+        return AwsClientFactory().get_s3_client(self.get_aws_account(), self.get_report_bucket_read_role())
 
     def get_notification_filters(self) -> List[NotificationFilterConfig]:
         return self._fetch_config_files("filters/", NotificationFilterConfig.from_dict)
 
     def get_notification_mappings(self) -> List[NotificationMappingConfig]:
         return self._fetch_config_files("mappings/", NotificationMappingConfig.from_dict)
+
+    @staticmethod
+    def _get_env(key: str) -> str:
+        try:
+            return environ[key]
+        except KeyError:
+            raise MissingConfigException(f"environment variable {key}")
 
     def _fetch_config_files(self, prefix: str, mapper: Callable[[Dict[str, str]], T]) -> List[T]:
         s3 = AwsClientFactory().get_s3_client(self.get_aws_account(), self.get_config_bucket_read_role())
@@ -57,6 +60,3 @@ class Config:
         except ComplianceAlertingException as err:
             self._logger.error(err)
             return []
-
-    def get_report_s3_client(self) -> AwsS3Client:
-        return AwsClientFactory().get_s3_client(self.get_aws_account(), self.get_report_bucket_read_role())
