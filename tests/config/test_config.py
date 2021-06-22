@@ -66,7 +66,7 @@ class TestConfig(TestCase):
                 with patch.object(AwsS3Client, "read_object", side_effect=read_object):
                     with redirect_stderr(StringIO()) as err:
                         filters = Config()._fetch_config_files("a-prefix", lambda d: namedtuple("Obj", "item")(**d))
-        self.assertEqual([namedtuple("Obj", "item")(item="1"), namedtuple("Obj", "item")(item="2")], filters)
+        self.assertEqual({namedtuple("Obj", "item")(item="1"), namedtuple("Obj", "item")(item="2")}, filters)
         self.assertEqual("boom", err.getvalue().strip())
 
     @patch.dict(environ, {"AWS_ACCOUNT": "88", "REPORT_BUCKET_READ_ROLE": "read-report"}, clear=True)

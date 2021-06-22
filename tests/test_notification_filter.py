@@ -16,13 +16,13 @@ item_4_filter = NotificationFilterConfig("item_4", "some reason")
 class TestNotificationFilter(TestCase):
     def test_filter(self) -> None:
         notifications = {item_1, item_2, item_3, item_4}
-        filters = [item_2_filter, item_4_filter]
+        filters = {item_2_filter, item_4_filter}
         self.assertEqual({item_1}, NotificationFilter().do_filter(notifications, filters))
 
     def test_empty_filters(self) -> None:
         notifications = {item_1, item_2, item_4}
-        self.assertEqual(notifications, NotificationFilter().do_filter(notifications=notifications, filters=[]))
+        self.assertEqual(notifications, NotificationFilter().do_filter(notifications=notifications, filters=set()))
 
     def test_empty_notifications(self) -> None:
-        filters = [item_2_filter, item_4_filter]
+        filters = {item_2_filter, item_4_filter}
         self.assertEqual(set(), NotificationFilter().do_filter(notifications=set(), filters=filters))

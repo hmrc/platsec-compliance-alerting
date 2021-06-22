@@ -5,7 +5,7 @@ from typing import Dict
 from src.data.exceptions import FilterConfigException
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class NotificationFilterConfig:
     item: str
     reason: str
