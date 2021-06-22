@@ -5,7 +5,7 @@ from src.data.notification import Notification
 
 
 class S3Compliance:
-    def check(self, audit: Audit) -> Set[Notification]:
+    def analyse(self, audit: Audit) -> Set[Notification]:
         return {self._check_bucket_rules(bucket) for report in audit.report for bucket in report["results"]["buckets"]}
 
     def _check_bucket_rules(self, bucket: Dict[str, Any]) -> Notification:

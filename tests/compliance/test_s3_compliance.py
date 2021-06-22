@@ -87,7 +87,7 @@ class TestS3Compliance(TestCase):
                 },
             ],
         )
-        notifications = S3Compliance().check(audit)
+        notifications = S3Compliance().analyse(audit)
         self.assertEqual(
             {
                 Notification(

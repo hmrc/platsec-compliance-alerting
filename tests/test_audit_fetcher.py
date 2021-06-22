@@ -6,7 +6,7 @@ from src.data.exceptions import UnsupportedEventException
 from src.data.audit import Audit
 
 
-class TestReportFetcher(TestCase):
+class TestAuditFetcher(TestCase):
     def test_fetch_audit(self) -> None:
         report = [{"some_key": "some value"}]
         s3 = Mock(read_object=Mock(side_effect=lambda b, k: report if b == "buck" and k == "report" else None))
