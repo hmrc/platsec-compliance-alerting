@@ -8,8 +8,7 @@ from src.data.exceptions import FilterConfigException
 @dataclass
 class NotificationFilterConfig:
     item: str
-    team: str = "unset"
-    reason: str = "unset"
+    reason: str
 
     @staticmethod
     def from_dict(filter_config: Dict[str, str]) -> NotificationFilterConfig:

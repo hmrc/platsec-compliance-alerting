@@ -9,8 +9,8 @@ item_2 = Notification(item="item_2", findings={"finding 2"})
 item_3 = Notification(item="item_3")
 item_4 = Notification(item="item_4", findings={"finding 3"})
 
-item_2_filter = NotificationFilterConfig("item_2")
-item_4_filter = NotificationFilterConfig("item_4")
+item_2_filter = NotificationFilterConfig("item_2", "a reason")
+item_4_filter = NotificationFilterConfig("item_4", "some reason")
 
 
 class TestNotificationFilter(TestCase):
