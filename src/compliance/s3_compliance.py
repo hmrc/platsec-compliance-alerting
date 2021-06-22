@@ -1,11 +1,12 @@
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, Set
 
+from src.data.audit import Audit
 from src.data.notification import Notification
 
 
-class S3ConfigCheck:
-    def check_buckets(self, reports: List[Dict[str, Any]]) -> Set[Notification]:
-        return {self._check_bucket_rules(bucket) for report in reports for bucket in report["results"]["buckets"]}
+class S3Compliance:
+    def check(self, audit: Audit) -> Set[Notification]:
+        return {self._check_bucket_rules(bucket) for report in audit.report for bucket in report["results"]["buckets"]}
 
     def _check_bucket_rules(self, bucket: Dict[str, Any]) -> Notification:
         findings = set()

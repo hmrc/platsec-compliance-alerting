@@ -11,9 +11,9 @@ class AwsS3Client:
     def __init__(self, boto_s3: BaseClient):
         self._s3 = boto_s3
 
-    def read_object(self, bucket: str, key: str) -> Dict[str, Any]:
+    def read_object(self, bucket: str, key: str) -> List[Dict[str, Any]]:
         return boto_try(
-            lambda: dict(loads(self._read_object(bucket, key))), f"failed to read object '{key}' from bucket '{bucket}'"
+            lambda: list(loads(self._read_object(bucket, key))), f"failed to read object '{key}' from bucket '{bucket}'"
         )
 
     def list_objects(self, bucket: str, prefix: str = "", max_keys: int = 1000) -> List[str]:

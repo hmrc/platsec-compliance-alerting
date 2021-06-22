@@ -30,7 +30,6 @@ class TestConfig(TestCase):
             "CENTRAL_CHANNEL": lambda: Config().get_central_channel(),
             "CONFIG_BUCKET": lambda: Config().get_config_bucket(),
             "CONFIG_BUCKET_READ_ROLE": lambda: Config().get_config_bucket_read_role(),
-            "REPORT_BUCKET": lambda: Config().get_report_bucket(),
             "REPORT_BUCKET_READ_ROLE": lambda: Config().get_report_bucket_read_role(),
             "S3_AUDIT_REPORT_KEY": lambda: Config().get_s3_audit_report_key(),
         }
@@ -57,7 +56,7 @@ class TestConfig(TestCase):
 
         def read_object(bucket: str, key: str) -> Dict[str, str]:
             return (
-                {"1": lambda: {"item": "val-1"}, "2": lambda: _raise(AwsClientException("boom"))}[key]()
+                {"1": lambda: [{"item": "1"}, {"item": "2"}], "2": lambda: _raise(AwsClientException("boom"))}[key]()
                 if bucket == "buck"
                 else None
             )
@@ -67,7 +66,7 @@ class TestConfig(TestCase):
                 with patch.object(AwsS3Client, "read_object", side_effect=read_object):
                     with redirect_stderr(StringIO()) as err:
                         filters = Config()._fetch_config_files("a-prefix", lambda d: namedtuple("Obj", "item")(**d))
-        self.assertEqual([namedtuple("Obj", "item")(item="val-1")], filters)
+        self.assertEqual([namedtuple("Obj", "item")(item="1"), namedtuple("Obj", "item")(item="2")], filters)
         self.assertEqual("boom", err.getvalue().strip())
 
     @patch.dict(environ, {"AWS_ACCOUNT": "88", "REPORT_BUCKET_READ_ROLE": "read-report"}, clear=True)

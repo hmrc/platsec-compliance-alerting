@@ -20,3 +20,7 @@ class MissingConfigException(ComplianceAlertingException):
 
 class NotificationMappingException(ComplianceAlertingException):
     pass
+
+
+class UnsupportedEventException(ComplianceAlertingException):
+    pass
