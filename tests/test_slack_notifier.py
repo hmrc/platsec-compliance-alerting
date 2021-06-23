@@ -6,7 +6,7 @@ from io import StringIO
 import httpretty
 import json
 
-from src.slack_notifier import SlackMessage, SlackNotifier, SlackNotifierException
+from src.slack_notifier import SlackMessage, SlackNotifier, SlackNotifierConfig, SlackNotifierException
 
 
 @httpretty.activate
@@ -14,7 +14,7 @@ class TestSlackNotifier(TestCase):
     def setUp(self) -> None:
         self.slack_message = SlackMessage(["channel-a", "channel-b"], "a-header", "a-title", "a-text", "#c1e7c6")
         self.api_url = "https://fake-api-url.com/"
-        self.slack_notifier = SlackNotifier("user", "token", self.api_url)
+        self.slack_notifier = SlackNotifier(SlackNotifierConfig("user", "token", self.api_url))
 
     def test_send_message(self) -> None:
         self._register_slack_api_success()

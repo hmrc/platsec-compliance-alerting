@@ -9,6 +9,6 @@ class AwsSsmClient:
 
     def get_parameter(self, parameter_name: str) -> str:
         return boto_try(
-            lambda: self._ssm.get_parameter(Name=parameter_name, WithDecryption=True)["Parameter"]["Value"],
+            lambda: str(self._ssm.get_parameter(Name=parameter_name, WithDecryption=True)["Parameter"]["Value"]),
             f"failed to get parameter {parameter_name}",
         )

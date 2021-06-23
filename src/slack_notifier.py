@@ -16,16 +16,23 @@ class SlackMessage:
     color: str = "#36a64f"
 
 
+@dataclass
+class SlackNotifierConfig:
+    username: str
+    token: str
+    api_url: str
+
+
 class SlackNotifierException(Exception):
     pass
 
 
 class SlackNotifier:
-    def __init__(self, username: str, token: str, api_url: str):
+    def __init__(self, config: SlackNotifierConfig):
         self._logger = getLogger(self.__class__.__name__)
-        self._username = username
-        self._token = token
-        self._api_url = api_url
+        self._username = config.username
+        self._token = config.token
+        self._api_url = config.api_url
 
     def send_messages(self, messages: List[SlackMessage]) -> None:
         for message in messages:

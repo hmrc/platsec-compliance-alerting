@@ -9,6 +9,7 @@ from src.clients.aws_client_factory import AwsClientFactory
 from src.config.notification_filter_config import NotificationFilterConfig
 from src.config.notification_mapping_config import NotificationMappingConfig
 from src.data.exceptions import ComplianceAlertingException, MissingConfigException
+from src.slack_notifier import SlackNotifierConfig
 
 
 class Config:
@@ -32,6 +33,26 @@ class Config:
 
     def get_s3_audit_report_key(self) -> str:
         return self._get_env("S3_AUDIT_REPORT_KEY")
+
+    def get_slack_api_url(self) -> str:
+        return self._get_env("SLACK_API_URL")
+
+    def get_slack_username_key(self) -> str:
+        return self._get_env("SLACK_USERNAME_KEY")
+
+    def get_slack_token_key(self) -> str:
+        return self._get_env("SLACK_TOKEN_KEY")
+
+    def get_ssm_read_role(self) -> str:
+        return self._get_env("SSM_READ_ROLE")
+
+    def get_slack_notifier_config(self) -> SlackNotifierConfig:
+        ssm = AwsClientFactory().get_ssm_client(self.get_aws_account(), self.get_ssm_read_role())
+        return SlackNotifierConfig(
+            username=ssm.get_parameter(self.get_slack_username_key()),
+            token=ssm.get_parameter(self.get_slack_token_key()),
+            api_url=self.get_slack_api_url(),
+        )
 
     def get_report_s3_client(self) -> AwsS3Client:
         return AwsClientFactory().get_s3_client(self.get_aws_account(), self.get_report_bucket_read_role())
