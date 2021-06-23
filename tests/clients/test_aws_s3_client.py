@@ -17,7 +17,7 @@ class TestAwsS3Client(TestCase):
         self.client = AwsS3Client(boto3.client("s3", region_name="us-east-1"))
         self.client._s3.create_bucket(Bucket=bucket)
         for key in keys:
-            self.client._s3.put_object(Bucket=bucket, Key=key, Body=f"{obj}")
+            self.client._s3.put_object(Bucket=bucket, Key=key, Body=obj)
 
     def test_read_object(self) -> None:
         self.assertEqual([{"key": "val1"}, {"key": "val2"}], self.client.read_object(bucket, keys[0]))

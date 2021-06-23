@@ -1,5 +1,7 @@
 from unittest import TestCase
 
+from tests.fixtures.audit_reports import s3_report
+
 from src.data.audit import Audit
 from src.compliance.s3_compliance import S3Compliance
 from src.data.notification import Notification
@@ -45,47 +47,7 @@ class TestS3Compliance(TestCase):
     def test_check(self) -> None:
         audit = Audit(
             type="s3",
-            report=[
-                {
-                    "account": {
-                        "identifier": "555666777444",
-                    },
-                    "results": {
-                        "buckets": [
-                            {
-                                "name": "good-bucket",
-                                "encryption": {"enabled": True},
-                                "public_access_block": {"enabled": True},
-                                "mfa_delete": {"enabled": False},
-                                "data_tagging": {"expiry": "not_unset", "sensitivity": "not_unset"},
-                            },
-                            {
-                                "name": "bad-bucket",
-                                "encryption": {"enabled": False},
-                                "mfa_delete": {"enabled": False},
-                                "public_access_block": {"enabled": True},
-                                "data_tagging": {"expiry": "unset", "sensitivity": "high"},
-                            },
-                        ]
-                    },
-                },
-                {
-                    "account": {
-                        "identifier": "111222333444",
-                    },
-                    "results": {
-                        "buckets": [
-                            {
-                                "name": "mischievous-bucket",
-                                "encryption": {"enabled": True},
-                                "mfa_delete": {"enabled": True},
-                                "public_access_block": {"enabled": False},
-                                "data_tagging": {"expiry": "unset", "sensitivity": "high"},
-                            },
-                        ]
-                    },
-                },
-            ],
+            report=s3_report,
         )
         notifications = S3Compliance().analyse(audit)
         self.assertEqual(
