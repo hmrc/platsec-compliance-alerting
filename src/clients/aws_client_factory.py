@@ -47,4 +47,4 @@ class AwsClientFactory:
                 sessionToken=credentials_dict["Credentials"]["SessionToken"],
             )
         except (BotoCoreError, ClientError) as error:
-            raise ClientFactoryException(f"unable to assume role '{role}' in account '{account}': {error}")
+            raise ClientFactoryException(f"unable to assume role '{role}' in account '{account}': {error}") from None

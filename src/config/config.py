@@ -68,7 +68,7 @@ class Config:
         try:
             return environ[key]
         except KeyError:
-            raise MissingConfigException(f"environment variable {key}")
+            raise MissingConfigException(f"environment variable {key}") from None
 
     def _fetch_config_files(self, prefix: str, mapper: Callable[[Dict[str, str]], T]) -> Set[T]:
         s3 = AwsClientFactory().get_s3_client(self.get_aws_account(), self.get_config_bucket_read_role())
