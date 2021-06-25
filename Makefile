@@ -71,5 +71,5 @@ build-lambda-image:
 .PHONY: push-lambda-image
 push-lambda-image: build-lambda-image
 	@aws --profile $(ROLE) ecr get-login-password | docker login --username AWS --password-stdin $(ECR)
-	@docker tag  platsec_compliance_alerting_lambda:local $(ECR)/platsec_compliance_alerting_lambda:latest
-	@docker push $(ECR)/platsec_compliance_alerting_lambda:latest
+	@docker tag  platsec_compliance_alerting_lambda:local $(ECR)/platsec-compliance-alerting:latest
+	@docker push $(ECR)/platsec-compliance-alerting:latest
