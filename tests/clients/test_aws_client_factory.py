@@ -59,7 +59,7 @@ class TestAwsClientFactory(TestCase):
         mock_sts_client.assume_role.assert_called_once_with(
             DurationSeconds=900,
             RoleArn="arn:aws:iam::some-account:role/some-role",
-            RoleSessionName="boto3_assuming_some-role",
+            RoleSessionName="some-role",
         )
 
     def test_get_client_failure(self) -> None:
