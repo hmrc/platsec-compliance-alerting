@@ -1,14 +1,15 @@
 from unittest import TestCase
 
 from src.config.notification_mapping_config import NotificationMappingConfig
-from src.data.notification import Notification
 from src.notification_mapper import NotificationMapper
 from src.slack_notifier import SlackMessage
 
+from tests.test_types_generator import notification
 
-notification_a = Notification("item-a", findings={"item a-1", "item a-2"})
-notification_b = Notification("item-b", findings={"item b"})
-notification_c = Notification("item-c", findings={"item c"})
+
+notification_a = notification(item="item-a", findings={"item a-1", "item a-2"})
+notification_b = notification(item="item-b", findings={"item b"})
+notification_c = notification(item="item-c", findings={"item c"})
 
 mapping_1 = NotificationMappingConfig("channel-1", ["item-b", "item-c"])
 mapping_2 = NotificationMappingConfig("channel-2", ["item-c", "item-a"])
