@@ -13,14 +13,14 @@ class NotificationMapper:
             [
                 SlackMessage(
                     channels=sorted(self._find_channels(notification.item, mappings).union({central_channel})),
-                    header="Alert",
+                    header=f"{notification.account.name} ({notification.account.identifier})",
                     title=notification.item,
                     text="\n".join(sorted(notification.findings)),
                     color="#ff4d4d",
                 )
                 for notification in notifications
             ],
-            key=lambda msg: msg.title,
+            key=lambda msg: (msg.header, msg.title),
         )
 
     @staticmethod
