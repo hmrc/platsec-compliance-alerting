@@ -42,6 +42,17 @@ class TestConfig(TestCase):
         for key, getter in env_map.items():
             self.assertRaisesRegex(MissingConfigException, key, getter)
 
+    def test_get_default_log_level(self) -> None:
+        self.assertEqual("ERROR", Config.get_log_level())
+
+    @patch.dict(environ, {"LOG_LEVEL": "debug"}, clear=True)
+    def test_get_configured_log_level(self) -> None:
+        self.assertEqual("DEBUG", Config.get_log_level())
+
+    @patch.dict(environ, {"LOG_LEVEL": "banana"}, clear=True)
+    def test_get_unsupported_log_level(self) -> None:
+        self.assertEqual("ERROR", Config.get_log_level())
+
     @patch.dict(
         environ,
         {

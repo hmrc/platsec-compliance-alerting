@@ -1,14 +1,19 @@
 from typing import Any, Dict, Set
 
 from src.data.audit import Audit
+from src.data.account import Account
 from src.data.notification import Notification
 
 
 class S3Compliance:
     def analyse(self, audit: Audit) -> Set[Notification]:
-        return {self._check_bucket_rules(bucket) for report in audit.report for bucket in report["results"]["buckets"]}
+        return {
+            self._check_bucket_rules(report["account"], bucket)
+            for report in audit.report
+            for bucket in report["results"]["buckets"]
+        }
 
-    def _check_bucket_rules(self, bucket: Dict[str, Any]) -> Notification:
+    def _check_bucket_rules(self, account: Dict[str, str], bucket: Dict[str, Any]) -> Notification:
         findings = set()
 
         if not self._is_encrypted(bucket):
@@ -22,7 +27,7 @@ class S3Compliance:
 
         findings.update(self._check_high_sensitivity_bucket_rules(bucket))
 
-        return Notification(item=bucket["name"], findings=findings)
+        return Notification(account=Account.from_dict(account), item=bucket["name"], findings=findings)
 
     def _check_high_sensitivity_bucket_rules(self, bucket: Dict[str, Any]) -> Set[str]:
         findings = set()

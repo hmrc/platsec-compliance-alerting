@@ -1,9 +1,8 @@
 from itertools import chain
-from logging import getLogger
 from os import environ
 from typing import Callable, Dict, Set
 
-from src import T
+from src import T, error
 from src.clients.aws_s3_client import AwsS3Client
 from src.clients.aws_client_factory import AwsClientFactory
 from src.config.notification_filter_config import NotificationFilterConfig
@@ -13,9 +12,6 @@ from src.slack_notifier import SlackNotifierConfig
 
 
 class Config:
-    def __init__(self) -> None:
-        self._logger = getLogger(self.__class__.__name__)
-
     def get_aws_account(self) -> str:
         return self._get_env("AWS_ACCOUNT")
 
@@ -27,6 +23,11 @@ class Config:
 
     def get_config_bucket_read_role(self) -> str:
         return self._get_env("CONFIG_BUCKET_READ_ROLE")
+
+    @staticmethod
+    def get_log_level() -> str:
+        log_level = str(environ.get("LOG_LEVEL")).upper()
+        return log_level if log_level in ["CRITICAL", "FATAL", "ERROR", "WARNING", "WARN", "INFO", "DEBUG"] else "ERROR"
 
     def get_report_bucket_read_role(self) -> str:
         return self._get_env("REPORT_BUCKET_READ_ROLE")
@@ -79,5 +80,5 @@ class Config:
         try:
             return {mapper(item) for item in s3.read_object(self.get_config_bucket(), key)}
         except ComplianceAlertingException as err:
-            self._logger.error(err)
+            error(self, err)
             return set()

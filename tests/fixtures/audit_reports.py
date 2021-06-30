@@ -2,6 +2,7 @@ s3_report = [
     {
         "account": {
             "identifier": "555666777444",
+            "name": "an-account",
         },
         "results": {
             "buckets": [
@@ -25,6 +26,7 @@ s3_report = [
     {
         "account": {
             "identifier": "111222333444",
+            "name": "another-account",
         },
         "results": {
             "buckets": [
