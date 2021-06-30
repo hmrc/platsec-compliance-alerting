@@ -22,6 +22,11 @@ class TestSlackNotifier(TestCase):
         self._assert_headers_correct()
         self._assert_payload_correct()
 
+    def test_send_message_with_no_channel(self) -> None:
+        self._register_slack_api_success()
+        self.slack_notifier.send_message(SlackMessage(["", ""], "a-header", "a-title", "a-text"))
+        self.assertEqual(0, len(httpretty.latest_requests()), "Message should not have been sent")
+
     def test_send_messages(self) -> None:
         self._register_slack_api_success()
         self._register_slack_api_failure(500)

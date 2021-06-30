@@ -15,8 +15,9 @@ class Config:
     def get_aws_account(self) -> str:
         return self._get_env("AWS_ACCOUNT")
 
-    def get_central_channel(self) -> str:
-        return self._get_env("CENTRAL_CHANNEL")
+    @staticmethod
+    def get_central_channel() -> str:
+        return environ.get("CENTRAL_CHANNEL", "")
 
     def get_config_bucket(self) -> str:
         return self._get_env("CONFIG_BUCKET")
