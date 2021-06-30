@@ -13,7 +13,14 @@ class SlackMessage:
     header: str
     title: str
     text: str
-    color: str = "#36a64f"
+    color: str
+
+    def __init__(self, channels: List[str], header: str, title: str, text: str, color: str = "#36a64f"):
+        self.channels = list(filter(None, channels))
+        self.header = header
+        self.title = title
+        self.text = text
+        self.color = color
 
 
 @dataclass
@@ -43,7 +50,7 @@ class SlackNotifier:
 
     def send_message(self, message: SlackMessage) -> None:
         try:
-            self._handle_response(self._send(message), message.channels)
+            self._handle_response(self._send(message), message.channels) if message.channels else None
         except requests.RequestException as ex:
             raise SlackNotifierException(f"unable to send message to channels {message.channels}: {ex}") from None
 

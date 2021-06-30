@@ -22,14 +22,16 @@ from tests.config import _raise
 
 class TestConfig(TestCase):
     @patch.dict(environ, {"CENTRAL_CHANNEL": "the-central-channel"}, clear=True)
-    def test_get_central_channel(self) -> None:
+    def test_get_configured_central_channel(self) -> None:
         self.assertEqual("the-central-channel", Config().get_central_channel())
+
+    def test_get_default_central_channel(self) -> None:
+        self.assertEqual("", Config().get_central_channel())
 
     @patch.dict(environ, {}, clear=True)
     def test_missing_env_vars(self) -> None:
         env_map = {
             "AWS_ACCOUNT": lambda: Config().get_aws_account(),
-            "CENTRAL_CHANNEL": lambda: Config().get_central_channel(),
             "CONFIG_BUCKET": lambda: Config().get_config_bucket(),
             "CONFIG_BUCKET_READ_ROLE": lambda: Config().get_config_bucket_read_role(),
             "REPORT_BUCKET_READ_ROLE": lambda: Config().get_report_bucket_read_role(),

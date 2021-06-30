@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Dict
 
 
-@dataclass(unsafe_hash=True)
+@dataclass(frozen=True)
 class Account:
     identifier: str
     name: str
