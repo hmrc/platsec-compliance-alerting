@@ -81,5 +81,5 @@ class Config:
         try:
             return {mapper(item) for item in s3.read_object(self.get_config_bucket(), key)}
         except ComplianceAlertingException as err:
-            error(self, err)
+            error(self, f"unable to load config file '{key}': {err}")
             return set()

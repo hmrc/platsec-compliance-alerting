@@ -110,7 +110,7 @@ class TestConfig(TestCase):
                     with redirect_stderr(StringIO()) as err:
                         filters = Config()._fetch_config_files("a-prefix", lambda d: namedtuple("Obj", "item")(**d))
         self.assertEqual({namedtuple("Obj", "item")(item="1"), namedtuple("Obj", "item")(item="2")}, filters)
-        self.assertEqual("boom", err.getvalue().strip())
+        self.assertEqual("unable to load config file '2': boom", err.getvalue().strip())
 
     @patch.dict(environ, {"AWS_ACCOUNT": "88", "REPORT_BUCKET_READ_ROLE": "read-report"}, clear=True)
     def test_get_report_s3_client(self) -> None:
