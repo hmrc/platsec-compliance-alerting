@@ -21,51 +21,49 @@ This Python program is meant to run as an AWS Lambda function that requires the 
 
 ### Alert mapping
 
-Alerts are always sent to a central Slack channel. On top of this, it's possible to map certain alerts with
-additional Slack channels, so that teams can receive in their own Slack channels alerts that are relevant to their own
-resources.
-
-Instructing PlatSec Compliance Alerting to sent certain alerts to additional Slack channels can be done with a JSON
-config file as such:
+Alerts are always sent to a central Slack channel. Additional Slack channels can be specified:
 
 ```json
 [
   {
-    "channel": "Slack channel where alerts should be sent to",
-    "account": "AWS account identifier: alerts for any resource that belongs to this account will be sent in the above channel"
+    "channel": "team-abc",
+    "account": "111222333444"
   },
   {
-    "channel": "Slack channel where alerts should be sent to",
-    "items": ["name of a resource for which alerts should go in the above Slack channel", "another resource", "..."]
+    "channel": "team-xyz",
+    "items": ["bucket-a", "bucket-b"]
   }
 ]
 ```
 
-One or more alert mapping config files can be saved in the config bucket. These files are expected to have names
-prefixed with `mappings/`.
+- `channel`: name of a Slack channel where alerts will be sent to (should not begin with `#`)
+- `account`: alerts for resources in this account will be sent to the specified channel
+- `items`: alerts for these resources will be sent to the specified channel
+
+Alert mapping config files should be saved in the config bucket and prefixed with `mappings/`.
 
 ### Alert filtering
 
 Alerts can be filtered out for resources that are known to be non-compliant, as long as the non-compliance state has
-been signed-off and documented.
-
-Instructing PlatSec Compliance Alerting to ignore a resource can be done with a JSON config file as such:
+been signed-off and documented:
 
 ```json
 [
   {
-    "item": "name of an item for which alerts should be ignored",
-    "reason": "explains why this item should not be alerted on, possibly with a link to a document illustrating the decision"
+    "item": "bucket-a",
+    "reason": "needs public access"
   },
   {
-    "item": "another item to be ignored",
-    "reason": "why alerts for this item should be filtered out"
+    "item": "bucket-b",
+    "reason": "some reason"
   }
 ]
 ```
 
-One or more alert filtering config files can be saved in the config bucket. These files are expected to have names
-prefixed with `filters/`.
+- `item`: alerts for this item won't be sent
+- `reason`: explains why this item should not be alerted on, ideally links to a document illustrating the decision
+
+Alert filtering config files should be saved in the config bucket and prefixed with `filters/`.
 
 ## Licence
 
