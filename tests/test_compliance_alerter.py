@@ -11,7 +11,7 @@ from moto import mock_s3, mock_ssm, mock_sts
 
 from src import compliance_alerter
 
-from tests.fixtures.audit_reports import s3_report
+from tests.fixtures.compliance_alerter import s3_report
 
 channel = "the-alerting-channel"
 config = "the_config_bucket"

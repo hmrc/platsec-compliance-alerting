@@ -22,8 +22,11 @@ class S3Compliance:
         if not self._is_private(bucket):
             findings.add("bucket should not allow public access")
 
-        if not self._is_tagged(bucket):
-            findings.add("bucket should have data expiry and data sensitivity tags")
+        if not self._is_tagged("expiry", bucket):
+            findings.add("bucket should have data expiry tag")
+
+        if not self._is_tagged("sensitivity", bucket):
+            findings.add("bucket should have data sensitivity tag")
 
         findings.update(self._check_high_sensitivity_bucket_rules(bucket))
 
@@ -42,11 +45,8 @@ class S3Compliance:
     def _is_encrypted(self, bucket: Dict[str, Any]) -> bool:
         return self._is_enabled("encryption", bucket)
 
-    def _is_tagged(self, bucket: Dict[str, Any]) -> bool:
-        return "unset" not in [
-            bucket.get("data_tagging", {}).get("expiry", "unset"),
-            bucket.get("data_tagging", {}).get("sensitivity", "unset"),
-        ]
+    def _is_tagged(self, key: str, bucket: Dict[str, Any]) -> bool:
+        return bool("unset" != bucket.get("data_tagging", {}).get(key, "unset"))
 
     def _is_private(self, bucket: Dict[str, Any]) -> bool:
         return self._is_enabled("public_access_block", bucket)

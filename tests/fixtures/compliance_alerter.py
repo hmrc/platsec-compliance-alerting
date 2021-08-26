@@ -18,7 +18,7 @@ s3_report = [
                     "encryption": {"enabled": False},
                     "mfa_delete": {"enabled": False},
                     "public_access_block": {"enabled": True},
-                    "data_tagging": {"expiry": "unset", "sensitivity": "high"},
+                    "data_tagging": {"expiry": "1-week", "sensitivity": "unset"},
                 },
             ]
         },
@@ -33,7 +33,7 @@ s3_report = [
                 {
                     "name": "mischievous-bucket",
                     "encryption": {"enabled": True},
-                    "mfa_delete": {"enabled": True},
+                    "mfa_delete": {"enabled": False},
                     "public_access_block": {"enabled": False},
                     "data_tagging": {"expiry": "unset", "sensitivity": "high"},
                 },

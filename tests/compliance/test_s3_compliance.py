@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from tests.fixtures.audit_reports import s3_report
+from tests.fixtures.s3_compliance import s3_report
 from tests.test_types_generator import account, notification
 
 from src.data.audit import Audit
@@ -22,27 +22,33 @@ class TestS3Compliance(TestCase):
 
     def test_bucket_has_tags(self) -> None:
         bucket = {"data_tagging": {"expiry": "not_unset", "sensitivity": "not_unset"}}
-        self.assertTrue(S3Compliance()._is_tagged(bucket))
+        self.assertTrue(S3Compliance()._is_tagged("expiry", bucket))
 
     def test_bucket_has_one_bad_tag(self) -> None:
         bucket = {"data_tagging": {"expiry": "unset", "sensitivity": "not_unset"}}
-        self.assertFalse(S3Compliance()._is_tagged(bucket))
+        self.assertFalse(S3Compliance()._is_tagged("expiry", bucket))
 
     def test_bucket_has_one_other_bad_tag(self) -> None:
         bucket = {"data_tagging": {"expiry": "not_unset", "sensitivity": "unset"}}
-        self.assertFalse(S3Compliance()._is_tagged(bucket))
+        self.assertFalse(S3Compliance()._is_tagged("sensitivity", bucket))
 
     def test_bucket_has_one_missing_tag(self) -> None:
-        self.assertFalse(S3Compliance()._is_tagged({"data_tagging": {"sensitivity": "unset"}}))
+        self.assertFalse(S3Compliance()._is_tagged("expiry", {"data_tagging": {"sensitivity": "unset"}}))
 
     def test_bucket_has_other_missing_tag(self) -> None:
-        self.assertFalse(S3Compliance()._is_tagged({"data_tagging": {"expiry": "unset"}}))
+        self.assertFalse(S3Compliance()._is_tagged("sensitivity", {"data_tagging": {"expiry": "unset"}}))
 
-    def test_bucket_has_tags_undefined(self) -> None:
-        self.assertFalse(S3Compliance()._is_tagged({"data_tagging": {}}))
+    def test_bucket_has_expiry_tag_undefined(self) -> None:
+        self.assertFalse(S3Compliance()._is_tagged("expiry", {"data_tagging": {}}))
 
-    def test_bucket_tags_bucket_missing(self) -> None:
-        self.assertFalse(S3Compliance()._is_tagged({}))
+    def test_bucket_expiry_tag_bucket_missing(self) -> None:
+        self.assertFalse(S3Compliance()._is_tagged("expiry", {}))
+
+    def test_bucket_has_sensitivity_tag_undefined(self) -> None:
+        self.assertFalse(S3Compliance()._is_tagged("sensitivity", {"data_tagging": {}}))
+
+    def test_bucket_sensitivity_tag_bucket_missing(self) -> None:
+        self.assertFalse(S3Compliance()._is_tagged("sensitivity", {}))
 
     def test_check(self) -> None:
         audit = Audit(
@@ -56,8 +62,9 @@ class TestS3Compliance(TestCase):
                     account=account("111222333444", "another-account"),
                     item="mischievous-bucket",
                     findings={
+                        "bucket should have mfa-delete",
                         "bucket should not allow public access",
-                        "bucket should have data expiry and data sensitivity tags",
+                        "bucket should have data expiry tag",
                     },
                 ),
                 notification(
@@ -65,11 +72,15 @@ class TestS3Compliance(TestCase):
                     item="bad-bucket",
                     findings={
                         "bucket should be encrypted",
-                        "bucket should have mfa-delete",
-                        "bucket should have data expiry and data sensitivity tags",
+                        "bucket should have data sensitivity tag",
                     },
                 ),
                 notification(account=account("555666777444", "an-account"), item="good-bucket", findings=set()),
+                notification(
+                    account=account("999999999999", "another-account-2"),
+                    item="good-bucket-high-sensitivity",
+                    findings=set(),
+                ),
             },
             notifications,
         )
