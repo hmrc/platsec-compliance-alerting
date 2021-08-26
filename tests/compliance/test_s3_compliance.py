@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from tests.fixtures.audit_reports import s3_report
+from tests.fixtures.s3_compliance import s3_report
 from tests.test_types_generator import account, notification
 
 from src.data.audit import Audit
@@ -50,8 +50,6 @@ class TestS3Compliance(TestCase):
     def test_bucket_sensitivity_tag_bucket_missing(self) -> None:
         self.assertFalse(S3Compliance()._is_tagged("sensitivity", {}))
 
-    
-
     def test_check(self) -> None:
         audit = Audit(
             type="s3",
@@ -64,9 +62,9 @@ class TestS3Compliance(TestCase):
                     account=account("111222333444", "another-account"),
                     item="mischievous-bucket",
                     findings={
+                        "bucket should have mfa-delete",
                         "bucket should not allow public access",
                         "bucket should have data expiry tag",
-                        #"bucket should have data sensitivity tag",
                     },
                 ),
                 notification(
@@ -74,12 +72,15 @@ class TestS3Compliance(TestCase):
                     item="bad-bucket",
                     findings={
                         "bucket should be encrypted",
-                        "bucket should have mfa-delete",
-                        "bucket should have data expiry tag",
-                        #"bucket should have data sensitivity tag",
+                        "bucket should have data sensitivity tag",
                     },
                 ),
                 notification(account=account("555666777444", "an-account"), item="good-bucket", findings=set()),
+                notification(
+                    account=account("999999999999", "another-account-2"),
+                    item="good-bucket-high-sensitivity",
+                    findings=set(),
+                ),
             },
             notifications,
         )
