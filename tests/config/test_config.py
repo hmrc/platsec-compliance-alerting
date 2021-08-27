@@ -36,6 +36,7 @@ class TestConfig(TestCase):
             "CONFIG_BUCKET_READ_ROLE": lambda: Config().get_config_bucket_read_role(),
             "REPORT_BUCKET_READ_ROLE": lambda: Config().get_report_bucket_read_role(),
             "S3_AUDIT_REPORT_KEY": lambda: Config().get_s3_audit_report_key(),
+            "GITHUB_AUDIT_REPORT_KEY": lambda: Config().get_github_audit_report_key(),
             "SLACK_API_URL": lambda: Config().get_slack_api_url(),
             "SLACK_USERNAME_KEY": lambda: Config().get_slack_username_key(),
             "SLACK_TOKEN_KEY": lambda: Config().get_slack_token_key(),
