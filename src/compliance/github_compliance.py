@@ -3,9 +3,10 @@ from typing import Any, Dict, Set
 from src.data.audit import Audit
 from src.data.account import Account
 from src.data.notification import Notification
+from src.compliance.analyser_interface import AnalyserInterface
 
 
-class GithubCompliance:
+class GithubCompliance(AnalyserInterface):
     def analyse(self, audit: Audit) -> Set[Notification]:
         return {self._check_repository_rules(repository) for repository in audit.report}
 

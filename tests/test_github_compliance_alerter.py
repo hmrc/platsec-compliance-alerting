@@ -40,7 +40,6 @@ class TestGithubComplianceAlerter(TestCase):
     def test_compliance_alerter_main(self) -> None:
         compliance_alerter.main(event)
         self._assert_slack_message_sent("bad-repo-no-signing")
-        # self._assert_slack_message_sent("bad-repo-no-admin")
 
     @staticmethod
     def _setup_environment() -> None:
