@@ -11,12 +11,13 @@ from moto import mock_s3, mock_ssm, mock_sts
 
 from src import compliance_alerter
 
-from tests.fixtures.compliance_alerter import s3_report
+from tests.fixtures.s3_compliance_alerter import s3_report
 
 channel = "the-alerting-channel"
 config = "the_config_bucket"
 report = "the_report_bucket"
 report_key = "s3_audit"
+github_report_key = "github_admin_report"
 slack_api_url = "https://the-slack-api-url.com"
 slack_username_key = "the-slack-username-key"
 slack_token_key = "the-slack-token-key"
@@ -54,6 +55,7 @@ class TestComplianceAlerter(TestCase):
                 "CONFIG_BUCKET_READ_ROLE": "the-config-bucket-read-role",
                 "REPORT_BUCKET_READ_ROLE": "the-report-bucket-read-role",
                 "S3_AUDIT_REPORT_KEY": report_key,
+                "GITHUB_AUDIT_REPORT_KEY": github_report_key,
                 "SLACK_API_URL": slack_api_url,
                 "SLACK_USERNAME_KEY": slack_username_key,
                 "SLACK_TOKEN_KEY": slack_token_key,

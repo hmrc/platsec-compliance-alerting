@@ -13,7 +13,8 @@ This Python program is meant to run as an AWS Lambda function that requires the 
 - `CONFIG_BUCKET_READ_ROLE`: name of an IAM role that can read config files from the config bucket
 - `LOG_LEVEL`: how much/little logs the lambda function should print (accepted values are official Python log levels)
 - `REPORT_BUCKET_READ_ROLE`: name of an IAM role that can read audit reports
-- `S3_AUDIT_REPORT_KEY`: name of audit reports that should trigger an S3 compliance check 
+- `S3_AUDIT_REPORT_KEY`: name of audit reports that should trigger an S3 compliance check
+- `GITHUB_AUDIT_REPORT_KEY`: name of audit reports that should trigger an Github compliance check 
 - `SLACK_API_URL`: PlatApps Slack API URL
 - `SLACK_USERNAME_KEY`: name of the SSM parameter that contains PlatApps Slack API username
 - `SLACK_TOKEN_KEY`: name of the SSM parameter that contains PlatApps Slack API token
