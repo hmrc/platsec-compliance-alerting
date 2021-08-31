@@ -24,13 +24,7 @@ class TestAuditAnalyser(TestCase):
 
     def test_check_github_compliance(self, *_: Mock) -> None:
         notifications = {notification(item="item-1"), notification(item="item-2")}
-        audit = Audit(
-            type="github_admin_report",
-            report=[
-                {"name": "some-repo", "branchProtectionRules": []},
-                {"name": "some-repo-2", "branchProtectionRules": []},
-            ],
-        )
+        audit = Audit(type="github_admin_report", report=[{"name": "some-repo"}, {"name": "some-repo-2"}])
 
         with patch.object(GithubCompliance, "analyse", return_value=notifications) as github_compliance:
             self.assertEqual(notifications, AuditAnalyser().analyse(audit, Config()))
