@@ -20,12 +20,7 @@ class GithubCompliance(AnalyserInterface):
             findings.add("repository should have admin permissions")
 
         return Notification(
-            Account.from_dict(
-                {
-                    "name": "Github audit report",
-                    "identifier": "https://www.github.com/{}".format(repository["nameWithOwner"]),
-                }
-            ),
+            Account(f"https://www.github.com/{repository['nameWithOwner']}", "Github audit report"),
             item=repository["name"],
             findings=findings,
         )
