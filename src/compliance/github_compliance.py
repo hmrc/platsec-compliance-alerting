@@ -26,11 +26,7 @@ class GithubCompliance(AnalyserInterface):
         )
 
     def _is_signed(self, repository: Dict[str, Any]) -> bool:
-        for branchProtectionRule in repository["branchProtectionRules"]["nodes"]:
-            if branchProtectionRule["requiresCommitSignatures"] is True:
-                return True
-
-        return False
+        return True in [bpr["requiresCommitSignatures"] for bpr in repository["branchProtectionRules"]["nodes"]]
 
     def _is_admin_permission(self, repository: Dict[str, Any]) -> bool:
         return bool(repository["teamPermissions"] == "ADMIN")
