@@ -7,7 +7,7 @@ from src.data.audit import Audit
 from src.compliance.github_compliance import GithubCompliance
 
 
-class TestS3Compliance(TestCase):
+class TestGithubCompliance(TestCase):
     def test_repository_is_signed(self) -> None:
         self.assertTrue(
             GithubCompliance()._is_signed({"branchProtectionRules": {"nodes": [{"requiresCommitSignatures": True}]}})
