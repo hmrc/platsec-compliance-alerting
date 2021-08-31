@@ -19,9 +19,16 @@ class GithubCompliance(AnalyserInterface):
         if not self._is_admin_permission(repository):
             findings.add("repository should have admin permissions")
 
-        name = repository["name"]
-
-        return Notification(Account.from_dict({"name": name, "identifier": name}), item=name, findings=findings)
+        return Notification(
+            Account.from_dict(
+                {
+                    "name": "Github audit report",
+                    "identifier": "https://www.github.com/{}".format(repository["nameWithOwner"]),
+                }
+            ),
+            item=repository["name"],
+            findings=findings,
+        )
 
     def _is_signed(self, repository: Dict[str, Any]) -> bool:
         for branchProtectionRule in repository["branchProtectionRules"]["nodes"]:

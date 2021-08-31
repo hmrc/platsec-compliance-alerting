@@ -1,6 +1,5 @@
 from typing import Set, Dict, Type
 
-
 from src.compliance.s3_compliance import S3Compliance
 from src.compliance.github_compliance import GithubCompliance
 from src.compliance.analyser_interface import AnalyserInterface
