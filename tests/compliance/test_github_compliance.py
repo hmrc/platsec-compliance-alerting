@@ -61,21 +61,25 @@ class TestGithubCompliance(TestCase):
         self.assertEqual(
             {
                 notification(
-                    account=account("https://www.github.com/org/bad-repo-no-signing", "Github audit report"),
+                    account=account(
+                        "<https://www.github.com/org/bad-repo-no-signing|bad-repo-no-signing>", "Github audit report"
+                    ),
                     item="bad-repo-no-signing",
                     findings={
                         "repository commit signing should be turned on",
                     },
                 ),
                 notification(
-                    account=account("https://www.github.com/org/bad-repo-no-admin", "Github audit report"),
+                    account=account(
+                        "<https://www.github.com/org/bad-repo-no-admin|bad-repo-no-admin>", "Github audit report"
+                    ),
                     item="bad-repo-no-admin",
                     findings={
                         "repository should have admin permissions",
                     },
                 ),
                 notification(
-                    account=account("https://www.github.com/org/good-repo", "Github audit report"),
+                    account=account("<https://www.github.com/org/good-repo|good-repo>", "Github audit report"),
                     item="good-repo",
                     findings=set(),
                 ),
