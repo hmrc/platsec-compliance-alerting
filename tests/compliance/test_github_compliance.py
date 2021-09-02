@@ -62,7 +62,7 @@ class TestGithubCompliance(TestCase):
             {
                 notification(
                     account=account(
-                        "<https://www.github.com/org/bad-repo-no-signing|bad-repo-no-signing>", "Github audit report"
+                        "Github audit report", "<https://www.github.com/org/bad-repo-no-signing|bad-repo-no-signing>"
                     ),
                     item="bad-repo-no-signing",
                     findings={
@@ -71,7 +71,7 @@ class TestGithubCompliance(TestCase):
                 ),
                 notification(
                     account=account(
-                        "<https://www.github.com/org/bad-repo-no-admin|bad-repo-no-admin>", "Github audit report"
+                        "Github audit report", "<https://www.github.com/org/bad-repo-no-admin|bad-repo-no-admin>"
                     ),
                     item="bad-repo-no-admin",
                     findings={
@@ -79,7 +79,7 @@ class TestGithubCompliance(TestCase):
                     },
                 ),
                 notification(
-                    account=account("<https://www.github.com/org/good-repo|good-repo>", "Github audit report"),
+                    account=account("Github audit report", "<https://www.github.com/org/good-repo|good-repo>"),
                     item="good-repo",
                     findings=set(),
                 ),

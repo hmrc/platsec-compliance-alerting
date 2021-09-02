@@ -21,7 +21,7 @@ class GithubCompliance(AnalyserInterface):
 
         return Notification(
             Account(
-                f"<https://www.github.com/{repository['nameWithOwner']}|{repository['name']}>", "Github audit report"
+                "Github audit report", f"<https://www.github.com/{repository['nameWithOwner']}|{repository['name']}>"
             ),
             item=repository["name"],
             findings=findings,
