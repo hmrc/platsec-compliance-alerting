@@ -8,7 +8,7 @@ from src.compliance.analyser_interface import AnalyserInterface
 
 class GithubCompliance(AnalyserInterface):
     def analyse(self, audit: Audit) -> Set[Notification]:
-        return {self._check_repository_rules(repository) for repository in audit.report}
+        return {self._check_repository_rules(repository) for repository in audit.report if not repository["isFork"]}
 
     def _check_repository_rules(self, repository: Dict[str, Any]) -> Notification:
         findings = set()
