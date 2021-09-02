@@ -20,9 +20,7 @@ class GithubCompliance(AnalyserInterface):
             findings.add("repository should have admin permissions")
 
         return Notification(
-            Account(
-                "Github audit report", f"<https://www.github.com/{repository['nameWithOwner']}|{repository['name']}>"
-            ),
+            Account("Github", f"<https://www.github.com/{repository['nameWithOwner']}|{repository['name']}>"),
             item=repository["name"],
             findings=findings,
         )
