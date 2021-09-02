@@ -8,7 +8,7 @@ from src.compliance.analyser_interface import AnalyserInterface
 
 class GithubCompliance(AnalyserInterface):
     def analyse(self, audit: Audit) -> Set[Notification]:
-        return {self._check_repository_rules(repository) for repository in audit.report}
+        return {self._check_repository_rules(repository) for repository in audit.report if not repository["isFork"]}
 
     def _check_repository_rules(self, repository: Dict[str, Any]) -> Notification:
         findings = set()
@@ -20,9 +20,7 @@ class GithubCompliance(AnalyserInterface):
             findings.add("repository should have admin permissions")
 
         return Notification(
-            Account(
-                f"<https://www.github.com/{repository['nameWithOwner']}|{repository['name']}>", "Github audit report"
-            ),
+            Account("Github", f"<https://www.github.com/{repository['nameWithOwner']}|{repository['name']}>"),
             item=repository["name"],
             findings=findings,
         )
