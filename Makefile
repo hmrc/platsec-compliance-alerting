@@ -4,23 +4,20 @@ DOCKER = docker run \
 	--env "PYTHONWARNINGS=ignore:ResourceWarning" \
 	--volume "$(PWD):${PWD}" \
 	--workdir "${PWD}"
-PYTHON_COVERAGE_OMIT = "tests/*,*__init__*,*.local/*"
 PYTHON_COVERAGE_FAIL_UNDER_PERCENT = 100
-PYTHON_TEST_PATTERN ?= "test_*.py"
 PYTHON_VERSION = $(shell head -1 .python-version)
 SHELL := /bin/bash
 
 .PHONY: pipenv
 pipenv:
-	@docker build \
+	docker build \
 		--tag $@ \
 		--build-arg PYTHON_VERSION=$(PYTHON_VERSION) \
 		--build-arg "user_id=$(shell id -u)" \
 		--build-arg "group_id=$(shell id -g)" \
 		--build-arg "home=${HOME}" \
 		--build-arg "workdir=${PWD}" \
-		--target $@ . \
-		>/dev/null
+		--target $@ .
 
 .PHONY: fmt
 fmt: pipenv
@@ -32,32 +29,25 @@ fmt-check: pipenv
 
 .PHONY: static-check
 static-check: pipenv
-	@$(DOCKER) pipenv run flake8 --max-line-length=120 --max-complexity=10
-	@$(DOCKER) pipenv run mypy --show-error-codes --namespace-packages --strict ./**/*.py
+	$(DOCKER) pipenv run flake8 --max-line-length=120 --max-complexity=10
+	$(DOCKER) pipenv run mypy --show-error-codes --namespace-packages --strict ./**/*.py
 
-.PHONY: all-checks
-all-checks: python-test python-coverage fmt-check static-check md-check clean-up
+.PHONY: all-checks test
+all-checks test: python-test fmt-check static-check md-check clean-up
 
 .PHONY: python-test
 python-test: pipenv
-	@$(DOCKER) pipenv run coverage run \
-		--append \
-		--branch \
-		--omit $(PYTHON_COVERAGE_OMIT) \
-		--module unittest \
-			discover \
-			--verbose \
-			--start-directory "tests/" \
-			--pattern $(PYTHON_TEST_PATTERN)
-
-.PHONY: python-coverage
-python-coverage:
-	@$(DOCKER) pipenv run coverage xml --omit $(PYTHON_COVERAGE_OMIT)
-	@$(DOCKER) pipenv run coverage report -m --omit $(PYTHON_COVERAGE_OMIT) --fail-under $(PYTHON_COVERAGE_FAIL_UNDER_PERCENT)
+	$(DOCKER) pipenv run pytest \
+		--cov=src \
+		--cov-fail-under=$(PYTHON_COVERAGE_FAIL_UNDER_PERCENT) \
+		--no-cov-on-fail \
+		--cov-report "term-missing:skip-covered" \
+		--no-header \
+		tests
 
 .PHONY: md-check
 md-check:
-	@docker pull zemanlx/remark-lint:0.2.0 >/dev/null
+	@docker pull zemanlx/remark-lint:0.2.0
 	@docker run --rm -i -v $(PWD):/lint/input:ro zemanlx/remark-lint:0.2.0 --frail .
 
 .PHONY: build-lambda-image
