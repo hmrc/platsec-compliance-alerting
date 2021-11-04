@@ -15,7 +15,7 @@ class NotificationMapper:
                     channels=sorted(self._find_channels(notification, mappings).union({central_channel})),
                     header=f"{notification.account.name} ({notification.account.identifier})",
                     title=notification.item,
-                    text="\n".join(sorted(notification.findings)),
+                    text=NotificationMapper._create_message_text(notification),
                     color="#ff4d4d",
                 )
                 for notification in notifications
@@ -33,3 +33,11 @@ class NotificationMapper:
     @staticmethod
     def _account_channels(notification: Findings, mappings: Set[NotificationMappingConfig]) -> Set[str]:
         return {mapping.channel for mapping in mappings if mapping.account and notification.account == mapping.account}
+
+    @staticmethod
+    def _create_message_text(notification: Findings) -> str:
+        findings = "\n".join(sorted(notification.findings))
+        if notification.description:
+            return f"{notification.description}\n\n{findings}"
+        else:
+            return findings

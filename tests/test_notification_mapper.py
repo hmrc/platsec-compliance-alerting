@@ -1,15 +1,16 @@
 from unittest import TestCase
 
 from src.config.notification_mapping_config import NotificationMappingConfig
+from src.data.findings import Findings
 from src.notification_mapper import NotificationMapper
 from src.slack_notifier import SlackMessage
 
 from tests.test_types_generator import account, findings
 
 
-notification_a = findings(item="item-a", findings={"a-1", "a-2"}, account=account(identifier="111", name="bbb"))
-notification_b = findings(item="item-b", findings={"finding b"}, account=account(identifier="222", name="aaa"))
-notification_c = findings(item="item-c", findings={"finding c"}, account=account(identifier="333", name="ccc"))
+findings_a = findings(item="item-a", findings={"a-1", "a-2"}, account=account(identifier="111", name="bbb"))
+findings_b = findings(item="item-b", findings={"finding b"}, account=account(identifier="222", name="aaa"))
+findings_c = findings(item="item-c", findings={"finding c"}, account=account(identifier="333", name="ccc"))
 
 msg_a = SlackMessage(["central", "channel-2"], "bbb (111)", "item-a", "a-1\na-2", "#ff4d4d")
 msg_b = SlackMessage(["central", "channel-1"], "aaa (222)", "item-b", "finding b", "#ff4d4d")
@@ -17,22 +18,31 @@ msg_c = SlackMessage(["central", "channel-1", "channel-2"], "ccc (333)", "item-c
 
 
 class TestNotificationMapper(TestCase):
-    def test_notification_mapper_with_items_mapping(self) -> None:
+    def test_findings_mapper_with_items_mapping(self) -> None:
         mapping_1 = NotificationMappingConfig("channel-1", items=["item-b", "item-c"])
         mapping_2 = NotificationMappingConfig("channel-2", items=["item-c", "item-a"])
 
-        notifications = {notification_a, notification_b, notification_c}
+        all_findings = {findings_a, findings_b, findings_c}
         mappings = {mapping_1, mapping_2}
-        slack_messages = NotificationMapper().do_map(notifications, mappings, "central")
+        slack_messages = NotificationMapper().do_map(all_findings, mappings, "central")
         self.assertEqual([msg_b, msg_a, msg_c], slack_messages)
 
-    def test_notification_mapper_with_account_mapping(self) -> None:
+    def test_findings_mapper_with_account_mapping(self) -> None:
         mapping_1 = NotificationMappingConfig("channel-1", account="222")
         mapping_2 = NotificationMappingConfig("channel-2", account="111")
         mapping_3 = NotificationMappingConfig("channel-1", account="333")
         mapping_4 = NotificationMappingConfig("channel-2", account="333")
 
-        notifications = {notification_a, notification_b, notification_c}
+        all_findings = {findings_a, findings_b, findings_c}
         mappings = {mapping_1, mapping_2, mapping_3, mapping_4}
-        slack_messages = NotificationMapper().do_map(notifications, mappings, "central")
+        slack_messages = NotificationMapper().do_map(all_findings, mappings, "central")
         self.assertEqual([msg_b, msg_a, msg_c], slack_messages)
+
+    def test_findings_mapper_with_description(self) -> None:
+        description = "additional context about the item"
+        f = Findings(description=description, findings={"finding-a", "finding-b"}, item="item", account=account())
+
+        slack_messages = NotificationMapper().do_map({f}, set(), "central")
+
+        expected_text = f"{description}\n\nfinding-a\nfinding-b"
+        self.assertEqual(expected_text, slack_messages[0].text)
