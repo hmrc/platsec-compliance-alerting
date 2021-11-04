@@ -1,13 +1,13 @@
 from typing import List, Set
 
-from src.data.notification import Notification
+from src.data.findings import Findings
 from src.config.notification_mapping_config import NotificationMappingConfig
 from src.slack_notifier import SlackMessage
 
 
 class NotificationMapper:
     def do_map(
-        self, notifications: Set[Notification], mappings: Set[NotificationMappingConfig], central_channel: str
+        self, notifications: Set[Findings], mappings: Set[NotificationMappingConfig], central_channel: str
     ) -> List[SlackMessage]:
         return sorted(
             [
@@ -23,13 +23,13 @@ class NotificationMapper:
             key=lambda msg: (msg.header, msg.title),
         )
 
-    def _find_channels(self, notification: Notification, mappings: Set[NotificationMappingConfig]) -> Set[str]:
+    def _find_channels(self, notification: Findings, mappings: Set[NotificationMappingConfig]) -> Set[str]:
         return self._item_channels(notification, mappings).union(self._account_channels(notification, mappings))
 
     @staticmethod
-    def _item_channels(notification: Notification, mappings: Set[NotificationMappingConfig]) -> Set[str]:
+    def _item_channels(notification: Findings, mappings: Set[NotificationMappingConfig]) -> Set[str]:
         return {mapping.channel for mapping in mappings if mapping.items and notification.item in mapping.items}
 
     @staticmethod
-    def _account_channels(notification: Notification, mappings: Set[NotificationMappingConfig]) -> Set[str]:
+    def _account_channels(notification: Findings, mappings: Set[NotificationMappingConfig]) -> Set[str]:
         return {mapping.channel for mapping in mappings if mapping.account and notification.account == mapping.account}

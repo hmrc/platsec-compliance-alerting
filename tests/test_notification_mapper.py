@@ -4,12 +4,12 @@ from src.config.notification_mapping_config import NotificationMappingConfig
 from src.notification_mapper import NotificationMapper
 from src.slack_notifier import SlackMessage
 
-from tests.test_types_generator import account, notification
+from tests.test_types_generator import account, findings
 
 
-notification_a = notification(item="item-a", findings={"a-1", "a-2"}, account=account(identifier="111", name="bbb"))
-notification_b = notification(item="item-b", findings={"finding b"}, account=account(identifier="222", name="aaa"))
-notification_c = notification(item="item-c", findings={"finding c"}, account=account(identifier="333", name="ccc"))
+notification_a = findings(item="item-a", findings={"a-1", "a-2"}, account=account(identifier="111", name="bbb"))
+notification_b = findings(item="item-b", findings={"finding b"}, account=account(identifier="222", name="aaa"))
+notification_c = findings(item="item-c", findings={"finding c"}, account=account(identifier="333", name="ccc"))
 
 msg_a = SlackMessage(["central", "channel-2"], "bbb (111)", "item-a", "a-1\na-2", "#ff4d4d")
 msg_b = SlackMessage(["central", "channel-1"], "aaa (222)", "item-b", "finding b", "#ff4d4d")

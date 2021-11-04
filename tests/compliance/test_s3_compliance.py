@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from tests.fixtures.s3_compliance import s3_report
-from tests.test_types_generator import account, notification
+from tests.test_types_generator import account, findings
 
 from src.data.audit import Audit
 from src.compliance.s3_compliance import S3Compliance
@@ -58,7 +58,7 @@ class TestS3Compliance(TestCase):
         notifications = S3Compliance().analyse(audit)
         self.assertEqual(
             {
-                notification(
+                findings(
                     account=account("111222333444", "another-account"),
                     item="mischievous-bucket",
                     findings={
@@ -67,7 +67,7 @@ class TestS3Compliance(TestCase):
                         "bucket should have data expiry tag",
                     },
                 ),
-                notification(
+                findings(
                     account=account("555666777444", "an-account"),
                     item="bad-bucket",
                     findings={
@@ -75,8 +75,8 @@ class TestS3Compliance(TestCase):
                         "bucket should have data sensitivity tag",
                     },
                 ),
-                notification(account=account("555666777444", "an-account"), item="good-bucket", findings=set()),
-                notification(
+                findings(account=account("555666777444", "an-account"), item="good-bucket", findings=set()),
+                findings(
                     account=account("999999999999", "another-account-2"),
                     item="good-bucket-high-sensitivity",
                     findings=set(),

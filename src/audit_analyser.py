@@ -5,13 +5,13 @@ from src.compliance.github_compliance import GithubCompliance
 from src.compliance.analyser_interface import AnalyserInterface
 from src.config.config import Config
 from src.data.audit import Audit
-from src.data.notification import Notification
+from src.data.findings import Findings
 from src.data.exceptions import UnsupportedAuditException
 
 
 class AuditAnalyser:
     @staticmethod
-    def analyse(audit: Audit, config: Config) -> Set[Notification]:
+    def analyse(audit: Audit, config: Config) -> Set[Findings]:
         try:
             configMap: Dict[str, Type[AnalyserInterface]] = {
                 config.get_github_audit_report_key(): GithubCompliance,
