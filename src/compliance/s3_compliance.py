@@ -31,7 +31,12 @@ class S3Compliance(AnalyserInterface):
 
         findings.update(self._check_high_sensitivity_bucket_rules(bucket))
 
-        return Findings(account=Account.from_dict(account), item=bucket["name"], findings=findings)
+        return Findings(
+            account=Account.from_dict(account),
+            compliance_item_type="s3_bucket",
+            item=bucket["name"],
+            findings=findings,
+        )
 
     def _check_high_sensitivity_bucket_rules(self, bucket: Dict[str, Any]) -> Set[str]:
         findings = set()

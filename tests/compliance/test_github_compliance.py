@@ -62,6 +62,7 @@ class TestGithubCompliance(TestCase):
             {
                 findings(
                     account=account("Github", "<https://www.github.com/org/bad-repo-no-signing|bad-repo-no-signing>"),
+                    compliance_item_type="github_repository",
                     item="bad-repo-no-signing",
                     findings={
                         "repository commit signing should be turned on",
@@ -69,6 +70,7 @@ class TestGithubCompliance(TestCase):
                 ),
                 findings(
                     account=account("Github", "<https://www.github.com/org/bad-repo-no-admin|bad-repo-no-admin>"),
+                    compliance_item_type="github_repository",
                     item="bad-repo-no-admin",
                     findings={
                         "repository should have admin permissions",
@@ -76,6 +78,7 @@ class TestGithubCompliance(TestCase):
                 ),
                 findings(
                     account=account("Github", "<https://www.github.com/org/good-repo|good-repo>"),
+                    compliance_item_type="github_repository",
                     item="good-repo",
                     findings=set(),
                 ),

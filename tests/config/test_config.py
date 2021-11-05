@@ -9,20 +9,8 @@ from src.clients.aws_s3_client import AwsS3Client
 from src.config.config import Config
 from src.config.notification_filter_config import NotificationFilterConfig
 from src.config.notification_mapping_config import NotificationMappingConfig
-from src.data.exceptions import AwsClientException, MissingConfigException
+from src.data.exceptions import AwsClientException, MissingConfigException, InvalidConfigException
 from src.slack_notifier import SlackNotifierConfig
-
-
-def test_get_configured_central_channel(monkeypatch) -> None:
-    monkeypatch.setenv("CENTRAL_CHANNEL", "the-central-channel")
-
-    assert Config().get_central_channel() == "the-central-channel"
-
-
-def test_get_default_central_channel(monkeypatch) -> None:
-    monkeypatch.delenv("CENTRAL_CHANNEL", raising=False)
-
-    assert Config().get_central_channel() == ""
 
 
 @pytest.mark.parametrize(
@@ -52,7 +40,7 @@ def test_missing_env_vars(env_var_key, config_function, monkeypatch):
 def test_get_default_log_level(monkeypatch) -> None:
     monkeypatch.delenv("LOG_LEVEL", raising=False)
 
-    assert Config.get_log_level() == "ERROR"
+    assert Config.get_log_level() == "WARNING"
 
 
 def test_get_configured_log_level(monkeypatch) -> None:
@@ -64,7 +52,11 @@ def test_get_configured_log_level(monkeypatch) -> None:
 def test_get_unsupported_log_level(monkeypatch) -> None:
     monkeypatch.setenv("LOG_LEVEL", "banana")
 
-    assert Config.get_log_level() == "ERROR"
+    with pytest.raises(InvalidConfigException) as ice:
+        assert Config.get_log_level()
+
+    assert "LOG_LEVEL" in str(ice)
+    assert "banana" in str(ice)
 
 
 @patch("src.clients.aws_client_factory.AwsClientFactory.get_ssm_client")

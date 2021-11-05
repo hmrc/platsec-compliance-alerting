@@ -88,6 +88,7 @@ class TestComplianceAlerter(TestCase):
         s3.create_bucket(Bucket=config)
         s3.put_object(Bucket=config, Key="filters/a", Body=dumps([{"item": "mischievous-bucket", "reason": "because"}]))
         s3.put_object(Bucket=config, Key="filters/b", Body=dumps([{"item": "bad-repo-no-admin", "reason": "because"}]))
+        s3.put_object(Bucket=config, Key="mappings/all", Body=dumps([{"channel": "the-alerting-channel"}]))
         s3.put_object(Bucket=config, Key="mappings/a", Body=dumps([{"channel": "alerts", "items": ["bad-bucket"]}]))
         s3.put_object(
             Bucket=config, Key="mappings/b", Body=dumps([{"channel": "alerts", "items": ["bad-repo-no-signing"]}])

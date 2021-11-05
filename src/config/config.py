@@ -7,17 +7,13 @@ from src.clients.aws_s3_client import AwsS3Client
 from src.clients.aws_client_factory import AwsClientFactory
 from src.config.notification_filter_config import NotificationFilterConfig
 from src.config.notification_mapping_config import NotificationMappingConfig
-from src.data.exceptions import ComplianceAlertingException, MissingConfigException
+from src.data.exceptions import ComplianceAlertingException, MissingConfigException, InvalidConfigException
 from src.slack_notifier import SlackNotifierConfig
 
 
 class Config:
     def get_aws_account(self) -> str:
         return self._get_env("AWS_ACCOUNT")
-
-    @staticmethod
-    def get_central_channel() -> str:
-        return environ.get("CENTRAL_CHANNEL", "")
 
     def get_config_bucket(self) -> str:
         return self._get_env("CONFIG_BUCKET")
@@ -27,8 +23,12 @@ class Config:
 
     @staticmethod
     def get_log_level() -> str:
-        log_level = str(environ.get("LOG_LEVEL")).upper()
-        return log_level if log_level in ["CRITICAL", "FATAL", "ERROR", "WARNING", "WARN", "INFO", "DEBUG"] else "ERROR"
+        log_level_cfg = environ.get("LOG_LEVEL", "WARNING")
+        log_level = log_level_cfg.upper()
+        if log_level not in ["CRITICAL", "FATAL", "ERROR", "WARNING", "WARN", "INFO", "DEBUG"]:
+            raise InvalidConfigException(f"invalid LOG_LEVEL: {log_level_cfg}")
+
+        return log_level
 
     def get_report_bucket_read_role(self) -> str:
         return self._get_env("REPORT_BUCKET_READ_ROLE")

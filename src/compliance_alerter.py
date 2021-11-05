@@ -29,7 +29,7 @@ def filter(notifications: Set[Findings]) -> Set[Findings]:
 
 
 def map(notifications: Set[Findings]) -> List[SlackMessage]:
-    return NotificationMapper().do_map(notifications, config.get_notification_mappings(), config.get_central_channel())
+    return NotificationMapper().do_map(notifications, config.get_notification_mappings())
 
 
 def send(slack_messages: List[SlackMessage]) -> None:

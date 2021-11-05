@@ -21,6 +21,7 @@ class GithubCompliance(AnalyserInterface):
 
         return Findings(
             Account("Github", f"<https://www.github.com/{repository['nameWithOwner']}|{repository['name']}>"),
+            compliance_item_type="github_repository",
             item=repository["name"],
             findings=findings,
         )

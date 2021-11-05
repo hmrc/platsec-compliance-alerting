@@ -36,4 +36,3 @@ def findings(
 
 def create_audit(report: List[Dict[str, Any]], type: str = "iam_access_keys") -> Audit:
     return Audit(type=type, report=report)
-

@@ -60,6 +60,7 @@ class TestS3Compliance(TestCase):
             {
                 findings(
                     account=account("111222333444", "another-account"),
+                    compliance_item_type="s3_bucket",
                     item="mischievous-bucket",
                     findings={
                         "bucket should have mfa-delete",
@@ -69,15 +70,22 @@ class TestS3Compliance(TestCase):
                 ),
                 findings(
                     account=account("555666777444", "an-account"),
+                    compliance_item_type="s3_bucket",
                     item="bad-bucket",
                     findings={
                         "bucket should be encrypted",
                         "bucket should have data sensitivity tag",
                     },
                 ),
-                findings(account=account("555666777444", "an-account"), item="good-bucket", findings=set()),
+                findings(
+                    account=account("555666777444", "an-account"),
+                    compliance_item_type="s3_bucket",
+                    item="good-bucket",
+                    findings=set(),
+                ),
                 findings(
                     account=account("999999999999", "another-account-2"),
+                    compliance_item_type="s3_bucket",
                     item="good-bucket-high-sensitivity",
                     findings=set(),
                 ),

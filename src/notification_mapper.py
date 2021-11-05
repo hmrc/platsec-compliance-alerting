@@ -6,13 +6,11 @@ from src.slack_notifier import SlackMessage
 
 
 class NotificationMapper:
-    def do_map(
-        self, notifications: Set[Findings], mappings: Set[NotificationMappingConfig], central_channel: str
-    ) -> List[SlackMessage]:
+    def do_map(self, notifications: Set[Findings], mappings: Set[NotificationMappingConfig]) -> List[SlackMessage]:
         return sorted(
             [
                 SlackMessage(
-                    channels=sorted(self._find_channels(notification, mappings).union({central_channel})),
+                    channels=sorted(NotificationMapper._find_channels(notification, mappings)),
                     header=f"{notification.account.name} ({notification.account.identifier})",
                     title=notification.item,
                     text=NotificationMapper._create_message_text(notification),
@@ -23,16 +21,17 @@ class NotificationMapper:
             key=lambda msg: (msg.header, msg.title),
         )
 
-    def _find_channels(self, notification: Findings, mappings: Set[NotificationMappingConfig]) -> Set[str]:
-        return self._item_channels(notification, mappings).union(self._account_channels(notification, mappings))
-
     @staticmethod
-    def _item_channels(notification: Findings, mappings: Set[NotificationMappingConfig]) -> Set[str]:
-        return {mapping.channel for mapping in mappings if mapping.items and notification.item in mapping.items}
-
-    @staticmethod
-    def _account_channels(notification: Findings, mappings: Set[NotificationMappingConfig]) -> Set[str]:
-        return {mapping.channel for mapping in mappings if mapping.account and notification.account == mapping.account}
+    def _find_channels(notification: Findings, mappings: Set[NotificationMappingConfig]) -> Set[str]:
+        return {
+            mapping.channel
+            for mapping in mappings
+            if (not mapping.items or notification.item in mapping.items)
+            and (not mapping.accounts or notification.account.identifier in mapping.accounts)
+            and (
+                not mapping.compliance_item_types or notification.compliance_item_type in mapping.compliance_item_types
+            )
+        }
 
     @staticmethod
     def _create_message_text(notification: Findings) -> str:
