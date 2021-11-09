@@ -21,6 +21,7 @@ from src.slack_notifier import SlackNotifierConfig
         ("CONFIG_BUCKET_READ_ROLE", Config().get_config_bucket_read_role),
         ("REPORT_BUCKET_READ_ROLE", Config().get_report_bucket_read_role),
         ("S3_AUDIT_REPORT_KEY", Config().get_s3_audit_report_key),
+        ("IAM_AUDIT_REPORT_KEY", Config().get_iam_audit_report_key),
         ("GITHUB_AUDIT_REPORT_KEY", Config().get_github_audit_report_key),
         ("SLACK_API_URL", Config().get_slack_api_url),
         ("SLACK_USERNAME_KEY", Config().get_slack_username_key),

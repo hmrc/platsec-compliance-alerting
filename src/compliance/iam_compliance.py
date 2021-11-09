@@ -12,7 +12,7 @@ AGE_VIOLATION_MESSAGE = f"key is older than {ACCEPTABLE_MAX_AGE.days} days"
 
 
 class IamCompliance(AnalyserInterface):
-    def __init__(self):
+    def __init__(self) -> None:
         self._max_age = datetime.now() - ACCEPTABLE_MAX_AGE
 
     def analyse(self, audit: Audit) -> Set[Findings]:
@@ -32,7 +32,7 @@ class IamCompliance(AnalyserInterface):
                 )
         return notifications
 
-    def _get_findings(self, access_key):
+    def _get_findings(self, access_key: Dict[str, Any]) -> Set[str]:
         findings = set()
         if access_key["created_datetime"] < self._max_age:
             findings.add(AGE_VIOLATION_MESSAGE)

@@ -1,5 +1,6 @@
 from typing import Set, Dict, Type
 
+from src.compliance.iam_compliance import IamCompliance
 from src.compliance.s3_compliance import S3Compliance
 from src.compliance.github_compliance import GithubCompliance
 from src.compliance.analyser_interface import AnalyserInterface
@@ -16,6 +17,7 @@ class AuditAnalyser:
             configMap: Dict[str, Type[AnalyserInterface]] = {
                 config.get_github_audit_report_key(): GithubCompliance,
                 config.get_s3_audit_report_key(): S3Compliance,
+                config.get_iam_audit_report_key(): IamCompliance,
             }
 
             return configMap[audit.type]().analyse(audit)

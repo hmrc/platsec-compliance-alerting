@@ -2,6 +2,7 @@ from unittest import TestCase
 from unittest.mock import Mock, patch
 
 from src.audit_analyser import AuditAnalyser
+from src.compliance.iam_compliance import IamCompliance
 from src.compliance.s3_compliance import S3Compliance
 from src.compliance.github_compliance import GithubCompliance
 from src.config.config import Config
@@ -13,6 +14,7 @@ from tests.test_types_generator import findings
 
 @patch.object(Config, "get_s3_audit_report_key", return_value="s3")
 @patch.object(Config, "get_github_audit_report_key", return_value="github_admin_report")
+@patch.object(Config, "get_iam_audit_report_key", return_value="audit_iam.json")
 class TestAuditAnalyser(TestCase):
     def test_check_s3_compliance(self, *_: Mock) -> None:
         notifications = {findings(item="item-1"), findings(item="item-2")}
@@ -21,6 +23,14 @@ class TestAuditAnalyser(TestCase):
         with patch.object(S3Compliance, "analyse", return_value=notifications) as s3_compliance:
             self.assertEqual(notifications, AuditAnalyser().analyse(audit, Config()))
         s3_compliance.assert_called_once_with(audit)
+
+    def test_check_iam_compliance(self, *_: Mock) -> None:
+        notifications = {findings(item="item-1"), findings(item="item-2")}
+        audit = Audit(type="audit_iam.json", report=[{"report": "val-1"}, {"report": "val-2"}])
+
+        with patch.object(IamCompliance, "analyse", return_value=notifications) as compliance:
+            self.assertEqual(notifications, AuditAnalyser().analyse(audit, Config()))
+        compliance.assert_called_once_with(audit)
 
     def test_check_github_compliance(self, *_: Mock) -> None:
         notifications = {findings(item="item-1"), findings(item="item-2")}
