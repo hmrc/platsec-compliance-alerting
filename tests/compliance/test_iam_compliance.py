@@ -9,7 +9,7 @@ from src.data.findings import Findings
 EXPECTED_OLD_KEY_VIOLATION = "key is older than 30 days"
 
 
-def test_no_violations():
+def test_no_violations() -> None:
     good_keys = [
         {
             "id": "key1_id",
@@ -46,7 +46,7 @@ def test_no_violations():
     ]
 
 
-def test_keys_older_than_30_days():
+def test_keys_older_than_30_days() -> None:
     keys_account1 = [
         {
             "id": "key1_id",
@@ -113,7 +113,7 @@ def test_keys_older_than_30_days():
     ]
 
 
-def create_account_report(account: Account, access_keys: List[Dict[str, Any]]):
+def create_account_report(account: Account, access_keys: List[Dict[str, Any]]) -> Dict[str, Any]:
     dates_as_strings = []
     for access_key in access_keys:
         key = {

@@ -1,6 +1,7 @@
 import logging
 import re
 from collections import namedtuple
+from typing import Any
 from unittest.mock import Mock, patch, call
 
 import pytest
@@ -29,7 +30,7 @@ from src.slack_notifier import SlackNotifierConfig
         ("SSM_READ_ROLE", Config().get_ssm_read_role),
     ],
 )
-def test_missing_env_vars(env_var_key, config_function, monkeypatch):
+def test_missing_env_vars(env_var_key: str, config_function: Any, monkeypatch: Any) -> None:
     monkeypatch.delenv(env_var_key, raising=False)
 
     with pytest.raises(MissingConfigException) as mce:
@@ -38,19 +39,19 @@ def test_missing_env_vars(env_var_key, config_function, monkeypatch):
     assert re.search(env_var_key, str(mce)) is not None
 
 
-def test_get_default_log_level(monkeypatch) -> None:
+def test_get_default_log_level(monkeypatch: Any) -> None:
     monkeypatch.delenv("LOG_LEVEL", raising=False)
 
     assert Config.get_log_level() == "WARNING"
 
 
-def test_get_configured_log_level(monkeypatch) -> None:
+def test_get_configured_log_level(monkeypatch: Any) -> None:
     monkeypatch.setenv("LOG_LEVEL", "debug")
 
     assert Config.get_log_level() == "DEBUG"
 
 
-def test_get_unsupported_log_level(monkeypatch) -> None:
+def test_get_unsupported_log_level(monkeypatch: Any) -> None:
     monkeypatch.setenv("LOG_LEVEL", "banana")
 
     with pytest.raises(InvalidConfigException) as ice:
@@ -61,7 +62,7 @@ def test_get_unsupported_log_level(monkeypatch) -> None:
 
 
 @patch("src.clients.aws_client_factory.AwsClientFactory.get_ssm_client")
-def test_get_slack_notifier_config(get_ssm_client, monkeypatch) -> None:
+def test_get_slack_notifier_config(get_ssm_client: Any, monkeypatch: Any) -> None:
     monkeypatch.setenv("AWS_ACCOUNT", "22")
     monkeypatch.setenv("SLACK_API_URL", "the-url")
     monkeypatch.setenv("SLACK_USERNAME_KEY", "username-key")
@@ -78,21 +79,21 @@ def test_get_slack_notifier_config(get_ssm_client, monkeypatch) -> None:
 
 
 @patch("src.config.config.Config._fetch_config_files")
-def test_get_notification_filters(fetch_config_files) -> None:
+def test_get_notification_filters(fetch_config_files: Any) -> None:
     Config().get_notification_filters()
 
     fetch_config_files.assert_called_once_with("filters/", NotificationFilterConfig.from_dict)
 
 
 @patch("src.config.config.Config._fetch_config_files")
-def test_get_notification_mappings(fetch_config_files) -> None:
+def test_get_notification_mappings(fetch_config_files: Any) -> None:
     Config().get_notification_mappings()
 
     fetch_config_files.assert_called_once_with("mappings/", NotificationMappingConfig.from_dict)
 
 
 @patch("src.clients.aws_client_factory.AwsClientFactory.get_s3_client")
-def test_fetch_config_files(get_s3_client, monkeypatch, caplog) -> None:
+def test_fetch_config_files(get_s3_client: Any, monkeypatch: Any, caplog: Any) -> None:
     aws_account = "99"
     bucket = "buck"
     read_role = "role"
@@ -105,7 +106,8 @@ def test_fetch_config_files(get_s3_client, monkeypatch, caplog) -> None:
     with caplog.at_level(logging.INFO):
         filters = Config()._fetch_config_files("a-prefix", lambda d: namedtuple("Obj", "item")(**d))
 
-    assert {namedtuple("Obj", "item")(item="1"), namedtuple("Obj", "item")(item="2")} == filters
+    Obj = namedtuple("Obj", "item")
+    assert {Obj(item="1"), Obj(item="2")} == filters
     get_s3_client.assert_called_with(aws_account, read_role)
     assert call().list_objects(bucket, "a-prefix") in get_s3_client.mock_calls
     assert call().read_object(bucket, "1") in get_s3_client.mock_calls
@@ -116,7 +118,7 @@ def test_fetch_config_files(get_s3_client, monkeypatch, caplog) -> None:
 
 
 @patch("src.clients.aws_client_factory.AwsClientFactory.get_s3_client")
-def test_get_report_s3_client(get_s3_client, monkeypatch) -> None:
+def test_get_report_s3_client(get_s3_client: Any, monkeypatch: Any) -> None:
     monkeypatch.setenv("AWS_ACCOUNT", "88")
     monkeypatch.setenv("REPORT_BUCKET_READ_ROLE", "read-report")
     s3_client = AwsS3Client(Mock())
