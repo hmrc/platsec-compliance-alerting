@@ -4,6 +4,7 @@ PYTHON_VERSION = $(shell head -1 .python-version)
 PIP_PIPENV_VERSION = $(shell head -1 .pipenv-version)
 GROUP_ID ?= $(shell id -g)
 USER_ID ?= $(shell id -u)
+PYTHON_SRC = *.py src/ tests/
 
 ifdef CI_MODE
 	DOCKER = docker build \
@@ -34,16 +35,16 @@ endif
 
 .PHONY: fmt
 fmt:
-	@$(DOCKER) pipenv run black --line-length=120 .
+	@$(DOCKER) pipenv run black --line-length=120 $(PYTHON_SRC)
 
 .PHONY:
 fmt-check:
-	@$(DOCKER) pipenv run black --line-length=120 --check .
+	@$(DOCKER) pipenv run black --line-length=120 --check $(PYTHON_SRC)
 
 .PHONY: static-check
 static-check:
-	$(DOCKER) pipenv run flake8 --max-line-length=120 --max-complexity=10
-	$(DOCKER) pipenv run mypy --show-error-codes --namespace-packages --strict ./**/*.py
+	$(DOCKER) pipenv run flake8 --max-line-length=120 --max-complexity=10 $(PYTHON_SRC)
+	$(DOCKER) pipenv run mypy --show-error-codes --namespace-packages --strict $(PYTHON_SRC)
 
 .PHONY: all-checks test
 all-checks test: python-test fmt-check static-check md-check clean-up
