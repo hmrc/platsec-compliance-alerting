@@ -27,6 +27,7 @@ RUN groupmod -g 64 dialout \
     && chown -R builder:union "${workdir}"
 
 FROM linter-base AS pipenv
+ARG PIP_PIPENV_VERSION
 RUN apk add --no-cache \
     bash \
     cargo \
@@ -35,11 +36,10 @@ RUN apk add --no-cache \
     libffi-dev \
     make \
     openssl-dev \
-    && pip install pipenv==2021.5.29
+    && pip install pipenv==${PIP_PIPENV_VERSION}
 USER builder
 # Install Python dependencies so they are cached
 ARG workdir
 WORKDIR ${workdir}
 COPY --chown=builder:union Pipfile Pipfile.lock ./
 RUN pipenv install --ignore-pipfile --dev
-ENTRYPOINT [ "/usr/local/bin/pipenv" ]

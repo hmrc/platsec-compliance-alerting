@@ -18,6 +18,10 @@ class MissingConfigException(ComplianceAlertingException):
     pass
 
 
+class InvalidConfigException(ComplianceAlertingException):
+    pass
+
+
 class NotificationMappingException(ComplianceAlertingException):
     pass
 

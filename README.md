@@ -8,7 +8,6 @@ non-compliant resources.
 This Python program is meant to run as an AWS Lambda function that requires the following environment variables:
 
 - `AWS_ACCOUNT`: identifier for the AWS account the lambda function is running in
-- `CENTRAL_CHANNEL`: name of the Slack channel where all alerts are sent to
 - `CONFIG_BUCKET`: name of the bucket that contains config files for alert mapping and alert filtering
 - `CONFIG_BUCKET_READ_ROLE`: name of an IAM role that can read config files from the config bucket
 - `LOG_LEVEL`: how much/little logs the lambda function should print (accepted values are official Python log levels)
@@ -22,24 +21,43 @@ This Python program is meant to run as an AWS Lambda function that requires the 
 
 ### Alert mapping
 
-Alerts are always sent to a central Slack channel. Additional Slack channels can be specified:
-
 ```json
 [
   {
+    "channel": "all-notifications-channel"
+  },
+  {
     "channel": "team-abc",
-    "account": "111222333444"
+    "accounts": ["111222333444"]
   },
   {
     "channel": "team-xyz",
     "items": ["bucket-a", "bucket-b"]
+  },
+  {
+    "channel": "aws-violations-channel",
+    "compliance_item_types": ["s3_bucket", "iam_access_key"]
+  },
+  {
+    "channel": "object-infrastructure-team",
+    "accounts": ["222222222222", "333333333333", "444444444444"],
+    "compliance_item_types": ["s3_bucket"]
+  },
+  {
+    "channel": "object-infrastructure-team",
+    "accounts": ["444444444444"],
+    "compliance_item_types": ["iam_access_key"]
   }
 ]
 ```
 
 - `channel`: name of a Slack channel where alerts will be sent to (should not begin with `#`)
-- `account`: alerts for resources in this account will be sent to the specified channel
+- `accounts`: alerts for resources in these accounts will be sent to the specified channel
 - `items`: alerts for these resources will be sent to the specified channel
+- `compliance_item_types`: alerts for these resource types will be sent to the specified channel
+
+`accounts`, `items` and `compliance_item_types` are all optional, but if specified they must all match for that
+channel to receive a notification. The same channel can appear in multiple mappings
 
 Alert mapping config files should be saved in the config bucket and prefixed with `mappings/`.
 
