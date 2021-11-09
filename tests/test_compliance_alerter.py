@@ -18,6 +18,7 @@ channel = "the-alerting-channel"
 config = "the_config_bucket"
 report = "the_report_bucket"
 s3_key = "s3_audit"
+iam_key = "iam_audit"
 github_key = "github_audit"
 slack_api_url = "https://the-slack-api-url.com"
 slack_username_key = "the-slack-username-key"
@@ -66,6 +67,7 @@ class TestComplianceAlerter(TestCase):
                 "CONFIG_BUCKET_READ_ROLE": "the-config-bucket-read-role",
                 "REPORT_BUCKET_READ_ROLE": "the-report-bucket-read-role",
                 "S3_AUDIT_REPORT_KEY": s3_key,
+                "IAM_AUDIT_REPORT_KEY": iam_key,
                 "GITHUB_AUDIT_REPORT_KEY": github_key,
                 "SLACK_API_URL": slack_api_url,
                 "SLACK_USERNAME_KEY": slack_username_key,
