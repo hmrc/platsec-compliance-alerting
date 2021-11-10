@@ -31,7 +31,7 @@ WORKDIR ${FUNCTION_DIR}
 COPY --from=build-image ${FUNCTION_DIR} ${FUNCTION_DIR}
 RUN mv ${FUNCTION_DIR}/.venv/lib/python3.9/site-packages/* ${FUNCTION_DIR}
 COPY src ${FUNCTION_DIR}/src
-COPY platsec_aws_scanner_lambda.py ${FUNCTION_DIR}
+COPY handler.py ${FUNCTION_DIR}
 RUN useradd alerter
 USER alerter
 ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]
