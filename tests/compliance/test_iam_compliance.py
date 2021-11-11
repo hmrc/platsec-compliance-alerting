@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 from typing import List, Dict, Any
+from zoneinfo import ZoneInfo
+
 from tests.test_types_generator import create_account, create_audit
 
 from src.compliance.iam_compliance import IamCompliance
@@ -7,6 +9,7 @@ from src.data.account import Account
 from src.data.findings import Findings
 
 EXPECTED_OLD_KEY_VIOLATION = "key is older than 30 days"
+UTC = ZoneInfo("UTC")
 
 
 def test_no_violations() -> None:
@@ -14,13 +17,13 @@ def test_no_violations() -> None:
         {
             "id": "key1_id",
             "user_name": "test_user1",
-            "created": datetime.now() - timedelta(days=29),
+            "created": datetime.now(tz=UTC) - timedelta(days=29),
         },
         {
             "id": "key2_id",
             "user_name": "test_user2",
-            "created": datetime.now() - timedelta(days=10),
-            "last_used": datetime.now() - timedelta(days=2),
+            "created": datetime.now(tz=UTC) - timedelta(days=10),
+            "last_used": datetime.now(tz=UTC) - timedelta(days=2),
         },
     ]
     account = create_account()
@@ -51,26 +54,26 @@ def test_keys_older_than_30_days() -> None:
         {
             "id": "key1_id",
             "user_name": "test_user1_old",
-            "created": datetime.now() - timedelta(days=31),
+            "created": datetime.now(tz=UTC) - timedelta(days=31),
         },
         {
             "id": "key2_id",
             "user_name": "test_user2_old",
-            "created": datetime.now() - timedelta(days=100),
-            "last_used": datetime.now(),
+            "created": datetime.now(tz=UTC) - timedelta(days=100),
+            "last_used": datetime.now(tz=UTC),
         },
     ]
     keys_account2 = [
         {
             "id": "key3_id",
             "user_name": "test_user3_good",
-            "created": datetime.now() - timedelta(days=1),
+            "created": datetime.now(tz=UTC) - timedelta(days=1),
         },
         {
             "id": "key4_id",
             "user_name": "test_user4_old",
-            "created": datetime.now() - timedelta(days=999),
-            "last_used": datetime.now() - timedelta(days=1),
+            "created": datetime.now(tz=UTC) - timedelta(days=999),
+            "last_used": datetime.now(tz=UTC) - timedelta(days=1),
         },
     ]
     account1 = create_account()
