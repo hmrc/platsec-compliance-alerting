@@ -37,14 +37,14 @@ def test_no_violations() -> None:
             compliance_item_type="iam_access_key",
             item="key1_id",
             findings=set(),
-            description="this key is 29 days old and belongs to test_user1",
+            description="this key is `29 days old` and belongs to `test_user1`",
         ),
         Findings(
             account=account,
             compliance_item_type="iam_access_key",
             item="key2_id",
             findings=set(),
-            description="this key is 10 days old, belongs to test_user2 and was last used 2 days ago",
+            description="this key is `10 days old`, belongs to `test_user2` and was last used 2 days ago",
         ),
     ]
 
@@ -90,28 +90,28 @@ def test_keys_older_than_30_days() -> None:
             compliance_item_type="iam_access_key",
             item="key1_id",
             findings={EXPECTED_OLD_KEY_VIOLATION},
-            description="this key is 31 days old and belongs to test_user1_old",
+            description="this key is `31 days old` and belongs to `test_user1_old`",
         ),
         Findings(
             account=account1,
             compliance_item_type="iam_access_key",
             item="key2_id",
             findings={EXPECTED_OLD_KEY_VIOLATION},
-            description="this key is 100 days old, belongs to test_user2_old and was last used today",
+            description="this key is `100 days old`, belongs to `test_user2_old` and was last used today",
         ),
         Findings(
             account=account2,
             compliance_item_type="iam_access_key",
             item="key3_id",
             findings=set(),
-            description="this key is 1 day old and belongs to test_user3_good",
+            description="this key is `1 day old` and belongs to `test_user3_good`",
         ),
         Findings(
             account=account2,
             compliance_item_type="iam_access_key",
             item="key4_id",
             findings={EXPECTED_OLD_KEY_VIOLATION},
-            description="this key is 999 days old, belongs to test_user4_old and was last used yesterday",
+            description="this key is `999 days old`, belongs to `test_user4_old` and was last used yesterday",
         ),
     ]
 
