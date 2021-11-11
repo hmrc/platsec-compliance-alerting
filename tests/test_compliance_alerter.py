@@ -20,6 +20,7 @@ report = "the_report_bucket"
 s3_key = "s3_audit"
 iam_key = "iam_audit"
 github_key = "github_audit"
+vpc_key = "vpc_audit"
 slack_api_url = "https://the-slack-api-url.com"
 slack_username_key = "the-slack-username-key"
 slack_token_key = "the-slack-token-key"
@@ -73,6 +74,7 @@ class TestComplianceAlerter(TestCase):
                 "SLACK_USERNAME_KEY": slack_username_key,
                 "SLACK_TOKEN_KEY": slack_token_key,
                 "SSM_READ_ROLE": "the-ssm-read-role",
+                "VPC_AUDIT_REPORT_KEY": vpc_key,
             },
             clear=True,
         ).start()
