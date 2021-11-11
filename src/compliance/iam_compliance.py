@@ -1,19 +1,20 @@
 from typing import Set, Dict, Any
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from src.data.audit import Audit
 from src.data.account import Account
 from src.data.findings import Findings
 from src.compliance.analyser_interface import AnalyserInterface
 
-
+UTC = ZoneInfo("UTC")
 ACCEPTABLE_MAX_AGE = timedelta(days=30)
 AGE_VIOLATION_MESSAGE = f"key is older than {ACCEPTABLE_MAX_AGE.days} days"
 
 
 class IamCompliance(AnalyserInterface):
     def __init__(self) -> None:
-        self._max_age = datetime.now() - ACCEPTABLE_MAX_AGE
+        self._max_age = datetime.now(tz=UTC) - ACCEPTABLE_MAX_AGE
 
     def analyse(self, audit: Audit) -> Set[Findings]:
         notifications = set()
@@ -40,7 +41,7 @@ class IamCompliance(AnalyserInterface):
 
     @staticmethod
     def _make_description(access_key: Dict[str, Any]) -> str:
-        now = datetime.now()
+        now = datetime.now(tz=UTC)
         age = now - access_key["created_datetime"]
         user = access_key["user_name"]
         optional_s = "" if age.days == 1 else "s"
