@@ -15,6 +15,14 @@ def test_empty_findings_when_audit_has_no_actions() -> None:
     assert _vpc_findings(acc) == VpcCompliance().analyse(audit)
 
 
+def test_vpc_compliance_not_met_when_audit_has_actions() -> None:
+    acc = create_account()
+    audit = _vpc_audit(acc, actions=[{"description": "a"}, {"description": "b"}])
+    expected_findings = _vpc_findings(acc, "VPC compliance not met", {"actions required: a, b"})
+
+    assert expected_findings == VpcCompliance().analyse(audit)
+
+
 def _vpc_audit(acc: Account, actions: Optional[Sequence[Dict[str, Any]]] = None) -> Audit:
     return create_audit(
         type="audit_vpc_flow_logs",
@@ -27,5 +35,5 @@ def _vpc_audit(acc: Account, actions: Optional[Sequence[Dict[str, Any]]] = None)
     )
 
 
-def _vpc_findings(acc: Account, find: Optional[Set[str]] = None) -> Set[Findings]:
-    return {findings(account=acc, compliance_item_type="vpc", item="VPC flow logs", findings=find)}
+def _vpc_findings(acc: Account, desc: Optional[str] = None, find: Optional[Set[str]] = None) -> Set[Findings]:
+    return {findings(account=acc, compliance_item_type="vpc", item="VPC flow logs", findings=find, description=desc)}
