@@ -57,7 +57,7 @@ class IamCompliance(AnalyserInterface):
                 last_used_suffix += "yesterday"
             else:
                 last_used_suffix += f"{last_used.days} days ago"
-        return f"this key is {age.days} day{optional_s} old{conj} belongs to {user}{last_used_suffix}"
+        return f"this key is `{age.days} day{optional_s} old`{conj} belongs to `{user}`{last_used_suffix}"
 
     @staticmethod
     def _convert_dates(access_key: Dict[str, Any]) -> None:
