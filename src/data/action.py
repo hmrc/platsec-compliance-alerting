@@ -16,3 +16,12 @@ class Action:
 
     def is_applied(self) -> bool:
         return self.status == "applied"
+
+    def is_not_applied(self) -> bool:
+        return self.status is None
+
+    def has_failed(self) -> bool:
+        return bool(self.status and self.status.startswith("failed"))
+
+    def reason(self) -> str:
+        return self.status.removeprefix("failed: ") if self.status else ""

@@ -17,7 +17,7 @@ def test_empty_findings_when_audit_has_no_actions() -> None:
 def test_vpc_compliance_not_met_when_audit_has_actions() -> None:
     acc = create_account()
     audit = _vpc_audit(acc, actions=[{"description": "a"}, {"description": "b"}])
-    expected_findings = _vpc_findings(acc, "VPC compliance is not met", {"actions required: a, b"})
+    expected_findings = _vpc_findings(acc, "VPC compliance is not met", {"required: a, b"})
     assert expected_findings == VpcCompliance().analyse(audit)
 
 
@@ -26,7 +26,16 @@ def test_vpc_compliance_enforcement_success_when_all_actions_applied() -> None:
     audit = _vpc_audit(
         acc, actions=[{"description": "a", "status": "applied"}, {"description": "b", "status": "applied"}]
     )
-    expected_findings = _vpc_findings(acc, "VPC compliance enforcement success", {"actions applied: a, b"})
+    expected_findings = _vpc_findings(acc, "VPC compliance enforcement success", {"applied: a, b"})
+    assert expected_findings == VpcCompliance().analyse(audit)
+
+
+def test_vpc_compliance_enforcement_failure_when_any_action_failed() -> None:
+    acc = create_account()
+    audit = _vpc_audit(
+        acc, actions=[{"description": "a", "status": "applied"}, {"description": "b", "status": "failed: boom"}]
+    )
+    expected_findings = _vpc_findings(acc, "VPC compliance enforcement failure", {"applied: a\nfailed: b (boom)"})
     assert expected_findings == VpcCompliance().analyse(audit)
 
 
