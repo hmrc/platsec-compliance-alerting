@@ -2,6 +2,7 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from os import environ
+from typing import Any, Dict
 
 import boto3
 import httpretty
@@ -13,6 +14,7 @@ from src import compliance_alerter
 
 from tests.fixtures.github_compliance import github_report
 from tests.fixtures.s3_compliance_alerter import s3_report
+from tests.fixtures.vpc_compliance import vpc_report
 
 channel = "the-alerting-channel"
 config = "the_config_bucket"
@@ -24,9 +26,6 @@ vpc_key = "vpc_audit"
 slack_api_url = "https://the-slack-api-url.com"
 slack_username_key = "the-slack-username-key"
 slack_token_key = "the-slack-token-key"
-
-s3_event = {"Records": [{"eventVersion": "2.1", "s3": {"bucket": {"name": report}, "object": {"key": s3_key}}}]}
-github_event = {"Records": [{"eventVersion": "2.1", "s3": {"bucket": {"name": report}, "object": {"key": github_key}}}]}
 
 
 @mock_s3
@@ -47,12 +46,20 @@ class TestComplianceAlerter(TestCase):
         self._delete_ssm_parameters()
 
     def test_compliance_alerter_main_s3_audit(self) -> None:
-        compliance_alerter.main(s3_event)
+        compliance_alerter.main(self.build_event(s3_key))
         self._assert_slack_message_sent("bad-bucket")
 
     def test_compliance_alerter_main_github_audit(self) -> None:
-        compliance_alerter.main(github_event)
+        compliance_alerter.main(self.build_event(github_key))
         self._assert_slack_message_sent("bad-repo-no-signing")
+
+    def test_compliance_alerter_main_vpc_audit(self) -> None:
+        compliance_alerter.main(self.build_event(vpc_key))
+        self._assert_slack_message_sent("VPC compliance enforcement success")
+
+    @staticmethod
+    def build_event(report_key: str) -> Dict[str, Any]:
+        return {"Records": [{"eventVersion": "2.1", "s3": {"bucket": {"name": report}, "object": {"key": report_key}}}]}
 
     @staticmethod
     def _setup_environment() -> None:
@@ -85,6 +92,7 @@ class TestComplianceAlerter(TestCase):
         s3.create_bucket(Bucket=report)
         s3.put_object(Bucket=report, Key=s3_key, Body=dumps(s3_report))
         s3.put_object(Bucket=report, Key=github_key, Body=dumps(github_report))
+        s3.put_object(Bucket=report, Key=vpc_key, Body=dumps(vpc_report))
 
     @staticmethod
     def _setup_config_bucket() -> None:
@@ -97,6 +105,7 @@ class TestComplianceAlerter(TestCase):
         s3.put_object(
             Bucket=config, Key="mappings/b", Body=dumps([{"channel": "alerts", "items": ["bad-repo-no-signing"]}])
         )
+        s3.put_object(Bucket=config, Key="mappings/c", Body=dumps([{"channel": "alerts", "items": ["VPC flow logs"]}]))
 
     @staticmethod
     def _setup_ssm_parameters() -> None:
