@@ -13,3 +13,6 @@ class Action:
     @staticmethod
     def from_dict(action: Dict[str, Any]) -> Action:
         return Action(**action)
+
+    def is_applied(self) -> bool:
+        return self.status == "applied"

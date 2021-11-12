@@ -7,6 +7,11 @@ from src.data.findings import Findings
 from src.compliance.analyser_interface import AnalyserInterface
 
 
+ENFORCEMENT_SUCCESS = "VPC compliance enforcement success"
+COMPLIANT = "VPC compliance is met"
+NOT_COMPLIANT = "VPC compliance is not met"
+
+
 class VpcCompliance(AnalyserInterface):
     def analyse(self, audit: Audit) -> Set[Findings]:
         return {
@@ -17,20 +22,26 @@ class VpcCompliance(AnalyserInterface):
             for report in audit.report
         }
 
-    @staticmethod
-    def _get_account_findings(account: Account, actions: Sequence[Action]) -> Findings:
+    def _get_account_findings(self, account: Account, actions: Sequence[Action]) -> Findings:
         return Findings(
             account=account,
             compliance_item_type="vpc",
             item="VPC flow logs",
-            findings=VpcCompliance._build_findings(actions),
-            description=VpcCompliance._build_description(actions),
+            description=self._build_description(actions),
+            findings=self._build_findings(actions),
         )
 
-    @staticmethod
-    def _build_description(actions: Sequence[Action]) -> Optional[str]:
-        return "VPC compliance not met" if actions else None
+    def _build_description(self, actions: Sequence[Action]) -> Optional[str]:
+        return COMPLIANT if not actions else ENFORCEMENT_SUCCESS if self._all_applied(actions) else NOT_COMPLIANT
+
+    def _build_findings(self, actions: Sequence[Action]) -> Optional[Set[str]]:
+        state = "applied" if self._all_applied(actions) else "required"
+        return {f"actions {state}: {self._get_descriptions(actions)}"} if actions else None
 
     @staticmethod
-    def _build_findings(actions: Sequence[Action]) -> Optional[Set[str]]:
-        return {f"actions required: {', '.join(a.description for a in actions)}"} if actions else None
+    def _all_applied(actions: Sequence[Action]) -> bool:
+        return all([a.is_applied() for a in actions])
+
+    @staticmethod
+    def _get_descriptions(actions: Sequence[Action]) -> Sequence[str]:
+        return ", ".join(a.description for a in actions)
