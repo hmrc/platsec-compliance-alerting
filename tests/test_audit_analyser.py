@@ -5,6 +5,7 @@ from src.audit_analyser import AuditAnalyser
 from src.compliance.iam_compliance import IamCompliance
 from src.compliance.s3_compliance import S3Compliance
 from src.compliance.github_compliance import GithubCompliance
+from src.compliance.vpc_compliance import VpcCompliance
 from src.config.config import Config
 from src.data.audit import Audit
 from src.data.exceptions import UnsupportedAuditException
@@ -15,6 +16,7 @@ from tests.test_types_generator import findings
 @patch.object(Config, "get_s3_audit_report_key", return_value="s3")
 @patch.object(Config, "get_github_audit_report_key", return_value="github_admin_report")
 @patch.object(Config, "get_iam_audit_report_key", return_value="audit_iam.json")
+@patch.object(Config, "get_vpc_audit_report_key", return_value="audit_vpc_flow_logs.json")
 class TestAuditAnalyser(TestCase):
     def test_check_s3_compliance(self, *_: Mock) -> None:
         notifications = {findings(item="item-1"), findings(item="item-2")}
@@ -39,6 +41,14 @@ class TestAuditAnalyser(TestCase):
         with patch.object(GithubCompliance, "analyse", return_value=notifications) as github_compliance:
             self.assertEqual(notifications, AuditAnalyser().analyse(audit, Config()))
         github_compliance.assert_called_once_with(audit)
+
+    def test_check_vpc_compliance(self, *_: Mock) -> None:
+        notifications = {findings(item="item-1"), findings(item="item-2")}
+        audit = Audit(type="audit_vpc_flow_logs.json", report=[{"report": "val-1"}, {"report": "val-2"}])
+
+        with patch.object(VpcCompliance, "analyse", return_value=notifications) as vpc_compliance:
+            self.assertEqual(notifications, AuditAnalyser().analyse(audit, Config()))
+        vpc_compliance.assert_called_once_with(audit)
 
     def test_check_unsupported_audit(self, *_: Mock) -> None:
         with self.assertRaisesRegex(UnsupportedAuditException, "wat"):
