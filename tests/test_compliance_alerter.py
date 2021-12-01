@@ -16,6 +16,7 @@ from tests.fixtures.github_compliance import github_report
 from tests.fixtures.github_webhook_compliance import github_webhook_report
 from tests.fixtures.s3_compliance_alerter import s3_report
 from tests.fixtures.vpc_compliance import vpc_report
+from tests.fixtures.password_policy_compliance import password_policy_report
 
 channel = "the-alerting-channel"
 config = "the_config_bucket"
@@ -25,6 +26,7 @@ iam_key = "iam_audit"
 github_key = "github_audit"
 github_webhook_key = "github_webhook"
 vpc_key = "vpc_audit"
+password_policy_key = "password_policy_audit"
 slack_api_url = "https://the-slack-api-url.com"
 slack_username_key = "the-slack-username-key"
 slack_token_key = "the-slack-token-key"
@@ -63,6 +65,10 @@ class TestComplianceAlerter(TestCase):
         compliance_alerter.main(self.build_event(vpc_key))
         self._assert_slack_message_sent("VPC compliance enforcement success")
 
+    def test_compliance_alerter_main_password_policy_audit(self) -> None:
+        compliance_alerter.main(self.build_event(password_policy_key))
+        self._assert_slack_message_sent("password policy compliance enforcement success")
+
     @staticmethod
     def build_event(report_key: str) -> Dict[str, Any]:
         return {"Records": [{"eventVersion": "2.1", "s3": {"bucket": {"name": report}, "object": {"key": report_key}}}]}
@@ -84,6 +90,7 @@ class TestComplianceAlerter(TestCase):
                 "IAM_AUDIT_REPORT_KEY": iam_key,
                 "GITHUB_AUDIT_REPORT_KEY": github_key,
                 "GITHUB_WEBHOOK_REPORT_KEY": github_webhook_key,
+                "PASSWORD_POLICY_AUDIT_REPORT_KEY": password_policy_key,
                 "SLACK_API_URL": slack_api_url,
                 "SLACK_USERNAME_KEY": slack_username_key,
                 "SLACK_TOKEN_KEY": slack_token_key,
@@ -101,6 +108,7 @@ class TestComplianceAlerter(TestCase):
         s3.put_object(Bucket=report, Key=github_key, Body=dumps(github_report))
         s3.put_object(Bucket=report, Key=github_webhook_key, Body=dumps(github_webhook_report))
         s3.put_object(Bucket=report, Key=vpc_key, Body=dumps(vpc_report))
+        s3.put_object(Bucket=report, Key=password_policy_key, Body=dumps(password_policy_report))
 
     @staticmethod
     def _setup_config_bucket() -> None:
@@ -116,6 +124,11 @@ class TestComplianceAlerter(TestCase):
         s3.put_object(Bucket=config, Key="mappings/c", Body=dumps([{"channel": "alerts", "items": ["VPC flow logs"]}]))
         s3.put_object(
             Bucket=config, Key="mappings/d", Body=dumps([{"channel": "alerts", "items": ["https://unknown-host.com"]}])
+        )
+        s3.put_object(
+            Bucket=config,
+            Key="mappings/e",
+            Body=dumps([{"channel": "alerts", "items": ["IAM account password policy"]}]),
         )
 
     @staticmethod
