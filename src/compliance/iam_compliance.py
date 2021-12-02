@@ -5,14 +5,14 @@ from zoneinfo import ZoneInfo
 from src.data.audit import Audit
 from src.data.account import Account
 from src.data.findings import Findings
-from src.compliance.analyser_interface import AnalyserInterface
+from src.compliance.analyser import Analyser
 
 UTC = ZoneInfo("UTC")
 ACCEPTABLE_MAX_AGE = timedelta(days=30)
 AGE_VIOLATION_MESSAGE = f"key is older than {ACCEPTABLE_MAX_AGE.days} days"
 
 
-class IamCompliance(AnalyserInterface):
+class IamCompliance(Analyser):
     def __init__(self) -> None:
         self._max_age = datetime.now(tz=UTC) - ACCEPTABLE_MAX_AGE
 

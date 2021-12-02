@@ -4,7 +4,7 @@ from src.data.findings import Findings
 from typing import Set
 
 
-class AnalyserInterface(ABC):
+class Analyser(ABC):
     @abstractmethod
     def analyse(self, audit: Audit) -> Set[Findings]:
         """

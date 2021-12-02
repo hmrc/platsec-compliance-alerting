@@ -4,7 +4,7 @@ from src.data.action import Action
 from src.data.audit import Audit
 from src.data.account import Account
 from src.data.findings import Findings
-from src.compliance.analyser_interface import AnalyserInterface
+from src.compliance.analyser import Analyser
 
 
 COMPLIANT = "password policy compliance is met"
@@ -13,7 +13,7 @@ COMPLIANCE_ENFORCEMENT_SUCCESS = "password policy compliance enforcement success
 COMPLIANCE_ENFORCEMENT_FAILURE = "password policy compliance enforcement failure"
 
 
-class PasswordPolicyCompliance(AnalyserInterface):
+class PasswordPolicyCompliance(Analyser):
     def analyse(self, audit: Audit) -> Set[Findings]:
         return {
             self._account_findings(

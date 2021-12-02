@@ -3,10 +3,10 @@ from typing import Any, Dict, Set
 from src.data.audit import Audit
 from src.data.account import Account
 from src.data.findings import Findings
-from src.compliance.analyser_interface import AnalyserInterface
+from src.compliance.analyser import Analyser
 
 
-class GithubCompliance(AnalyserInterface):
+class GithubCompliance(Analyser):
     def analyse(self, audit: Audit) -> Set[Findings]:
         return {self._check_repository_rules(repository) for repository in audit.report if not repository["isFork"]}
 
