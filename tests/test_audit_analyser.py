@@ -7,6 +7,7 @@ from src.compliance.s3_compliance import S3Compliance
 from src.compliance.github_compliance import GithubCompliance
 from src.compliance.github_webhook_compliance import GithubWebhookCompliance
 from src.compliance.vpc_compliance import VpcCompliance
+from src.compliance.password_policy_compliance import PasswordPolicyCompliance
 from src.config.config import Config
 from src.data.audit import Audit
 from src.data.exceptions import UnsupportedAuditException
@@ -19,6 +20,7 @@ from tests.test_types_generator import findings
 @patch.object(Config, "get_github_webhook_report_key", return_value="github_webhook_report")
 @patch.object(Config, "get_iam_audit_report_key", return_value="audit_iam.json")
 @patch.object(Config, "get_vpc_audit_report_key", return_value="audit_vpc_flow_logs.json")
+@patch.object(Config, "get_password_policy_audit_report_key", return_value="audit_password_policy.json")
 class TestAuditAnalyser(TestCase):
     def test_check_s3_compliance(self, *_: Mock) -> None:
         notifications = {findings(item="item-1"), findings(item="item-2")}
@@ -69,6 +71,14 @@ class TestAuditAnalyser(TestCase):
         with patch.object(VpcCompliance, "analyse", return_value=notifications) as vpc_compliance:
             self.assertEqual(notifications, AuditAnalyser().analyse(audit, Config()))
         vpc_compliance.assert_called_once_with(audit)
+
+    def test_check_password_policy_compliance(self, *_: Mock) -> None:
+        the_findings = {findings(item="item-1"), findings(item="item-2")}
+        audit = Audit(type="audit_password_policy.json", report=[{"report": "val-1"}, {"report": "val-2"}])
+
+        with patch.object(PasswordPolicyCompliance, "analyse", return_value=the_findings) as password_policy_compliance:
+            self.assertEqual(the_findings, AuditAnalyser().analyse(audit, Config()))
+        password_policy_compliance.assert_called_once_with(audit)
 
     def test_check_unsupported_audit(self, *_: Mock) -> None:
         with self.assertRaisesRegex(UnsupportedAuditException, "wat"):

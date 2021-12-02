@@ -1,13 +1,13 @@
 from typing import Any, Dict, Set
 from urllib.parse import urlparse
 
+from src.compliance.analyser import Analyser
 from src.data.audit import Audit
 from src.data.account import Account
 from src.data.findings import Findings
-from src.compliance.analyser_interface import AnalyserInterface
 
 
-class GithubWebhookCompliance(AnalyserInterface):
+class GithubWebhookCompliance(Analyser):
     webhooks: Dict[str, Set[str]] = {}
 
     def analyse(self, audit: Audit) -> Set[Findings]:

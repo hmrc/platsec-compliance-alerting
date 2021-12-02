@@ -48,6 +48,9 @@ class Config:
     def get_vpc_audit_report_key(self) -> str:
         return self._get_env("VPC_AUDIT_REPORT_KEY")
 
+    def get_password_policy_audit_report_key(self) -> str:
+        return self._get_env("PASSWORD_POLICY_AUDIT_REPORT_KEY")
+
     def get_slack_api_url(self) -> str:
         return self._get_env("SLACK_API_URL")
 

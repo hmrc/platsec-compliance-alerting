@@ -6,6 +6,6 @@ from src.compliance.actionable_report_compliance import ActionableReportComplian
 from src.compliance.analyser import Analyser
 
 
-class VpcCompliance(Analyser):
+class PasswordPolicyCompliance(Analyser):
     def analyse(self, audit: Audit) -> Set[Findings]:
-        return ActionableReportCompliance("vpc", "VPC flow logs").analyse(audit)
+        return ActionableReportCompliance("password_policy", "password policy").analyse(audit)
