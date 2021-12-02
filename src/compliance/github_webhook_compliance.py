@@ -12,9 +12,8 @@ class GithubWebhookCompliance(AnalyserInterface):
 
     def analyse(self, audit: Audit) -> Set[Findings]:
         for repositories in audit.report:
-            for repository in repositories:
-                for webhook in repositories[repository]:
-                    self._check_webhook_rules(repository, webhook)
+            for webhook in repositories["Webhooks"]:
+                self._check_webhook_rules(repositories["RepositoryName"], webhook)
 
         return {self._set_all_findings(webhookURL, self.webhooks[webhookURL]) for webhookURL in self.webhooks}
 
@@ -46,12 +45,13 @@ class GithubWebhookCompliance(AnalyserInterface):
     def _in_ignore_host_list(self, url: str) -> bool:
         urlParse = urlparse(url)
         host = urlParse.netloc
-        
+
         """Pass this list in from a config file"""
         ignoreList = [
             "jira.tools.tax.service.gov.uk",
             "hooks.slack.com",
             "jira-staging.tools.tax.service.gov.uk",
             "jenkins.tools.management.tax.service.gov.uk",
+            "codebuild.eu-west-2.amazonaws.com",
         ]
         return bool(host in ignoreList)

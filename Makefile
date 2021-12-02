@@ -73,7 +73,7 @@ container-release:
 
 push-lambda-image: container-release
 	@aws --profile $(ROLE) ecr get-login-password | docker login --username AWS --password-stdin $(ECR)
-	@docker tag container-release:local $(ECR)/platsec-aws-scanner:latest
+	@docker tag container-release:local $(ECR)/platsec-compliance-alerting:latest
 	@docker push $(ECR)/platsec-compliance-alerting:latest
 
 .PHONY: clean-up

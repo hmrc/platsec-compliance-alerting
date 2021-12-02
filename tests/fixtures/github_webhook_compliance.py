@@ -1,6 +1,9 @@
-github_webhook_report = [
+from typing import List, Dict, Any
+
+github_webhook_report: List[Dict[str, Any]] = [
     {
-        "repository-with-insecure-url": [
+        "RepositoryName": "repository-with-insecure-url",
+        "Webhooks": [
             {
                 "config": {"url": "https://hooks.slack.com", "insecure_url": 0},
                 "active": True,
@@ -14,7 +17,10 @@ github_webhook_report = [
                 "events": ["issue_comment", "pull_request", "pull_request_review_comment", "push"],
             },
         ],
-        "repository-with-2-unknown-urls": [
+    },
+    {
+        "RepositoryName": "repository-with-2-unknown-urls",
+        "Webhooks": [
             {
                 "config": {"url": "https://unknown-host.com", "insecure_url": 0},
                 "active": True,
@@ -28,7 +34,10 @@ github_webhook_report = [
                 "events": ["issue_comment", "pull_request", "pull_request_review_comment", "push"],
             },
         ],
-        "repository-with-known-secure-hosts": [
+    },
+    {
+        "RepositoryName": "repository-with-known-secure-hosts",
+        "Webhooks": [
             {
                 "config": {"url": "http://hooks.slack.com", "insecure_url": 0},
                 "active": True,
@@ -42,6 +51,9 @@ github_webhook_report = [
                 "events": ["issue_comment", "pull_request", "pull_request_review_comment", "push"],
             },
         ],
-        "repository-name-4": [],
-    }
+    },
+    {
+        "RepositoryName": "repository-name-4",
+        "Webhooks": [],
+    },
 ]

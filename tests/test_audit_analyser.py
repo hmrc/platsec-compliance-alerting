@@ -47,7 +47,7 @@ class TestAuditAnalyser(TestCase):
     def test_check_github_webhook_compliance(self, *_: Mock) -> None:
         notifications = {findings(item="item-1"), findings(item="item-2")}
         audit = Audit(
-            type="github_webhook_report",
+            type="github_webhook_report1",
             report=[
                 {
                     "repository-with-unknown-url": [{"config": {"url": "https://unknown-host.com", "insecure_url": 0}}],

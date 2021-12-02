@@ -15,14 +15,16 @@ from src.data.exceptions import UnsupportedAuditException
 class AuditAnalyser:
     @staticmethod
     def analyse(audit: Audit, config: Config) -> Set[Findings]:
-        try:
-            config_map: Dict[str, Type[AnalyserInterface]] = {
-                config.get_github_audit_report_key(): GithubCompliance,
-                config.get_github_webhook_report_key(): GithubWebhookCompliance,
-                config.get_s3_audit_report_key(): S3Compliance,
-                config.get_iam_audit_report_key(): IamCompliance,
-                config.get_vpc_audit_report_key(): VpcCompliance,
-            }
-            return config_map[audit.type]().analyse(audit)
-        except KeyError:
-            raise UnsupportedAuditException(audit.type)
+        config_map: Dict[str, Type[AnalyserInterface]] = {
+            config.get_github_audit_report_key(): GithubCompliance,
+            config.get_github_webhook_report_key(): GithubWebhookCompliance,
+            config.get_s3_audit_report_key(): S3Compliance,
+            config.get_iam_audit_report_key(): IamCompliance,
+            config.get_vpc_audit_report_key(): VpcCompliance,
+        }
+
+        for key in config_map.keys():
+            if audit.type.startswith(key):
+                return config_map[key]().analyse(audit)
+
+        raise UnsupportedAuditException(audit.type)
