@@ -5,6 +5,7 @@ from src.audit_analyser import AuditAnalyser
 from src.compliance.iam_compliance import IamCompliance
 from src.compliance.s3_compliance import S3Compliance
 from src.compliance.github_compliance import GithubCompliance
+from src.compliance.github_webhook_compliance import GithubWebhookCompliance
 from src.compliance.vpc_compliance import VpcCompliance
 from src.config.config import Config
 from src.data.audit import Audit
@@ -15,6 +16,7 @@ from tests.test_types_generator import findings
 
 @patch.object(Config, "get_s3_audit_report_key", return_value="s3")
 @patch.object(Config, "get_github_audit_report_key", return_value="github_admin_report")
+@patch.object(Config, "get_github_webhook_report_key", return_value="github_webhook_report")
 @patch.object(Config, "get_iam_audit_report_key", return_value="audit_iam.json")
 @patch.object(Config, "get_vpc_audit_report_key", return_value="audit_vpc_flow_logs.json")
 class TestAuditAnalyser(TestCase):
@@ -41,6 +43,24 @@ class TestAuditAnalyser(TestCase):
         with patch.object(GithubCompliance, "analyse", return_value=notifications) as github_compliance:
             self.assertEqual(notifications, AuditAnalyser().analyse(audit, Config()))
         github_compliance.assert_called_once_with(audit)
+
+    def test_check_github_webhook_compliance(self, *_: Mock) -> None:
+        notifications = {findings(item="item-1"), findings(item="item-2")}
+        audit = Audit(
+            type="github_webhook_report1",
+            report=[
+                {
+                    "repository-with-unknown-url": [{"config": {"url": "https://unknown-host.com", "insecure_url": 0}}],
+                    "repository-with-insecure-url": [
+                        {"config": {"url": "https://insecure-host.com", "insecure_url": 1}}
+                    ],
+                }
+            ],
+        )
+
+        with patch.object(GithubWebhookCompliance, "analyse", return_value=notifications) as github_webhook_compliance:
+            self.assertEqual(notifications, AuditAnalyser().analyse(audit, Config()))
+        github_webhook_compliance.assert_called_once_with(audit)
 
     def test_check_vpc_compliance(self, *_: Mock) -> None:
         notifications = {findings(item="item-1"), findings(item="item-2")}
