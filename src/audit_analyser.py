@@ -25,8 +25,8 @@ class AuditAnalyser:
             config.get_password_policy_audit_report_key(): PasswordPolicyCompliance,
         }
 
-        for key in config_map.keys():
-            if audit.type.startswith(key):
-                return config_map[key]().analyse(audit)
+        for audit_key, audit_analyser in config_map.items():
+            if audit.type.startswith(audit_key):
+                return audit_analyser().analyse(audit)
 
         raise UnsupportedAuditException(audit.type)
