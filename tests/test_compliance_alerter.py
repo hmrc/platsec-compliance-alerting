@@ -63,7 +63,7 @@ class TestComplianceAlerter(TestCase):
 
     def test_compliance_alerter_main_vpc_audit(self) -> None:
         compliance_alerter.main(self.build_event(vpc_key))
-        self._assert_slack_message_sent("VPC compliance enforcement success")
+        self._assert_slack_message_sent("VPC flow logs compliance enforcement success")
 
     def test_compliance_alerter_main_password_policy_audit(self) -> None:
         compliance_alerter.main(self.build_event(password_policy_key))
@@ -126,9 +126,7 @@ class TestComplianceAlerter(TestCase):
             Bucket=config, Key="mappings/d", Body=dumps([{"channel": "alerts", "items": ["https://unknown-host.com"]}])
         )
         s3.put_object(
-            Bucket=config,
-            Key="mappings/e",
-            Body=dumps([{"channel": "alerts", "items": ["IAM account password policy"]}]),
+            Bucket=config, Key="mappings/e", Body=dumps([{"channel": "alerts", "items": ["password policy"]}])
         )
 
     @staticmethod

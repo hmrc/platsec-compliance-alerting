@@ -58,7 +58,7 @@ def _findings(acc: Account, desc: Optional[str] = None, find: Optional[Set[str]]
         findings(
             account=acc,
             compliance_item_type="password_policy",
-            item="IAM account password policy",
+            item="password policy",
             findings=find,
             description=desc,
         )
