@@ -8,17 +8,23 @@ from src.compliance.github_webhook_compliance import GithubWebhookCompliance
 
 
 class TestGithubWebhookCompliance(TestCase):
-    def test_repository_is_insecure_url(self) -> None:
+    def test_webhook_is_insecure_url(self) -> None:
         self.assertTrue(GithubWebhookCompliance()._is_insecure_url({"config": {"insecure_url": 1}}))
 
-    def test_repository_is_secure_url(self) -> None:
+    def test_webhook_is_secure_url(self) -> None:
         self.assertFalse(GithubWebhookCompliance()._is_insecure_url({"config": {"insecure_url": 0}}))
 
-    def test_repository_in_ignore_host_list(self) -> None:
+    def test_webhook_in_ignore_host_list(self) -> None:
         self.assertTrue(GithubWebhookCompliance()._in_ignore_host_list("https://known-host.com"))
 
-    def test_repository_not_in_ignore_host_list(self) -> None:
+    def test_webhook_not_in_ignore_host_list(self) -> None:
         self.assertFalse(GithubWebhookCompliance()._in_ignore_host_list("https://unknown-host.com"))
+
+    def test_webhook_with_port_in_ignore_list(self) -> None:
+        self.assertTrue(GithubWebhookCompliance()._in_ignore_host_list("https://known-host.com:8443"))
+
+    def test_webhook_with_port_and_path_in_ignore_host_list(self) -> None:
+        self.assertTrue(GithubWebhookCompliance()._in_ignore_host_list("https://known-host.com:8443/something"))
 
     def test_check(self) -> None:
         audit = Audit(

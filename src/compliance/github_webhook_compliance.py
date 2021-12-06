@@ -45,7 +45,7 @@ class GithubWebhookCompliance(Analyser):
 
     def _in_ignore_host_list(self, url: str) -> bool:
         urlParse = urlparse(url)
-        host = urlParse.netloc
+        host = urlParse.hostname
 
         return bool(host in self._get_ignore_list())
 
