@@ -51,4 +51,4 @@ class GithubWebhookCompliance(Analyser):
 
     def _get_ignore_list(self) -> List[str]:
         config = Config()
-        return config.get_github_webhook_host_ignore_list().split(",")
+        return config.get_github_webhook_host_ignore_list()
