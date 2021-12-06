@@ -35,19 +35,19 @@ class TestGithubWebhookCompliance(TestCase):
         self.assertEqual(
             {
                 findings(
-                    account=account("Github webhook", "https://known-host.com"),
+                    account=account("Github webhook", "`https://known-host.com`"),
                     compliance_item_type="github_repository_webhook",
                     item="https://known-host.com",
                     findings={
-                        "webhook is set to insecure_url for repository-with-insecure-url",
+                        "webhook is set to insecure_url for `repository-with-insecure-url`",
                     },
                 ),
                 findings(
-                    account=account("Github webhook", "https://unknown-host.com"),
+                    account=account("Github webhook", "`https://unknown-host.com`"),
                     compliance_item_type="github_repository_webhook",
                     item="https://unknown-host.com",
                     findings={
-                        "webhook is unknown for repository-with-2-unknown-urls",
+                        "webhook is unknown for `repository-with-2-unknown-urls`",
                     },
                 ),
             },
