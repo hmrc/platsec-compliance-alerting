@@ -45,6 +45,9 @@ class Config:
     def get_github_webhook_report_key(self) -> str:
         return self._get_env("GITHUB_WEBHOOK_REPORT_KEY")
 
+    def get_github_webhook_host_ignore_list(self) -> str:
+        return self._get_env("GITHUB_WEBHOOK_HOST_IGNORE_LIST")
+
     def get_vpc_audit_report_key(self) -> str:
         return self._get_env("VPC_AUDIT_REPORT_KEY")
 
