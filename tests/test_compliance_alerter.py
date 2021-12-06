@@ -25,6 +25,7 @@ s3_key = "s3_audit"
 iam_key = "iam_audit"
 github_key = "github_audit"
 github_webhook_key = "github_webhook"
+github_webhook_host_ignore_list = "known-host.com,known-host2.com"
 vpc_key = "vpc_audit"
 password_policy_key = "password_policy_audit"
 slack_api_url = "https://the-slack-api-url.com"
@@ -90,6 +91,7 @@ class TestComplianceAlerter(TestCase):
                 "IAM_AUDIT_REPORT_KEY": iam_key,
                 "GITHUB_AUDIT_REPORT_KEY": github_key,
                 "GITHUB_WEBHOOK_REPORT_KEY": github_webhook_key,
+                "GITHUB_WEBHOOK_HOST_IGNORE_LIST": github_webhook_host_ignore_list,
                 "PASSWORD_POLICY_AUDIT_REPORT_KEY": password_policy_key,
                 "SLACK_API_URL": slack_api_url,
                 "SLACK_USERNAME_KEY": slack_username_key,

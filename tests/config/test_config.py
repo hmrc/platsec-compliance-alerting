@@ -25,6 +25,7 @@ from src.slack_notifier import SlackNotifierConfig
         ("IAM_AUDIT_REPORT_KEY", Config().get_iam_audit_report_key),
         ("GITHUB_AUDIT_REPORT_KEY", Config().get_github_audit_report_key),
         ("GITHUB_WEBHOOK_REPORT_KEY", Config().get_github_webhook_report_key),
+        ("GITHUB_WEBHOOK_HOST_IGNORE_LIST", Config().get_github_webhook_host_ignore_key),
         ("VPC_AUDIT_REPORT_KEY", Config().get_vpc_audit_report_key),
         ("PASSWORD_POLICY_AUDIT_REPORT_KEY", Config().get_password_policy_audit_report_key),
         ("SLACK_API_URL", Config().get_slack_api_url),

@@ -1,6 +1,6 @@
 from itertools import chain
 from os import environ
-from typing import Callable, Dict, Set
+from typing import Callable, Dict, Set, List
 
 from src import T, error
 from src.clients.aws_s3_client import AwsS3Client
@@ -44,6 +44,12 @@ class Config:
 
     def get_github_webhook_report_key(self) -> str:
         return self._get_env("GITHUB_WEBHOOK_REPORT_KEY")
+
+    def get_github_webhook_host_ignore_key(self) -> str:
+        return self._get_env("GITHUB_WEBHOOK_HOST_IGNORE_LIST")
+
+    def get_github_webhook_host_ignore_list(self) -> List[str]:
+        return self._get_env("GITHUB_WEBHOOK_HOST_IGNORE_LIST").split(",")
 
     def get_vpc_audit_report_key(self) -> str:
         return self._get_env("VPC_AUDIT_REPORT_KEY")

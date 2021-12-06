@@ -1,7 +1,8 @@
-from typing import Any, Dict, Set
+from typing import Any, Dict, Set, List
 from urllib.parse import urlparse
 
 from src.compliance.analyser import Analyser
+from src.config.config import Config
 from src.data.audit import Audit
 from src.data.account import Account
 from src.data.findings import Findings
@@ -46,12 +47,8 @@ class GithubWebhookCompliance(Analyser):
         urlParse = urlparse(url)
         host = urlParse.netloc
 
-        """Pass this list in from a config file"""
-        ignoreList = [
-            "jira.tools.tax.service.gov.uk",
-            "hooks.slack.com",
-            "jira-staging.tools.tax.service.gov.uk",
-            "jenkins.tools.management.tax.service.gov.uk",
-            "codebuild.eu-west-2.amazonaws.com",
-        ]
-        return bool(host in ignoreList)
+        return bool(host in self._get_ignore_list())
+
+    def _get_ignore_list(self) -> List[str]:
+        config = Config()
+        return config.get_github_webhook_host_ignore_list()
