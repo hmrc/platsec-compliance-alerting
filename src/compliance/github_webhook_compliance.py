@@ -30,7 +30,12 @@ class GithubWebhookCompliance(Analyser):
             findings.add(f"webhook is unknown for `{repository}`")
 
         if len(findings) > 0:
-            self.webhooks[webhookURL] = findings
+            print(f"url is {webhookURL}")
+            print(f"webhooks is {self.webhooks}")
+            if webhookURL in self.webhooks:
+                self.webhooks[webhookURL].update(findings)
+            else:
+                self.webhooks[webhookURL] = findings
 
     def _set_all_findings(self, webhook: str, findings: Set[str]) -> Findings:
         return Findings(
