@@ -48,6 +48,7 @@ class TestGithubWebhookCompliance(TestCase):
                     item="https://unknown-host.com",
                     findings={
                         "webhook is unknown for `repository-with-2-unknown-urls`",
+                        "webhook is unknown for `repository-with-unknown-url`",
                     },
                 ),
             },

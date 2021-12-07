@@ -53,6 +53,17 @@ github_webhook_report: List[Dict[str, Any]] = [
         ],
     },
     {
+        "RepositoryName": "repository-with-unknown-url",
+        "Webhooks": [
+            {
+                "config": {"url": "https://unknown-host.com", "insecure_url": 0},
+                "active": True,
+                "id": 234,
+                "events": ["push"],
+            },
+        ],
+    },
+    {
         "RepositoryName": "repository-name-4",
         "Webhooks": [],
     },
