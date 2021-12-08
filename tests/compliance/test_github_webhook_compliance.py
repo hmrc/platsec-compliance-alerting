@@ -15,16 +15,16 @@ class TestGithubWebhookCompliance(TestCase):
         self.assertFalse(GithubWebhookCompliance()._is_insecure_url({"config": {"insecure_url": 0}}))
 
     def test_webhook_in_ignore_host_list(self) -> None:
-        self.assertTrue(GithubWebhookCompliance()._in_ignore_host_list("known-host.com"))
+        self.assertTrue(GithubWebhookCompliance()._in_ignore_host_list("https://known-host.com"))
 
     def test_webhook_not_in_ignore_host_list(self) -> None:
-        self.assertFalse(GithubWebhookCompliance()._in_ignore_host_list("unknown-host.com"))
+        self.assertFalse(GithubWebhookCompliance()._in_ignore_host_list("https://unknown-host.com"))
 
     def test_webhook_with_port_in_ignore_list(self) -> None:
-        self.assertFalse(GithubWebhookCompliance()._in_ignore_host_list("https://known-host.com:8443"))
+        self.assertTrue(GithubWebhookCompliance()._in_ignore_host_list("https://known-host.com:8443"))
 
     def test_webhook_with_port_and_path_in_ignore_host_list(self) -> None:
-        self.assertFalse(GithubWebhookCompliance()._in_ignore_host_list("https://known-host.com:8443/something"))
+        self.assertTrue(GithubWebhookCompliance()._in_ignore_host_list("https://known-host.com:8443/something"))
 
     def test_check(self) -> None:
         audit = Audit(
@@ -35,17 +35,17 @@ class TestGithubWebhookCompliance(TestCase):
         self.assertEqual(
             {
                 findings(
-                    account=account("Github webhook", "```known-host.com```"),
+                    account=account("Github webhook", "`https://known-host.com`"),
                     compliance_item_type="github_repository_webhook",
-                    item="```known-host.com```",
+                    item="https://known-host.com",
                     findings={
                         "webhook is set to insecure_url for `repository-with-insecure-url`",
                     },
                 ),
                 findings(
-                    account=account("Github webhook", "```unknown-host.com```"),
+                    account=account("Github webhook", "`https://unknown-host.com`"),
                     compliance_item_type="github_repository_webhook",
-                    item="```unknown-host.com```",
+                    item="https://unknown-host.com",
                     findings={
                         "webhook is unknown for `repository-with-2-unknown-urls`",
                         "webhook is unknown for `repository-with-unknown-url`",
