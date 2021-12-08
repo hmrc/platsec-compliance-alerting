@@ -60,7 +60,7 @@ class TestComplianceAlerter(TestCase):
 
     def test_compliance_alerter_main_github_webhook(self) -> None:
         compliance_alerter.main(self.build_event(github_webhook_key))
-        self._assert_slack_message_sent("https://unknown-host.com")
+        self._assert_slack_message_sent("```unknown-host.com```")
 
     def test_compliance_alerter_main_vpc_audit(self) -> None:
         compliance_alerter.main(self.build_event(vpc_key))
@@ -125,7 +125,7 @@ class TestComplianceAlerter(TestCase):
         )
         s3.put_object(Bucket=config, Key="mappings/c", Body=dumps([{"channel": "alerts", "items": ["VPC flow logs"]}]))
         s3.put_object(
-            Bucket=config, Key="mappings/d", Body=dumps([{"channel": "alerts", "items": ["https://unknown-host.com"]}])
+            Bucket=config, Key="mappings/d", Body=dumps([{"channel": "alerts", "items": ["```unknown-host.com```"]}])
         )
         s3.put_object(
             Bucket=config, Key="mappings/e", Body=dumps([{"channel": "alerts", "items": ["password policy"]}])
@@ -155,5 +155,6 @@ class TestComplianceAlerter(TestCase):
 
     def _assert_slack_message_sent(self, message: str) -> None:
         message_request = httpretty.last_request().body.decode("utf-8")
+        print(message_request)
         self.assertIn(message, message_request)
         self.assertIn('"slackChannels": ["alerts", "the-alerting-channel"]', message_request)

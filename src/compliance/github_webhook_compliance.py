@@ -22,35 +22,34 @@ class GithubWebhookCompliance(Analyser):
         findings = set()
 
         webhookURL = webhook["config"]["url"]
+        webhookParse = urlparse(webhookURL)
+        webhookHost = webhookParse.hostname
 
         if self._is_insecure_url(webhook):
             findings.add(f"webhook is set to insecure_url for `{repository}`")
 
-        if not self._in_ignore_host_list(webhookURL):
+        if not self._in_ignore_host_list(webhookHost):
             findings.add(f"webhook is unknown for `{repository}`")
 
         if len(findings) > 0:
-            if webhookURL in self.webhooks:
-                self.webhooks[webhookURL].update(findings)
+            if webhookHost in self.webhooks:
+                self.webhooks[webhookHost].update(findings)
             else:
-                self.webhooks[webhookURL] = findings
+                self.webhooks[webhookHost] = findings
 
     def _set_all_findings(self, webhook: str, findings: Set[str]) -> Findings:
         return Findings(
-            Account("Github webhook", f"`{webhook}`"),
+            Account("Github webhook", f"```{webhook}```"),
             compliance_item_type="github_repository_webhook",
-            item=webhook,
+            item=f"```{webhook}```",
             findings=findings,
         )
 
     def _is_insecure_url(self, webhook: Dict[str, Any]) -> bool:
         return bool(webhook["config"]["insecure_url"])
 
-    def _in_ignore_host_list(self, url: str) -> bool:
-        urlParse = urlparse(url)
-        host = urlParse.hostname
-
-        return bool(host in self._get_ignore_list())
+    def _in_ignore_host_list(self, webhookHost: str) -> bool:
+        return bool(webhookHost in self._get_ignore_list())
 
     def _get_ignore_list(self) -> List[str]:
         config = Config()
