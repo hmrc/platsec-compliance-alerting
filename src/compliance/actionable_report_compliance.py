@@ -1,4 +1,4 @@
-from typing import Optional, Sequence, Set
+from typing import Any, Dict, Optional, Sequence, Set
 
 from src.compliance.action_describer import ActionDescriber, BriefActionDescriber, DetailedActionDescriber
 from src.compliance.analyser import Analyser
@@ -21,20 +21,24 @@ class ActionableReportCompliance(Analyser):
             self._account_findings(
                 account=Account.from_dict(report["account"]),
                 actions=[Action.from_dict(action) for action in report["results"]["enforcement_actions"]],
+                results=report["results"],
             )
             for report in audit.report
         }
 
-    def _account_findings(self, account: Account, actions: Sequence[Action]) -> Findings:
+    def _account_findings(self, account: Account, actions: Sequence[Action], results: Dict[str, Any]) -> Findings:
         return Findings(
             account=account,
             compliance_item_type=self.item_type,
             item=self.item,
-            description=self._build_description(actions),
+            description=self._build_description(actions, results),
             findings=self._build_findings(actions),
         )
 
-    def _build_description(self, actions: Sequence[Action]) -> Optional[str]:
+    def _build_description(self, actions: Sequence[Action], results: Dict[str, Any]) -> Optional[str]:
+        return self._determine_compliance_status(actions)
+
+    def _determine_compliance_status(self, actions: Sequence[Action]) -> str:
         if not actions:
             return f"{self.item} compliance is met"
         if self._any_failed(actions):
@@ -69,3 +73,7 @@ class DetailedActionableReportCompliance(ActionableReportCompliance):
     def __init__(self, item_type: str, item: str):
         super().__init__(item_type=item_type, item=item)
         self.action = DetailedActionDescriber()
+
+    def _build_description(self, actions: Sequence[Action], results: Dict[str, Any]) -> Optional[str]:
+        results.pop("enforcement_actions")
+        return f"{self._determine_compliance_status(actions)}\ndetails: {results}"
