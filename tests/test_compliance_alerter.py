@@ -155,6 +155,5 @@ class TestComplianceAlerter(TestCase):
 
     def _assert_slack_message_sent(self, message: str) -> None:
         message_request = httpretty.last_request().body.decode("utf-8")
-        print(message_request)
         self.assertIn(message, message_request)
         self.assertIn('"slackChannels": ["alerts", "the-alerting-channel"]', message_request)
