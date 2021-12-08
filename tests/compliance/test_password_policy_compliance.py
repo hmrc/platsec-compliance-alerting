@@ -16,27 +16,37 @@ def test_empty_findings_when_audit_has_no_actions() -> None:
 
 def test_vpc_compliance_not_met_when_audit_has_actions() -> None:
     acc = create_account()
-    audit = _password_policy_audit(acc, actions=[{"description": "a"}, {"description": "b"}])
-    expected_findings = _findings(acc, "password policy compliance is not met", {"required: a, b"})
+    audit = _password_policy_audit(acc, actions=[{"description": "a"}, {"description": "b", "details": "bla"}])
+    expected_findings = _findings(acc, "password policy compliance is not met", {"required: a, b (details: bla)"})
     assert expected_findings == PasswordPolicyCompliance().analyse(audit)
 
 
 def test_vpc_compliance_enforcement_success_when_all_actions_applied() -> None:
     acc = create_account()
     audit = _password_policy_audit(
-        acc, actions=[{"description": "a", "status": "applied"}, {"description": "b", "status": "applied"}]
+        acc,
+        actions=[
+            {"description": "a", "status": "applied", "details": "bla"},
+            {"description": "b", "status": "applied"},
+        ],
     )
-    expected_findings = _findings(acc, "password policy compliance enforcement success", {"applied: a, b"})
+    expected_findings = _findings(
+        acc, "password policy compliance enforcement success", {"applied: a (details: bla), b"}
+    )
     assert expected_findings == PasswordPolicyCompliance().analyse(audit)
 
 
 def test_vpc_compliance_enforcement_failure_when_any_action_failed() -> None:
     acc = create_account()
     audit = _password_policy_audit(
-        acc, actions=[{"description": "a", "status": "applied"}, {"description": "b", "status": "failed: boom"}]
+        acc,
+        actions=[
+            {"description": "a", "status": "applied"},
+            {"description": "b", "details": "nope", "status": "failed: boom"},
+        ],
     )
     expected_findings = _findings(
-        acc, "password policy compliance enforcement failure", {"applied: a\nfailed: b (boom)"}
+        acc, "password policy compliance enforcement failure", {"applied: a\nfailed: b (details: nope) (error: boom)"}
     )
     assert expected_findings == PasswordPolicyCompliance().analyse(audit)
 

@@ -23,5 +23,10 @@ class Action:
     def has_failed(self) -> bool:
         return bool(self.status and self.status.startswith("failed"))
 
+    @property
     def reason(self) -> str:
         return self.status.removeprefix("failed: ") if self.status else ""
+
+    @property
+    def detailed_description(self) -> str:
+        return f"{self.description} (details: {self.details})" if self.details else self.description

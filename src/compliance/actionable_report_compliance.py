@@ -1,16 +1,20 @@
 from typing import Optional, Sequence, Set
 
+from src.compliance.action_describer import ActionDescriber, BriefActionDescriber, DetailedActionDescriber
+from src.compliance.analyser import Analyser
+from src.data.account import Account
 from src.data.action import Action
 from src.data.audit import Audit
-from src.data.account import Account
 from src.data.findings import Findings
-from src.compliance.analyser import Analyser
 
 
 class ActionableReportCompliance(Analyser):
+    action: ActionDescriber
+
     def __init__(self, item_type: str, item: str):
         self.item_type = item_type
         self.item = item
+        self.action = BriefActionDescriber()
 
     def analyse(self, audit: Audit) -> Set[Findings]:
         return {
@@ -41,11 +45,11 @@ class ActionableReportCompliance(Analyser):
 
     def _build_findings(self, actions: Sequence[Action]) -> Optional[Set[str]]:
         if self._none_applied(actions):
-            return {f"required: {self._describe(actions)}"}
+            return {f"required: {self.action.describe(actions)}"}
         if self._all_applied(actions):
-            return {f"applied: {self._describe(actions)}"}
+            return {f"applied: {self.action.describe(actions)}"}
         if self._any_failed(actions):
-            return {f"applied: {self._describe_applied(actions)}\nfailed: {self._describe_failed(actions)}"}
+            return {f"applied: {self.action.describe_applied(actions)}\nfailed: {self.action.describe_failed(actions)}"}
         return None
 
     @staticmethod
@@ -60,14 +64,8 @@ class ActionableReportCompliance(Analyser):
     def _any_failed(actions: Sequence[Action]) -> bool:
         return bool(actions) and any([a.has_failed() for a in actions])
 
-    @staticmethod
-    def _describe(actions: Sequence[Action]) -> Sequence[str]:
-        return ", ".join(a.description for a in actions)
 
-    @staticmethod
-    def _describe_applied(actions: Sequence[Action]) -> Sequence[str]:
-        return ", ".join(a.description for a in actions if a.is_applied())
-
-    @staticmethod
-    def _describe_failed(actions: Sequence[Action]) -> Sequence[str]:
-        return ", ".join(f"{a.description} ({a.reason()})" for a in actions if a.has_failed())
+class DetailedActionableReportCompliance(ActionableReportCompliance):
+    def __init__(self, item_type: str, item: str):
+        super().__init__(item_type=item_type, item=item)
+        self.action = DetailedActionDescriber()
