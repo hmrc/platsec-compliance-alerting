@@ -11,33 +11,43 @@ from src.data.findings import Findings
 def test_empty_findings_when_audit_has_no_actions() -> None:
     acc = create_account()
     audit = _password_policy_audit(acc)
-    assert _findings(acc, "password policy compliance is met") == PasswordPolicyCompliance().analyse(audit)
+    expected_description = "password policy compliance is met\ndetails: {'some_results': 'some_value'}"
+    assert _findings(acc, expected_description) == PasswordPolicyCompliance().analyse(audit)
 
 
 def test_vpc_compliance_not_met_when_audit_has_actions() -> None:
     acc = create_account()
-    audit = _password_policy_audit(acc, actions=[{"description": "a"}, {"description": "b"}])
-    expected_findings = _findings(acc, "password policy compliance is not met", {"required: a, b"})
+    audit = _password_policy_audit(acc, actions=[{"description": "a"}, {"description": "b", "details": "bla"}])
+    expected_description = "password policy compliance is not met\ndetails: {'some_results': 'some_value'}"
+    expected_findings = _findings(acc, expected_description, {"required: a, b (details: bla)"})
     assert expected_findings == PasswordPolicyCompliance().analyse(audit)
 
 
 def test_vpc_compliance_enforcement_success_when_all_actions_applied() -> None:
     acc = create_account()
     audit = _password_policy_audit(
-        acc, actions=[{"description": "a", "status": "applied"}, {"description": "b", "status": "applied"}]
+        acc,
+        actions=[
+            {"description": "a", "status": "applied", "details": "bla"},
+            {"description": "b", "status": "applied"},
+        ],
     )
-    expected_findings = _findings(acc, "password policy compliance enforcement success", {"applied: a, b"})
+    expected_description = "password policy compliance enforcement success\ndetails: {'some_results': 'some_value'}"
+    expected_findings = _findings(acc, expected_description, {"applied: a (details: bla), b"})
     assert expected_findings == PasswordPolicyCompliance().analyse(audit)
 
 
 def test_vpc_compliance_enforcement_failure_when_any_action_failed() -> None:
     acc = create_account()
     audit = _password_policy_audit(
-        acc, actions=[{"description": "a", "status": "applied"}, {"description": "b", "status": "failed: boom"}]
+        acc,
+        actions=[
+            {"description": "a", "status": "applied"},
+            {"description": "b", "details": "nope", "status": "failed: boom"},
+        ],
     )
-    expected_findings = _findings(
-        acc, "password policy compliance enforcement failure", {"applied: a\nfailed: b (boom)"}
-    )
+    expected_description = "password policy compliance enforcement failure\ndetails: {'some_results': 'some_value'}"
+    expected_findings = _findings(acc, expected_description, {"applied: a\nfailed: b (details: nope) (error: boom)"})
     assert expected_findings == PasswordPolicyCompliance().analyse(audit)
 
 
@@ -47,7 +57,7 @@ def _password_policy_audit(acc: Account, actions: Optional[Sequence[Dict[str, An
         report=[
             {
                 "account": {"identifier": acc.identifier, "name": acc.name},
-                "results": {"enforcement_actions": actions or []},
+                "results": {"some_results": "some_value", "enforcement_actions": actions or []},
             }
         ],
     )

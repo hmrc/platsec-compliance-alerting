@@ -16,7 +16,7 @@ def test_empty_findings_when_audit_has_no_actions() -> None:
 
 def test_vpc_compliance_not_met_when_audit_has_actions() -> None:
     acc = create_account()
-    audit = _vpc_audit(acc, actions=[{"description": "a"}, {"description": "b"}])
+    audit = _vpc_audit(acc, actions=[{"description": "a"}, {"description": "b", "details": "bla"}])
     expected_findings = _vpc_findings(acc, "VPC flow logs compliance is not met", {"required: a, b"})
     assert expected_findings == VpcCompliance().analyse(audit)
 
