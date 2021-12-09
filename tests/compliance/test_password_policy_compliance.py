@@ -8,17 +8,22 @@ from src.data.audit import Audit
 from src.data.findings import Findings
 
 
+prettified_results = """`{
+    "some_results": "some_value"
+}`"""
+
+
 def test_empty_findings_when_audit_has_no_actions() -> None:
     acc = create_account()
     audit = _password_policy_audit(acc)
-    expected_description = "password policy compliance is met\ndetails: {'some_results': 'some_value'}"
-    assert _findings(acc, expected_description) == PasswordPolicyCompliance().analyse(audit)
+    expected_description = f"password policy compliance is met\n{prettified_results}"
+    assert PasswordPolicyCompliance().analyse(audit) == _findings(acc, expected_description)
 
 
 def test_vpc_compliance_not_met_when_audit_has_actions() -> None:
     acc = create_account()
     audit = _password_policy_audit(acc, actions=[{"description": "a"}, {"description": "b", "details": "bla"}])
-    expected_description = "password policy compliance is not met\ndetails: {'some_results': 'some_value'}"
+    expected_description = f"password policy compliance is not met\n{prettified_results}"
     expected_findings = _findings(acc, expected_description, {"required: a, b (details: bla)"})
     assert expected_findings == PasswordPolicyCompliance().analyse(audit)
 
@@ -32,7 +37,7 @@ def test_vpc_compliance_enforcement_success_when_all_actions_applied() -> None:
             {"description": "b", "status": "applied"},
         ],
     )
-    expected_description = "password policy compliance enforcement success\ndetails: {'some_results': 'some_value'}"
+    expected_description = f"password policy compliance enforcement success\n{prettified_results}"
     expected_findings = _findings(acc, expected_description, {"applied: a (details: bla), b"})
     assert expected_findings == PasswordPolicyCompliance().analyse(audit)
 
@@ -46,7 +51,7 @@ def test_vpc_compliance_enforcement_failure_when_any_action_failed() -> None:
             {"description": "b", "details": "nope", "status": "failed: boom"},
         ],
     )
-    expected_description = "password policy compliance enforcement failure\ndetails: {'some_results': 'some_value'}"
+    expected_description = f"password policy compliance enforcement failure\n{prettified_results}"
     expected_findings = _findings(acc, expected_description, {"applied: a\nfailed: b (details: nope) (error: boom)"})
     assert expected_findings == PasswordPolicyCompliance().analyse(audit)
 
