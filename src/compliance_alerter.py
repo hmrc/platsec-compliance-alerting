@@ -8,12 +8,19 @@ from src.data.findings import Findings
 from src.findings_filter import FindingsFilter
 from src.notification_mapper import NotificationMapper
 from src.slack_notifier import SlackMessage, SlackNotifier
+from src.sns.codepipeline import CodePipeline
 
 config = Config()
 
 
 def main(event: Dict[str, Any]) -> None:
-    send(map(filter(analyse(fetch(event)))))
+    if "EventSource" in event["Records"][0] and event["Records"][0]["EventSource"] == "aws:sns":
+        findings = CodePipeline().event_to_findings(event)
+    else:
+        findings = analyse(fetch(event))
+
+    slack_messages = map(filter(findings))
+    send(slack_messages)
 
 
 def fetch(event: Dict[str, Any]) -> Audit:

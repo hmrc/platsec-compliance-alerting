@@ -5,6 +5,7 @@ PIP_PIPENV_VERSION = $(shell head -1 .pipenv-version)
 GROUP_ID ?= $(shell id -g)
 USER_ID ?= $(shell id -u)
 PYTHON_SRC = *.py src/ tests/
+PROJECT_ROOT = $(PWD)
 
 ifdef CI_MODE
 	DOCKER = docker build \
@@ -70,11 +71,6 @@ container-release:
 		--tag container-release:local . \
 		--build-arg PYTHON_VERSION=$(PYTHON_VERSION) \
 		--build-arg PIP_PIPENV_VERSION=$(PIP_PIPENV_VERSION)
-
-push-lambda-image: container-release
-	@aws --profile $(ROLE) ecr get-login-password | docker login --username AWS --password-stdin $(ECR)
-	@docker tag container-release:local $(ECR)/platsec-compliance-alerting:latest
-	@docker push $(ECR)/platsec-compliance-alerting:latest
 
 .PHONY: clean-up
 clean-up:

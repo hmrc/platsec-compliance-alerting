@@ -1,0 +1,52 @@
+{
+  "Records":
+  [
+    {
+      "EventSource": "aws:sns",
+      "EventVersion": "1.0",
+      "EventSubscriptionArn": "arn:aws:sns:eu-west-2:123456789012:alerting_failure_topic:e622c6db-fcd6-43cc-a7d3-ef5b73e6dff7",
+      "Sns":
+      {
+        "Type": "Notification",
+        "MessageId": "ff47b95e-4ead-4710-8843-f90980175df0",
+        "TopicArn": "arn:aws:sns:eu-west-2:123456789012:alerting_failure_topic",
+        "Subject": "None",
+        "Message":
+        {
+          "account": "123456789012",
+          "detailType": "CodePipeline Pipeline Execution State Change",
+          "region": "eu-west-2",
+          "source": "aws.codepipeline",
+          "time": "2021-12-08T13:36:02Z",
+          "notificationRuleArn": "arn:aws:codestar-notifications:eu-west-2:123456789012:notificationrule/8c671a6ec498a4513a69b3b537acb9d91aa0707b",
+          "detail":
+          {
+            "pipeline": "test-codepipeline-ua",
+            "execution-id": "95bcd5b2-03b4-44ff-873b-8a95d57a24a0",
+            "state": "FAILED",
+            "version":1.0
+          },
+          "resources":["arn:aws:codepipeline:eu-west-2:123456789012:test-codepipeline-ua"],
+          "additionalAttributes":
+          {
+            "failedActionCount":1,
+            "failedActions":
+            [
+              {
+                "action": "Deploy",
+                "additionalInformation": "The AWS CodeDeploy application test-codepipeline-ua does not exist"
+              }
+            ],
+            "failedStage": "Deploy"
+          }
+        },
+        "Timestamp": "2021-12-08T13:36:06.770Z",
+        "SignatureVersion": "1",
+        "Signature": "YJ1ryn9mB58pG2kiYhzK+7rjFSjX0+UL7GtjqXz36ouxqIcMp/rgVCg5fKloBxSxtgx9UkYIAUvhfgVrc/zih8BS2WRcrHnhNFpetI6WH9xRuz13f+JusNHPFnojVuKwvypoOplU+ig3koNxP6yHfvmNzosYNRcu2MZN3Xa22l6dubej488xjmt9YHddYaypHhnHkd+5enBNHYkV6HpXdgw0sHZW6+V/rUcCavH+Ce3cm9LQA/u1YlSDWuaRGUOlWFNEYPJcsGIdM1Om25iaRt0kL5bvgw9KvAKISXE+wS7WwsW8QHcQMF8nt3g0losN/mhb+EM5L2/on/bU96brvA==",
+        "SigningCertUrl": "https://sns.eu-west-2.amazonaws.com/SimpleNotificationService-7ff5318490ec183fbaddaa2a969abfda.pem",
+        "UnsubscribeUrl": "https://sns.eu-west-2.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:eu-west-2:304923144821:platsec_compliance_alerting_failure_topic:8f9069de-83da-4891-857e-d1614f60fc7e",
+        "MessageAttributes": {}
+      }
+    }
+  ]
+}
