@@ -11,7 +11,7 @@ from src.data.findings import Findings
 def test_empty_findings_when_audit_has_no_actions() -> None:
     acc = create_account()
     audit = _password_policy_audit(acc)
-    prettified_results = '`{\n    "some_results": "some_value"\n}`'
+    prettified_results = '```{\n    "some_results": "some_value"\n}```'
     expected_description = f"password policy compliance is met\n{prettified_results}"
     assert PasswordPolicyCompliance().analyse(audit) == _findings(acc, expected_description)
 
@@ -21,9 +21,9 @@ def test_vpc_compliance_not_met_when_audit_has_actions() -> None:
     audit = _password_policy_audit(
         acc, actions=[{"description": "a"}, {"description": "b", "details": {"some_details": "bla"}}]
     )
-    prettified_results = '`{\n    "some_results": "some_value"\n}`'
+    prettified_results = '```{\n    "some_results": "some_value"\n}```'
     expected_description = f"password policy compliance is not met\n{prettified_results}"
-    expected_actions = {'required: a\nb\n`{\n    "some_details": "bla"\n}`'}
+    expected_actions = {'required: a\nb\n```{\n    "some_details": "bla"\n}```'}
     expected_findings = _findings(acc, expected_description, expected_actions)
     assert PasswordPolicyCompliance().analyse(audit) == expected_findings
 
@@ -37,9 +37,9 @@ def test_vpc_compliance_enforcement_success_when_all_actions_applied() -> None:
             {"description": "b", "status": "applied"},
         ],
     )
-    prettified_results = '`{\n    "some_results": "some_value"\n}`'
+    prettified_results = '```{\n    "some_results": "some_value"\n}```'
     expected_description = f"password policy compliance enforcement success\n{prettified_results}"
-    expected_actions = {'applied: a\n`{\n    "some_key": 1\n}`\nb'}
+    expected_actions = {'applied: a\n```{\n    "some_key": 1\n}```\nb'}
     expected_findings = _findings(acc, expected_description, expected_actions)
     assert expected_findings == PasswordPolicyCompliance().analyse(audit)
 
@@ -53,9 +53,9 @@ def test_vpc_compliance_enforcement_failure_when_any_action_failed() -> None:
             {"description": "b", "details": {"a_key": 42}, "status": "failed: boom"},
         ],
     )
-    prettified_results = '`{\n    "some_results": "some_value"\n}`'
+    prettified_results = '```{\n    "some_results": "some_value"\n}```'
     expected_description = f"password policy compliance enforcement failure\n{prettified_results}"
-    expected_actions = {'applied: a\nfailed: b\n`{\n    "a_key": 42\n}`\nerror: boom'}
+    expected_actions = {'applied: a\nfailed: b\n```{\n    "a_key": 42\n}```\nerror: boom'}
     expected_findings = _findings(acc, expected_description, expected_actions)
     assert PasswordPolicyCompliance().analyse(audit) == expected_findings
 

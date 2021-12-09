@@ -30,5 +30,5 @@ class Action:
 
     @property
     def detailed_description(self) -> str:
-        prettified_details = f"\n`{dumps(self.details, indent=4)}`" if self.details else ""
+        prettified_details = f"\n```{dumps(self.details, indent=4)}```" if self.details else ""
         return f"{self.description}{prettified_details}"

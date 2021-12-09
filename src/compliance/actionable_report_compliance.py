@@ -77,4 +77,4 @@ class DetailedActionableReportCompliance(ActionableReportCompliance):
 
     def _build_description(self, actions: Sequence[Action], results: Dict[str, Any]) -> Optional[str]:
         results.pop("enforcement_actions")
-        return f"{self._determine_compliance_status(actions)}\n`{dumps(results, indent=4)}`"
+        return f"{self._determine_compliance_status(actions)}\n```{dumps(results, indent=4)}```"
