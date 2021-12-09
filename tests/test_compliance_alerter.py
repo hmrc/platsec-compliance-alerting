@@ -1,13 +1,13 @@
 from unittest import TestCase
 from unittest.mock import patch
 
-from os import environ
+import os
 from typing import Any, Dict
 
 import boto3
 import httpretty
 
-from json import dumps
+import json
 from moto import mock_s3, mock_ssm, mock_sts
 
 from src import compliance_alerter
@@ -70,6 +70,10 @@ class TestComplianceAlerter(TestCase):
         compliance_alerter.main(self.build_event(password_policy_key))
         self._assert_slack_message_sent("password policy compliance enforcement success")
 
+    def test_codepipeline_sns_event(self) -> None:
+        compliance_alerter.main(TestComplianceAlerter.load_json_resource("codepipeline_event.json"))
+        self._assert_slack_message_sent_to_channel("codepipeline-alerts")
+
     @staticmethod
     def build_event(report_key: str) -> Dict[str, Any]:
         return {"Records": [{"eventVersion": "2.1", "s3": {"bucket": {"name": report}, "object": {"key": report_key}}}]}
@@ -77,7 +81,7 @@ class TestComplianceAlerter(TestCase):
     @staticmethod
     def _setup_environment() -> None:
         patch.dict(
-            environ,
+            os.environ,
             {
                 "AWS_ACCESS_KEY_ID": "the-access-key-id",
                 "AWS_SECRET_ACCESS_KEY": "the-secret-access-key",
@@ -106,29 +110,44 @@ class TestComplianceAlerter(TestCase):
     def _setup_report_bucket() -> None:
         s3 = boto3.client("s3")
         s3.create_bucket(Bucket=report)
-        s3.put_object(Bucket=report, Key=s3_key, Body=dumps(s3_report))
-        s3.put_object(Bucket=report, Key=github_key, Body=dumps(github_report))
-        s3.put_object(Bucket=report, Key=github_webhook_key, Body=dumps(github_webhook_report))
-        s3.put_object(Bucket=report, Key=vpc_key, Body=dumps(vpc_report))
-        s3.put_object(Bucket=report, Key=password_policy_key, Body=dumps(password_policy_report))
+        s3.put_object(Bucket=report, Key=s3_key, Body=json.dumps(s3_report))
+        s3.put_object(Bucket=report, Key=github_key, Body=json.dumps(github_report))
+        s3.put_object(Bucket=report, Key=github_webhook_key, Body=json.dumps(github_webhook_report))
+        s3.put_object(Bucket=report, Key=vpc_key, Body=json.dumps(vpc_report))
+        s3.put_object(Bucket=report, Key=password_policy_key, Body=json.dumps(password_policy_report))
 
     @staticmethod
     def _setup_config_bucket() -> None:
         s3 = boto3.client("s3")
         s3.create_bucket(Bucket=config)
-        s3.put_object(Bucket=config, Key="filters/a", Body=dumps([{"item": "mischievous-bucket", "reason": "because"}]))
-        s3.put_object(Bucket=config, Key="filters/b", Body=dumps([{"item": "bad-repo-no-admin", "reason": "because"}]))
-        s3.put_object(Bucket=config, Key="mappings/all", Body=dumps([{"channel": "the-alerting-channel"}]))
-        s3.put_object(Bucket=config, Key="mappings/a", Body=dumps([{"channel": "alerts", "items": ["bad-bucket"]}]))
         s3.put_object(
-            Bucket=config, Key="mappings/b", Body=dumps([{"channel": "alerts", "items": ["bad-repo-no-signing"]}])
-        )
-        s3.put_object(Bucket=config, Key="mappings/c", Body=dumps([{"channel": "alerts", "items": ["VPC flow logs"]}]))
-        s3.put_object(
-            Bucket=config, Key="mappings/d", Body=dumps([{"channel": "alerts", "items": ["https://unknown-host.com"]}])
+            Bucket=config, Key="filters/a", Body=json.dumps([{"item": "mischievous-bucket", "reason": "because"}])
         )
         s3.put_object(
-            Bucket=config, Key="mappings/e", Body=dumps([{"channel": "alerts", "items": ["password policy"]}])
+            Bucket=config, Key="filters/b", Body=json.dumps([{"item": "bad-repo-no-admin", "reason": "because"}])
+        )
+        s3.put_object(Bucket=config, Key="mappings/all", Body=json.dumps([{"channel": "the-alerting-channel"}]))
+        s3.put_object(
+            Bucket=config, Key="mappings/a", Body=json.dumps([{"channel": "alerts", "items": ["bad-bucket"]}])
+        )
+        s3.put_object(
+            Bucket=config, Key="mappings/b", Body=json.dumps([{"channel": "alerts", "items": ["bad-repo-no-signing"]}])
+        )
+        s3.put_object(
+            Bucket=config, Key="mappings/c", Body=json.dumps([{"channel": "alerts", "items": ["VPC flow logs"]}])
+        )
+        s3.put_object(
+            Bucket=config,
+            Key="mappings/d",
+            Body=json.dumps([{"channel": "alerts", "items": ["https://unknown-host.com"]}]),
+        )
+        s3.put_object(
+            Bucket=config, Key="mappings/e", Body=json.dumps([{"channel": "alerts", "items": ["password policy"]}])
+        )
+        s3.put_object(
+            Bucket=config,
+            Key="mappings/codepipeline",
+            Body=json.dumps([{"channel": "codepipeline-alerts", "compliance_item_types": ["codepipeline"]}]),
         )
 
     @staticmethod
@@ -151,9 +170,22 @@ class TestComplianceAlerter(TestCase):
 
     @staticmethod
     def _mock_slack_notifier() -> None:
-        httpretty.register_uri(httpretty.POST, slack_api_url, body=dumps({"successfullySentTo": [channel]}), status=200)
+        httpretty.register_uri(
+            httpretty.POST, slack_api_url, body=json.dumps({"successfullySentTo": [channel]}), status=200
+        )
 
     def _assert_slack_message_sent(self, message: str) -> None:
         message_request = httpretty.last_request().body.decode("utf-8")
         self.assertIn(message, message_request)
         self.assertIn('"slackChannels": ["alerts", "the-alerting-channel"]', message_request)
+
+    def _assert_slack_message_sent_to_channel(self, channel: str) -> None:
+        message_request = httpretty.last_request().body.decode("utf-8")
+        message_json = json.loads(message_request)
+        self.assertIn(channel, message_json["channelLookup"]["slackChannels"])
+
+    @staticmethod
+    def load_json_resource(filename: str) -> Any:
+        with open(os.path.join("tests", "resources", filename), "r") as json_file:
+            resource = json.load(json_file)
+        return resource
