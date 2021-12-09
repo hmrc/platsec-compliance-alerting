@@ -1,6 +1,7 @@
 from __future__ import annotations
-from __future__ import annotations
+
 from dataclasses import dataclass
+from json import dumps
 from typing import Any, Dict, Optional
 
 
@@ -29,4 +30,5 @@ class Action:
 
     @property
     def detailed_description(self) -> str:
-        return f"{self.description} (details: {self.details})" if self.details else self.description
+        prettified_details = f"\n`{dumps(self.details, indent=4)}`" if self.details else ""
+        return f"{self.description}{prettified_details}"
