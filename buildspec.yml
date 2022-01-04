@@ -6,6 +6,7 @@ phases:
       - make test
       - make container-release
       - docker save -o docker.tar container-release:local
+      - /bin/false
 artifacts:
   files:
     - docker.tar
