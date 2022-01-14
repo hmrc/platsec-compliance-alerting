@@ -1,5 +1,4 @@
-from typing import Dict, Any, Set
-import json
+from typing import Dict, Any
 
 from src.data.account import Account
 from src.data.findings import Findings

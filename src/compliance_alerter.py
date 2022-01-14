@@ -17,22 +17,27 @@ config = Config()
 
 
 def main(events: Dict[str, Any]) -> None:
-    findings: Set[Findings] = set()
     if "EventSource" in events["Records"][0] and events["Records"][0]["EventSource"] == "aws:sns":
-        for record in events["Records"]:
-            message = json.loads(record["Sns"]["Message"])
-            type = message["detailType"]
-            if type == CodePipeline.Type:
-                findings.add(CodePipeline().create_finding(message))
-            elif type == CodeBuild.Type:
-                findings.add(CodeBuild().create_finding(message))
-            else:
-                getLogger(__name__).warning(f"Received unknown event with detailType '{type}'. Ignoring...")
+        findings = handle_sns_events(events)
     else:
         findings = analyse(fetch(events))
 
     slack_messages = map(filter(findings))
     send(slack_messages)
+
+
+def handle_sns_events(events: Dict[str, Any]) -> Set[Findings]:
+    findings: Set[Findings] = set()
+    for record in events["Records"]:
+        message = json.loads(record["Sns"]["Message"])
+        type = message["detailType"]
+        if type == CodePipeline.Type:
+            findings.add(CodePipeline().create_finding(message))
+        elif type == CodeBuild.Type:
+            findings.add(CodeBuild().create_finding(message))
+        else:
+            getLogger(__name__).warning(f"Received unknown event with detailType '{type}'. Ignoring...")
+    return findings
 
 
 def fetch(event: Dict[str, Any]) -> Audit:

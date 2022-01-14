@@ -9,7 +9,6 @@ import httpretty
 
 import json
 
-import pytest
 from moto import mock_s3, mock_ssm, mock_sts
 
 from src import compliance_alerter
