@@ -6,12 +6,9 @@ from src.sns.codepipeline import CodePipeline
 
 
 def test_event_to_findings() -> None:
-    event = load_json_resource("codepipeline_event.json")
+    message = json.loads(load_json_resource("codepipeline_event.json")["Records"][0]["Sns"]["Message"])
 
-    findings = CodePipeline().event_to_findings(event)
-
-    assert len(findings) == 1
-    finding = next(iter(findings))
+    finding = CodePipeline().create_finding(message)
     assert finding.account.identifier == "123456789012"
     assert finding.compliance_item_type == "codepipeline"
     assert finding.item == "test-codepipeline-ua"

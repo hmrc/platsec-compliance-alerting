@@ -1,0 +1,20 @@
+{
+  "Records": [
+    {
+      "EventSource": "aws:sns",
+      "EventVersion": "1.0",
+      "EventSubscriptionArn": "arn:aws:sns:eu-west-2:123456789012:alerting_failure_topic:e622c6db-fcd6-43cc-a7d3-ef5b73e6dff7",
+      "Sns":{
+        "Type" : "Notification",
+        "MessageId" : "dfec9f35-2e5a-529e-8e98-c56f68d578dc",
+        "TopicArn" : "arn:aws:sns:eu-west-2:123456789012:platsec_compliance_alerting_failure_topic",
+        "Message" : "{\"detailType\": \"this is not the event you are looking for\"}",
+        "Timestamp" : "2022-01-13T15:25:03.307Z",
+        "SignatureVersion" : "1",
+        "Signature" : "IItG2BY4pw++x0JKLVYILoHYLtXqNwx9OuezautPLxcAGVCkRIsv8C/UX6Kmb3PA9RAbApdwFKjwtcYevsnJnu0cfaBynU/HbzRAAYFxhDYIKZzrAW2Vt+Sif8fWoK3W+Wo4IOB3l024iiAPtdTBPaC/s33A1KDMzGrBktQWUuZzIp4m3Z3P1ZNTSXuX9ee1Jkuh7PtkA847MyKxSz6cTMV0snsN9A3GiIzedVEteDb4LRY8cumLTVnYTFoi6XPSGqjnj14wzr/hWyOq3HIGkLXiCAsZyB1eD4yS9S9oKAcrB0gWodf3pc6KeRPrncAShTp3djK5Q6uDRgQxmkGfnQ==",
+        "SigningCertURL" : "https://sns.eu-west-2.amazonaws.com/SimpleNotificationService-7ff5318490ec183fbaddaa2a969abfda.pem",
+        "UnsubscribeURL" : "https://sns.eu-west-2.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:eu-west-2:123456789012:platsec_compliance_alerting_failure_topic:765f3d71-c29f-4ccb-b7e8-24ddf19010a0"
+      }
+    }
+  ]
+}

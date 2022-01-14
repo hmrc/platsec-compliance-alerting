@@ -1,3 +1,4 @@
+from logging import getLogger
 from typing import Any, Dict, List, Set
 import json
 
@@ -9,22 +10,24 @@ from src.data.findings import Findings
 from src.findings_filter import FindingsFilter
 from src.notification_mapper import NotificationMapper
 from src.slack_notifier import SlackMessage, SlackNotifier
+from src.sns.codebuild import CodeBuild
 from src.sns.codepipeline import CodePipeline
 
 config = Config()
 
 
 def main(events: Dict[str, Any]) -> None:
-    findings: Set[Findings] = {}
+    findings: Set[Findings] = set()
     if "EventSource" in events["Records"][0] and events["Records"][0]["EventSource"] == "aws:sns":
         for record in events["Records"]:
             message = json.loads(record["Sns"]["Message"])
             type = message["detailType"]
             if type == CodePipeline.Type:
-                findings =
-                findings.add(CodePipeline().event_to_findings(message))
-            # if type == CodeBuild.Type:
-            #     findings.add(CodeBuild().event_to_findings(message))
+                findings.add(CodePipeline().create_finding(message))
+            elif type == CodeBuild.Type:
+                findings.add(CodeBuild().create_finding(message))
+            else:
+                getLogger(__name__).warning(f"Received unknown event with detailType '{type}'. Ignoring...")
     else:
         findings = analyse(fetch(events))
 

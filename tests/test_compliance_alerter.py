@@ -8,6 +8,8 @@ import boto3
 import httpretty
 
 import json
+
+import pytest
 from moto import mock_s3, mock_ssm, mock_sts
 
 from src import compliance_alerter
@@ -78,9 +80,9 @@ class TestComplianceAlerter(TestCase):
         compliance_alerter.main(TestComplianceAlerter.load_json_resource("codebuild_event.json"))
         self._assert_slack_message_sent_to_channel("codebuild-alerts")
 
-    # def test_unknown_sns_event(self) -> None:
-    #     compliance_alerter.main(TestComplianceAlerter.load_json_resource("codepipeline_event.json"))
-    #     self._assert_slack_message_sent_to_channel("codepipeline-alerts")
+    def test_unknown_sns_event(self) -> None:
+        compliance_alerter.main(TestComplianceAlerter.load_json_resource("unknown_sns_event.json"))
+        self._assert_no_slack_message_sent()
 
     @staticmethod
     def build_event(report_key: str) -> Dict[str, Any]:
@@ -157,6 +159,11 @@ class TestComplianceAlerter(TestCase):
             Key="mappings/codepipeline",
             Body=json.dumps([{"channel": "codepipeline-alerts", "compliance_item_types": ["codepipeline"]}]),
         )
+        s3.put_object(
+            Bucket=config,
+            Key="mappings/codebuild",
+            Body=json.dumps([{"channel": "codebuild-alerts", "compliance_item_types": ["codebuild"]}]),
+        )
 
     @staticmethod
     def _setup_ssm_parameters() -> None:
@@ -188,12 +195,20 @@ class TestComplianceAlerter(TestCase):
         self.assertIn('"slackChannels": ["alerts", "the-alerting-channel"]', message_request)
 
     def _assert_slack_message_sent_to_channel(self, channel: str) -> None:
-        message_request = httpretty.last_request().body.decode("utf-8")
+        last_request = httpretty.last_request()
+        assert type(last_request) != httpretty.core.HTTPrettyRequestEmpty, "No requests were made to slack"
+        message_request = last_request.body.decode("utf-8")
         message_json = json.loads(message_request)
         self.assertIn(channel, message_json["channelLookup"]["slackChannels"])
+
+    def _assert_no_slack_message_sent(self) -> None:
+        last_request = httpretty.last_request()
+        assert type(last_request) == httpretty.core.HTTPrettyRequestEmpty, "A request was made to slack"
 
     @staticmethod
     def load_json_resource(filename: str) -> Any:
         with open(os.path.join("tests", "resources", filename), "r") as json_file:
             resource = json.load(json_file)
         return resource
+
+

@@ -10,12 +10,7 @@ class CodePipeline:
     Type: str = "CodePipeline Pipeline Execution State Change"
 
     @staticmethod
-    def event_to_findings(sns_event: Dict[str, Any]) -> Set[Findings]:
-        return {CodePipeline.create_finding(record) for record in sns_event["Records"]}
-
-    @staticmethod
-    def create_finding(record: Dict[str, Any]) -> Findings:
-        message = json.loads(record["Sns"]["Message"])
+    def create_finding(message: Dict[str, Any]) -> Findings:
         account = Account(identifier=message["account"])
         pipeline = message["detail"]["pipeline"]
         execution_id = message["detail"]["execution-id"]

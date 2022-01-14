@@ -6,13 +6,10 @@ from src.data.findings import Findings
 
 
 class CodeBuild:
-    @staticmethod
-    def event_to_findings(sns_event: Dict[str, Any]) -> Set[Findings]:
-        return {CodeBuild.create_finding(record) for record in sns_event["Records"]}
+    Type: str = "CodeBuild Build State Change"
 
     @staticmethod
-    def create_finding(record: Dict[str, Any]) -> Findings:
-        message = json.loads(record["Sns"]["Message"])
+    def create_finding(message: Dict[str, Any]) -> Findings:
         account = Account(identifier=message["account"])
         project_name = message["detail"]["project-name"]
         build_id = message["detail"]["build-id"]
