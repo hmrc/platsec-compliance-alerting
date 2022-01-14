@@ -2,21 +2,21 @@ import json
 import os
 from typing import Any
 
-from src.sns.codebuild import CodePipeline
+from src.sns.codebuild import CodeBuild
 
 
 def test_event_to_findings() -> None:
-    event = load_json_resource("codepipeline_event.json")
+    event = load_json_resource("codebuild_event.json")
 
-    findings = CodePipeline().event_to_findings(event)
+    findings = CodeBuild().event_to_findings(event)
 
     assert len(findings) == 1
     finding = next(iter(findings))
     assert finding.account.identifier == "123456789012"
-    assert finding.compliance_item_type == "codepipeline"
-    assert finding.item == "test-codepipeline-ua"
+    assert finding.compliance_item_type == "codebuild"
+    assert finding.item == "ua-test"
     assert len(finding.findings) == 1
-    assert next(iter(finding.findings)) == "pipeline execution 95bcd5b2-03b4-44ff-873b-8a95d57a24a0 failed"
+    assert next(iter(finding.findings)) == "build arn:aws:codebuild:eu-west-2:123456789012:build/ua-test:7cf9f577-4069-4010-a467-f0640dfc0afb FAILED"
 
 
 def load_json_resource(filename: str) -> Any:

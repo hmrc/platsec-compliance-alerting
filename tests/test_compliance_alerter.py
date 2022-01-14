@@ -74,6 +74,14 @@ class TestComplianceAlerter(TestCase):
         compliance_alerter.main(TestComplianceAlerter.load_json_resource("codepipeline_event.json"))
         self._assert_slack_message_sent_to_channel("codepipeline-alerts")
 
+    def test_codebuild_sns_event(self) -> None:
+        compliance_alerter.main(TestComplianceAlerter.load_json_resource("codebuild_event.json"))
+        self._assert_slack_message_sent_to_channel("codebuild-alerts")
+
+    # def test_unknown_sns_event(self) -> None:
+    #     compliance_alerter.main(TestComplianceAlerter.load_json_resource("codepipeline_event.json"))
+    #     self._assert_slack_message_sent_to_channel("codepipeline-alerts")
+
     @staticmethod
     def build_event(report_key: str) -> Dict[str, Any]:
         return {"Records": [{"eventVersion": "2.1", "s3": {"bucket": {"name": report}, "object": {"key": report_key}}}]}

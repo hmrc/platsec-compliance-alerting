@@ -16,7 +16,7 @@ def test_event_to_findings() -> None:
     assert finding.compliance_item_type == "codepipeline"
     assert finding.item == "test-codepipeline-ua"
     assert len(finding.findings) == 1
-    assert next(iter(finding.findings)) == "pipeline execution 95bcd5b2-03b4-44ff-873b-8a95d57a24a0 failed"
+    assert next(iter(finding.findings)) == "pipeline execution 95bcd5b2-03b4-44ff-873b-8a95d57a24a0 FAILED"
 
 
 def load_json_resource(filename: str) -> Any:

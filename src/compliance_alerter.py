@@ -1,4 +1,5 @@
 from typing import Any, Dict, List, Set
+import json
 
 from src.audit_analyser import AuditAnalyser
 from src.audit_fetcher import AuditFetcher
@@ -13,11 +14,19 @@ from src.sns.codepipeline import CodePipeline
 config = Config()
 
 
-def main(event: Dict[str, Any]) -> None:
-    if "EventSource" in event["Records"][0] and event["Records"][0]["EventSource"] == "aws:sns":
-        findings = CodePipeline().event_to_findings(event)
+def main(events: Dict[str, Any]) -> None:
+    findings: Set[Findings] = {}
+    if "EventSource" in events["Records"][0] and events["Records"][0]["EventSource"] == "aws:sns":
+        for record in events["Records"]:
+            message = json.loads(record["Sns"]["Message"])
+            type = message["detailType"]
+            if type == CodePipeline.Type:
+                findings =
+                findings.add(CodePipeline().event_to_findings(message))
+            # if type == CodeBuild.Type:
+            #     findings.add(CodeBuild().event_to_findings(message))
     else:
-        findings = analyse(fetch(event))
+        findings = analyse(fetch(events))
 
     slack_messages = map(filter(findings))
     send(slack_messages)
