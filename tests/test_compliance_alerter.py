@@ -210,5 +210,3 @@ class TestComplianceAlerter(TestCase):
         with open(os.path.join("tests", "resources", filename), "r") as json_file:
             resource = json.load(json_file)
         return resource
-
-

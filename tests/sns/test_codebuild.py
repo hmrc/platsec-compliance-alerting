@@ -13,7 +13,10 @@ def test_event_to_findings() -> None:
     assert finding.compliance_item_type == "codebuild"
     assert finding.item == "ua-test"
     assert len(finding.findings) == 1
-    assert next(iter(finding.findings)) == "build arn:aws:codebuild:eu-west-2:123456789012:build/ua-test:7cf9f577-4069-4010-a467-f0640dfc0afb FAILED"
+    assert (
+        next(iter(finding.findings))
+        == "build arn:aws:codebuild:eu-west-2:123456789012:build/ua-test:7cf9f577-4069-4010-a467-f0640dfc0afb FAILED"
+    )
 
 
 def load_json_resource(filename: str) -> Any:
