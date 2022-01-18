@@ -26,7 +26,7 @@ class CodeBuild:
             compliance_item_type="codebuild",
             account=account,
             item=title,
-            findings={f"<{codebuild_url}|build> <{logs_url}|logs>"},
+            findings={f"<{codebuild_url}|build> | <{logs_url}|logs>"},
         )
 
     @staticmethod

@@ -25,7 +25,7 @@ def test_event_to_findings() -> None:
         "https://eu-west-2.console.aws.amazon.com/codesuite/codebuild/123456789012/projects/"
         "ua-test/build/ua-test%3A7cf9f577-4069-4010-a467-f0640dfc0afb/?region=eu-west-2"
     )
-    assert finding.findings == frozenset({f"<{expected_build_link}|build> <{expected_logs_link}|logs>"})
+    assert finding.findings == frozenset({f"<{expected_build_link}|build> | <{expected_logs_link}|logs>"})
 
 
 def load_json_resource(filename: str) -> Any:
