@@ -27,7 +27,7 @@ class CodePipeline:
         )
 
     @staticmethod
-    def generate_pipeline_link(execution_id: str, pipeline_name: str, region: str):
+    def generate_pipeline_link(execution_id: str, pipeline_name: str, region: str) -> str:
         return (
             f"<https://{region}.console.aws.amazon.com/codesuite/codepipeline/pipelines/"
             f"{pipeline_name}/executions/{execution_id}/visualization?region={region}|pipeline link>"
