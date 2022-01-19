@@ -13,7 +13,13 @@ def test_event_to_findings() -> None:
     assert finding.compliance_item_type == "codepipeline"
     assert finding.item == "test-codepipeline-ua FAILED"
     assert len(finding.findings) == 1
-    assert next(iter(finding.findings)) == "pipeline execution 95bcd5b2-03b4-44ff-873b-8a95d57a24a0"
+    expected_build_url = (
+        "https://eu-west-2.console.aws.amazon.com/codesuite/codepipeline/pipelines/"
+        "test-codepipeline-ua/"
+        "executions/95bcd5b2-03b4-44ff-873b-8a95d57a24a0/visualization?region=eu-west-2"
+    )
+
+    assert next(iter(finding.findings)) == f"<{expected_build_url}|pipeline link>"
 
 
 def load_json_resource(filename: str) -> Any:
