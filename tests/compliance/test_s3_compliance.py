@@ -50,6 +50,18 @@ class TestS3Compliance(TestCase):
     def test_bucket_sensitivity_tag_bucket_missing(self) -> None:
         self.assertFalse(S3Compliance()._is_tagged("sensitivity", {}))
 
+    def test_bucket_has_secure_transport_unenforced(self) -> None:
+        self.assertFalse(S3Compliance()._is_enabled("secure_transport", {"secure_transport": {}}))
+
+    def test_bucket_has_secure_transport_enforced(self) -> None:
+        self.assertTrue(S3Compliance()._is_enabled("secure_transport", {"secure_transport": {"enabled": True}}))
+
+    def test_bucket_has_content_deny_unenforced(self) -> None:
+        self.assertFalse(S3Compliance()._is_enabled("content_deny", {"content_deny": {}}))
+
+    def test_bucket_has_content_deny_enforced(self) -> None:
+        self.assertTrue(S3Compliance()._is_enabled("content_deny", {"content_deny": {"enabled": True}}))
+
     def test_check(self) -> None:
         audit = Audit(
             type="s3",
@@ -63,8 +75,9 @@ class TestS3Compliance(TestCase):
                     compliance_item_type="s3_bucket",
                     item="mischievous-bucket",
                     findings={
-                        "bucket should have mfa-delete",
+                        "bucket should have a resource policy with secure transport enforced",
                         "bucket should not allow public access",
+                        "bucket should have a resource policy with a default deny action",
                         "bucket should have data expiry tag",
                     },
                 ),
@@ -88,6 +101,16 @@ class TestS3Compliance(TestCase):
                     compliance_item_type="s3_bucket",
                     item="good-bucket-high-sensitivity",
                     findings=set(),
+                ),
+                findings(
+                    account=account("999999999888", "another-account-888"),
+                    compliance_item_type="s3_bucket",
+                    item="bad-bucket-low-sensitivity",
+                    findings={
+                        "bucket should not allow public access",
+                        "bucket should have data expiry tag",
+                        "bucket should be encrypted",
+                    },
                 ),
             },
             notifications,
