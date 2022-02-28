@@ -10,13 +10,13 @@ s3_report = [
                     "name": "good-bucket",
                     "encryption": {"enabled": True},
                     "public_access_block": {"enabled": True},
-                    "mfa_delete": {"enabled": False},
+                    "secure_transport": {},
                     "data_tagging": {"expiry": "not_unset", "sensitivity": "not_unset"},
                 },
                 {
                     "name": "bad-bucket",
                     "encryption": {"enabled": False},
-                    "mfa_delete": {"enabled": False},
+                    "secure_transport": {},
                     "public_access_block": {"enabled": True},
                     "data_tagging": {"expiry": "1-week", "sensitivity": "unset"},
                 },
@@ -33,7 +33,7 @@ s3_report = [
                 {
                     "name": "mischievous-bucket",
                     "encryption": {"enabled": True},
-                    "mfa_delete": {"enabled": False},
+                    "secure_transport": {},
                     "public_access_block": {"enabled": False},
                     "data_tagging": {"expiry": "unset", "sensitivity": "high"},
                 },
@@ -50,9 +50,27 @@ s3_report = [
                 {
                     "name": "good-bucket-high-sensitivity",
                     "encryption": {"enabled": True},
-                    "mfa_delete": {"enabled": True},
+                    "secure_transport": {"enabled": True},
                     "public_access_block": {"enabled": True},
                     "data_tagging": {"expiry": "1-week", "sensitivity": "high"},
+                    "content_deny": {"enabled": True},
+                },
+            ]
+        },
+    },
+    {
+        "account": {
+            "identifier": "999999999888",
+            "name": "another-account-888",
+        },
+        "results": {
+            "buckets": [
+                {
+                    "name": "bad-bucket-low-sensitivity",
+                    "encryption": {"enabled": False},
+                    "secure_transport": {},
+                    "public_access_block": {"enabled": False},
+                    "data_tagging": {"expiry": "unset", "sensitivity": "low"},
                 },
             ]
         },

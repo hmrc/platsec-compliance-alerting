@@ -41,8 +41,10 @@ class S3Compliance(Analyser):
     def _check_high_sensitivity_bucket_rules(self, bucket: Dict[str, Any]) -> Set[str]:
         findings = set()
         if bucket["data_tagging"]["sensitivity"] == "high":
-            if not self._is_mfa_delete(bucket):
-                findings.add("bucket should have mfa-delete")
+            if not self._has_secure_transport(bucket):
+                findings.add("bucket should have a resource policy with secure transport enforced")
+            if not self._has_content_deny(bucket):
+                findings.add("bucket should have a resource policy with a default deny action")
         return findings
 
     def _is_enabled(self, key: str, bucket: Dict[str, Any]) -> bool:
@@ -57,5 +59,8 @@ class S3Compliance(Analyser):
     def _is_private(self, bucket: Dict[str, Any]) -> bool:
         return self._is_enabled("public_access_block", bucket)
 
-    def _is_mfa_delete(self, bucket: Dict[str, Any]) -> bool:
-        return self._is_enabled("mfa_delete", bucket)
+    def _has_secure_transport(self, bucket: Dict[str, Any]) -> bool:
+        return self._is_enabled("secure_transport", bucket)
+
+    def _has_content_deny(self, bucket: Dict[str, Any]) -> bool:
+        return self._is_enabled("content_deny", bucket)
