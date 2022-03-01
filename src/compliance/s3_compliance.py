@@ -29,6 +29,9 @@ class S3Compliance(Analyser):
         if not self._is_tagged("sensitivity", bucket):
             findings.add("bucket should have data sensitivity tag")
 
+        if not self._has_logging(bucket):
+            findings.add("bucket should have logging enabled")
+
         findings.update(self._check_high_sensitivity_bucket_rules(bucket))
 
         return Findings(
@@ -64,3 +67,6 @@ class S3Compliance(Analyser):
 
     def _has_content_deny(self, bucket: Dict[str, Any]) -> bool:
         return self._is_enabled("content_deny", bucket)
+
+    def _has_logging(self, bucket: Dict[str, Any]) -> bool:
+        return self._is_enabled("logging", bucket)

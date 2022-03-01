@@ -12,6 +12,7 @@ s3_report = [
                     "public_access_block": {"enabled": True},
                     "secure_transport": {},
                     "data_tagging": {"expiry": "not_unset", "sensitivity": "not_unset"},
+                    "logging": {"enabled": True},
                 },
                 {
                     "name": "bad-bucket",
@@ -19,6 +20,7 @@ s3_report = [
                     "secure_transport": {},
                     "public_access_block": {"enabled": True},
                     "data_tagging": {"expiry": "1-week", "sensitivity": "unset"},
+                    "logging": {"enabled": False},
                 },
             ]
         },
@@ -36,6 +38,7 @@ s3_report = [
                     "secure_transport": {},
                     "public_access_block": {"enabled": False},
                     "data_tagging": {"expiry": "unset", "sensitivity": "high"},
+                    "logging": {},
                 },
             ]
         },
@@ -54,6 +57,7 @@ s3_report = [
                     "public_access_block": {"enabled": True},
                     "data_tagging": {"expiry": "1-week", "sensitivity": "high"},
                     "content_deny": {"enabled": True},
+                    "logging": {"enabled": True},
                 },
             ]
         },
@@ -71,6 +75,7 @@ s3_report = [
                     "secure_transport": {},
                     "public_access_block": {"enabled": False},
                     "data_tagging": {"expiry": "unset", "sensitivity": "low"},
+                    "logging": {},
                 },
             ]
         },

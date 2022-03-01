@@ -62,6 +62,12 @@ class TestS3Compliance(TestCase):
     def test_bucket_has_content_deny_enforced(self) -> None:
         self.assertTrue(S3Compliance()._is_enabled("content_deny", {"content_deny": {"enabled": True}}))
 
+    def test_bucket_has_logging_unenforced(self) -> None:
+        self.assertFalse(S3Compliance()._is_enabled("logging", {"logging": {}}))
+
+    def test_bucket_has_logging_enforced(self) -> None:
+        self.assertTrue(S3Compliance()._is_enabled("logging", {"logging": {"enabled": True}}))
+
     def test_check(self) -> None:
         audit = Audit(
             type="s3",
@@ -79,6 +85,7 @@ class TestS3Compliance(TestCase):
                         "bucket should not allow public access",
                         "bucket should have a resource policy with a default deny action",
                         "bucket should have data expiry tag",
+                        "bucket should have logging enabled",
                     },
                 ),
                 findings(
@@ -88,6 +95,7 @@ class TestS3Compliance(TestCase):
                     findings={
                         "bucket should be encrypted",
                         "bucket should have data sensitivity tag",
+                        "bucket should have logging enabled",
                     },
                 ),
                 findings(
@@ -110,6 +118,7 @@ class TestS3Compliance(TestCase):
                         "bucket should not allow public access",
                         "bucket should have data expiry tag",
                         "bucket should be encrypted",
+                        "bucket should have logging enabled",
                     },
                 ),
             },
