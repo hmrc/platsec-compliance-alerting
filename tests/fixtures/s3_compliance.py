@@ -38,6 +38,7 @@ s3_report = [
                     "secure_transport": {},
                     "public_access_block": {"enabled": False},
                     "data_tagging": {"expiry": "unset", "sensitivity": "high"},
+                    "logging": {},
                 },
             ]
         },
@@ -74,6 +75,7 @@ s3_report = [
                     "secure_transport": {},
                     "public_access_block": {"enabled": False},
                     "data_tagging": {"expiry": "unset", "sensitivity": "low"},
+                    "logging": {},
                 },
             ]
         },

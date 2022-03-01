@@ -12,6 +12,7 @@ s3_report = [
                     "public_access_block": {"enabled": True},
                     "secure_transport": {},
                     "data_tagging": {"expiry": "not_unset", "sensitivity": "not_unset"},
+                    "logging": {"enabled": True},
                 },
                 {
                     "name": "bad-bucket",
