@@ -79,6 +79,10 @@ class TestComplianceAlerter(TestCase):
         compliance_alerter.main(TestComplianceAlerter.load_json_resource("codebuild_event.json"))
         self._assert_slack_message_sent_to_channel("codebuild-alerts")
 
+    def test_guardduty_sns_event(self) -> None:
+        compliance_alerter.main(TestComplianceAlerter.load_json_resource("guardduty_event.json"))
+        self._assert_slack_message_sent_to_channel("guardduty-alerts")
+
     def test_unknown_sns_event(self) -> None:
         compliance_alerter.main(TestComplianceAlerter.load_json_resource("unknown_sns_event.json"))
         self._assert_no_slack_message_sent()
