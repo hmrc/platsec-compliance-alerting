@@ -167,6 +167,11 @@ class TestComplianceAlerter(TestCase):
             Key="mappings/codebuild",
             Body=json.dumps([{"channel": "codebuild-alerts", "compliance_item_types": ["codebuild"]}]),
         )
+        s3.put_object(
+            Bucket=config,
+            Key="mappings/guardduty",
+            Body=json.dumps([{"channel": "guardduty-alerts", "compliance_item_types": ["guardduty"]}]),
+        )
 
     @staticmethod
     def _setup_ssm_parameters() -> None:
