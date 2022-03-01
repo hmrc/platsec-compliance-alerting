@@ -12,6 +12,7 @@ from src.notification_mapper import NotificationMapper
 from src.slack_notifier import SlackMessage, SlackNotifier
 from src.sns.codebuild import CodeBuild
 from src.sns.codepipeline import CodePipeline
+from src.sns.guardduty import GuardDuty
 
 config = Config()
 
@@ -30,11 +31,13 @@ def handle_sns_events(events: Dict[str, Any]) -> Set[Findings]:
     findings: Set[Findings] = set()
     for record in events["Records"]:
         message = json.loads(record["Sns"]["Message"])
-        type = message["detailType"]
+        type = message.get("detailType") or message.get("detail-type")
         if type == CodePipeline.Type:
             findings.add(CodePipeline().create_finding(message))
         elif type == CodeBuild.Type:
             findings.add(CodeBuild().create_finding(message))
+        elif type == GuardDuty.Type:
+            findings.add(GuardDuty().create_finding(message))
         else:
             getLogger(__name__).warning(f"Received unknown event with detailType '{type}'. Ignoring...")
     return findings
