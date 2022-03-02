@@ -37,7 +37,7 @@ def handle_sns_events(events: Dict[str, Any]) -> Set[Findings]:
         elif type == CodeBuild.Type:
             findings.add(CodeBuild().create_finding(message))
         elif type == GuardDuty.Type:
-            findings.add(GuardDuty().create_finding(message))
+            findings.add(GuardDuty(config).create_finding(message))
         else:
             getLogger(__name__).warning(f"Received unknown event with detailType '{type}'. Ignoring...")
     return findings

@@ -51,6 +51,9 @@ class Config:
     def get_github_webhook_host_ignore_list(self) -> List[str]:
         return self._get_env("GITHUB_WEBHOOK_HOST_IGNORE_LIST").split(",")
 
+    def get_guardduty_runbook_url(self) -> str:
+        return self._get_env("GUARDDUTY_RUNBOOK_URL")
+
     def get_vpc_audit_report_key(self) -> str:
         return self._get_env("VPC_AUDIT_REPORT_KEY")
 

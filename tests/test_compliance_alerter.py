@@ -109,6 +109,7 @@ class TestComplianceAlerter(TestCase):
                 "GITHUB_AUDIT_REPORT_KEY": github_key,
                 "GITHUB_WEBHOOK_REPORT_KEY": github_webhook_key,
                 "GITHUB_WEBHOOK_HOST_IGNORE_LIST": github_webhook_host_ignore_list,
+                "GUARDDUTY_RUNBOOK_URL": "the-gd-runbook",
                 "PASSWORD_POLICY_AUDIT_REPORT_KEY": password_policy_key,
                 "SLACK_API_URL": slack_api_url,
                 "SLACK_USERNAME_KEY": slack_username_key,
