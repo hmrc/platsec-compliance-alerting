@@ -21,11 +21,12 @@ class GuardDuty:
             findings={
                 f"Type: {message['detail']['type']}",
                 f"Severity: {message['detail']['severity']}",
-                f"Account: {message['detail']['accountId']}",
+                f"Account: {self._get_account_name(message['detail']['accountId'])} ({message['detail']['accountId']})",
+                f"Team: {self._get_team_name(message['detail']['accountId'])}",
                 f"Details: {GuardDuty._build_finding_url(message)}",
                 f"First seen: {GuardDuty._traverse(message, 'detail', 'service', 'eventFirstSeen')}",
                 f"Last seen: {GuardDuty._traverse(message, 'detail', 'service', 'eventLastSeen')}",
-                f"Runbook: {self.config.get_guardduty_runbook_url}",
+                f"Runbook: {self.config.get_guardduty_runbook_url()}",
             },
         )
 
@@ -37,5 +38,18 @@ class GuardDuty:
     def _build_finding_url(message: Dict[str, Any]) -> str:
         return (
             f"https://{message['region']}.console.aws.amazon.com/guardduty/home?region={message['region']}#/findings?"
-            f"macros=current&fId={message['detail']['id']}"
+            f"fId={message['detail']['id']}"
         )
+
+    def _get_account_name(self, account_id: str) -> str:
+        for acc_id, acc_name in self.config.get_account_mappings().items():
+            if acc_id == account_id:
+                return acc_name
+        return "unknown"
+
+    def _get_team_name(self, account_id: str) -> str:
+        account_name = self._get_account_name(account_id)
+        for team, accounts in self.config.get_slack_mappings().items():
+            if account_name in accounts:
+                return team
+        return "unknown"

@@ -146,7 +146,7 @@ def test_get_slack_mappings(get_s3_client: Any, monkeypatch: Any) -> None:
     assert {"team-a": ["account-1", "account-2"]} == Config().get_slack_mappings()
 
     get_s3_client.assert_called_with("88", "config-bucket-read-role")
-    s3_client.read_raw_object.assert_called_once_with("config-bucket", "slack-map-file")
+    s3_client.read_raw_object.assert_called_once_with("config-bucket", "guardduty_alerts_mappings/slack-map-file")
 
 
 @patch("src.clients.aws_client_factory.AwsClientFactory.get_s3_client")
@@ -161,4 +161,4 @@ def test_get_account_mappings(get_s3_client: Any, monkeypatch: Any) -> None:
     assert {"1234": "account-1", "5678": "account-2"} == Config().get_account_mappings()
 
     get_s3_client.assert_called_with("88", "config-bucket-read-role")
-    s3_client.read_raw_object.assert_called_once_with("config-bucket", "account-map-file")
+    s3_client.read_raw_object.assert_called_once_with("config-bucket", "guardduty_alerts_mappings/account-map-file")

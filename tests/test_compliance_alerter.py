@@ -96,6 +96,7 @@ class TestComplianceAlerter(TestCase):
         patch.dict(
             os.environ,
             {
+                "ACCOUNT_MAPPINGS_FILENAME": "the-account-mappings",
                 "AWS_ACCESS_KEY_ID": "the-access-key-id",
                 "AWS_SECRET_ACCESS_KEY": "the-secret-access-key",
                 "AWS_DEFAULT_REGION": "us-east-1",
@@ -112,6 +113,7 @@ class TestComplianceAlerter(TestCase):
                 "GUARDDUTY_RUNBOOK_URL": "the-gd-runbook",
                 "PASSWORD_POLICY_AUDIT_REPORT_KEY": password_policy_key,
                 "SLACK_API_URL": slack_api_url,
+                "SLACK_MAPPINGS_FILENAME": "the-slack-mappings",
                 "SLACK_USERNAME_KEY": slack_username_key,
                 "SLACK_TOKEN_KEY": slack_token_key,
                 "SSM_READ_ROLE": "the-ssm-read-role",
@@ -172,6 +174,16 @@ class TestComplianceAlerter(TestCase):
             Bucket=config,
             Key="mappings/guardduty",
             Body=json.dumps([{"channel": "guardduty-alerts", "compliance_item_types": ["guardduty"]}]),
+        )
+        s3.put_object(
+            Bucket=config,
+            Key="guardduty_alerts_mappings/the-account-mappings",
+            Body=json.dumps({"987987987987": "account-1"}),
+        )
+        s3.put_object(
+            Bucket=config,
+            Key="guardduty_alerts_mappings/the-slack-mappings",
+            Body=json.dumps({"team-a": ["account-1", "account-2"]}),
         )
 
     @staticmethod
