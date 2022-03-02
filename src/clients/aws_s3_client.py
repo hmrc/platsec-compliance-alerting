@@ -13,7 +13,8 @@ class AwsS3Client:
 
     def read_object(self, bucket: str, key: str) -> List[Dict[str, Any]]:
         return boto_try(
-            lambda: list(loads(self._read_object(bucket, key))), f"failed to read object '{key}' from bucket '{bucket}'"
+            lambda: list(loads(self.read_raw_object(bucket, key))),
+            f"failed to read object '{key}' from bucket '{bucket}'",
         )
 
     def list_objects(self, bucket: str, prefix: str = "", max_keys: int = 1000) -> List[str]:
@@ -22,7 +23,7 @@ class AwsS3Client:
             f"failed to list objects{' with prefix ' + prefix if prefix else ''} from bucket '{bucket}'",
         )
 
-    def _read_object(self, bucket: str, key: str) -> str:
+    def read_raw_object(self, bucket: str, key: str) -> str:
         with BytesIO() as buffer:
             self._s3.download_fileobj(Bucket=bucket, Key=key, Fileobj=buffer)
             return buffer.getvalue().decode("utf-8")

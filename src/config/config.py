@@ -1,4 +1,5 @@
 from itertools import chain
+from json import loads
 from os import environ
 from typing import Callable, Dict, Set, List
 
@@ -88,6 +89,14 @@ class Config:
 
     def get_notification_mappings(self) -> Set[NotificationMappingConfig]:
         return self._fetch_config_files("mappings/", NotificationMappingConfig.from_dict)
+
+    def get_slack_mappings(self) -> Dict[str, List[str]]:
+        s3 = AwsClientFactory().get_s3_client(self.get_aws_account(), self.get_config_bucket_read_role())
+        return dict(loads(s3.read_raw_object(self.get_config_bucket(), "slacktags.json")))
+
+    def get_account_mappings(self) -> Dict[str, str]:
+        s3 = AwsClientFactory().get_s3_client(self.get_aws_account(), self.get_config_bucket_read_role())
+        return dict(loads(s3.read_raw_object(self.get_config_bucket(), "accountId.json")))
 
     @staticmethod
     def _get_env(key: str) -> str:
