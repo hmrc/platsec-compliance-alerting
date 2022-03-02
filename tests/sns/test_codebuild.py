@@ -1,8 +1,8 @@
 import json
-import os
-from typing import Any
 
 from src.sns.codebuild import CodeBuild
+
+from tests.sns import load_json_resource
 
 
 def test_event_to_findings() -> None:
@@ -26,9 +26,3 @@ def test_event_to_findings() -> None:
         "ua-test/build/ua-test%3A7cf9f577-4069-4010-a467-f0640dfc0afb/?region=eu-west-2"
     )
     assert finding.findings == frozenset({f"<{expected_build_link}|build> | <{expected_logs_link}|logs>"})
-
-
-def load_json_resource(filename: str) -> Any:
-    with open(os.path.join("tests", "resources", filename), "r") as json_file:
-        resource = json.load(json_file)
-    return resource

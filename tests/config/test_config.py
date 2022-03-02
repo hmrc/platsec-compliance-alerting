@@ -26,6 +26,7 @@ from src.slack_notifier import SlackNotifierConfig
         ("GITHUB_AUDIT_REPORT_KEY", Config().get_github_audit_report_key),
         ("GITHUB_WEBHOOK_REPORT_KEY", Config().get_github_webhook_report_key),
         ("GITHUB_WEBHOOK_HOST_IGNORE_LIST", Config().get_github_webhook_host_ignore_key),
+        ("GUARDDUTY_RUNBOOK_URL", Config().get_guardduty_runbook_url),
         ("VPC_AUDIT_REPORT_KEY", Config().get_vpc_audit_report_key),
         ("PASSWORD_POLICY_AUDIT_REPORT_KEY", Config().get_password_policy_audit_report_key),
         ("SLACK_API_URL", Config().get_slack_api_url),
@@ -131,3 +132,33 @@ def test_get_report_s3_client(get_s3_client: Any, monkeypatch: Any) -> None:
     assert Config().get_report_s3_client() is s3_client
 
     get_s3_client.assert_called_with("88", "read-report")
+
+
+@patch("src.clients.aws_client_factory.AwsClientFactory.get_s3_client")
+def test_get_slack_mappings(get_s3_client: Any, monkeypatch: Any) -> None:
+    monkeypatch.setenv("AWS_ACCOUNT", "88")
+    monkeypatch.setenv("CONFIG_BUCKET_READ_ROLE", "config-bucket-read-role")
+    monkeypatch.setenv("CONFIG_BUCKET", "config-bucket")
+    monkeypatch.setenv("SLACK_MAPPINGS_FILENAME", "slack-map-file")
+    s3_client = Mock(spec=AwsS3Client, read_raw_object=Mock(return_value='{"team-a": ["account-1", "account-2"]}'))
+    get_s3_client.return_value = s3_client
+
+    assert {"team-a": ["account-1", "account-2"]} == Config().get_slack_mappings()
+
+    get_s3_client.assert_called_with("88", "config-bucket-read-role")
+    s3_client.read_raw_object.assert_called_once_with("config-bucket", "guardduty_alerts_mappings/slack-map-file")
+
+
+@patch("src.clients.aws_client_factory.AwsClientFactory.get_s3_client")
+def test_get_account_mappings(get_s3_client: Any, monkeypatch: Any) -> None:
+    monkeypatch.setenv("ACCOUNT_MAPPINGS_FILENAME", "account-map-file")
+    monkeypatch.setenv("AWS_ACCOUNT", "88")
+    monkeypatch.setenv("CONFIG_BUCKET_READ_ROLE", "config-bucket-read-role")
+    monkeypatch.setenv("CONFIG_BUCKET", "config-bucket")
+    s3_client = Mock(spec=AwsS3Client, read_raw_object=Mock(return_value='{"1234": "account-1", "5678": "account-2"}'))
+    get_s3_client.return_value = s3_client
+
+    assert {"1234": "account-1", "5678": "account-2"} == Config().get_account_mappings()
+
+    get_s3_client.assert_called_with("88", "config-bucket-read-role")
+    s3_client.read_raw_object.assert_called_once_with("config-bucket", "guardduty_alerts_mappings/account-map-file")

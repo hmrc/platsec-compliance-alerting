@@ -79,6 +79,10 @@ class TestComplianceAlerter(TestCase):
         compliance_alerter.main(TestComplianceAlerter.load_json_resource("codebuild_event.json"))
         self._assert_slack_message_sent_to_channel("codebuild-alerts")
 
+    def test_guardduty_sns_event(self) -> None:
+        compliance_alerter.main(TestComplianceAlerter.load_json_resource("guardduty_event.json"))
+        self._assert_slack_message_sent_to_channel("guardduty-alerts")
+
     def test_unknown_sns_event(self) -> None:
         compliance_alerter.main(TestComplianceAlerter.load_json_resource("unknown_sns_event.json"))
         self._assert_no_slack_message_sent()
@@ -92,6 +96,7 @@ class TestComplianceAlerter(TestCase):
         patch.dict(
             os.environ,
             {
+                "ACCOUNT_MAPPINGS_FILENAME": "the-account-mappings",
                 "AWS_ACCESS_KEY_ID": "the-access-key-id",
                 "AWS_SECRET_ACCESS_KEY": "the-secret-access-key",
                 "AWS_DEFAULT_REGION": "us-east-1",
@@ -105,12 +110,15 @@ class TestComplianceAlerter(TestCase):
                 "GITHUB_AUDIT_REPORT_KEY": github_key,
                 "GITHUB_WEBHOOK_REPORT_KEY": github_webhook_key,
                 "GITHUB_WEBHOOK_HOST_IGNORE_LIST": github_webhook_host_ignore_list,
+                "GUARDDUTY_RUNBOOK_URL": "the-gd-runbook",
                 "PASSWORD_POLICY_AUDIT_REPORT_KEY": password_policy_key,
                 "SLACK_API_URL": slack_api_url,
+                "SLACK_MAPPINGS_FILENAME": "the-slack-mappings",
                 "SLACK_USERNAME_KEY": slack_username_key,
                 "SLACK_TOKEN_KEY": slack_token_key,
                 "SSM_READ_ROLE": "the-ssm-read-role",
                 "VPC_AUDIT_REPORT_KEY": vpc_key,
+                "LOG_LEVEL": "DEBUG",
             },
             clear=True,
         ).start()
@@ -162,6 +170,21 @@ class TestComplianceAlerter(TestCase):
             Bucket=config,
             Key="mappings/codebuild",
             Body=json.dumps([{"channel": "codebuild-alerts", "compliance_item_types": ["codebuild"]}]),
+        )
+        s3.put_object(
+            Bucket=config,
+            Key="mappings/guardduty",
+            Body=json.dumps([{"channel": "guardduty-alerts", "compliance_item_types": ["guardduty"]}]),
+        )
+        s3.put_object(
+            Bucket=config,
+            Key="guardduty_alerts_mappings/the-account-mappings",
+            Body=json.dumps({"987987987987": "account-1"}),
+        )
+        s3.put_object(
+            Bucket=config,
+            Key="guardduty_alerts_mappings/the-slack-mappings",
+            Body=json.dumps({"team-a": ["account-1", "account-2"]}),
         )
 
     @staticmethod

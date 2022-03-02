@@ -1,8 +1,8 @@
 import json
-import os
-from typing import Any
 
 from src.sns.codepipeline import CodePipeline
+
+from tests.sns import load_json_resource
 
 
 def test_event_to_findings() -> None:
@@ -20,9 +20,3 @@ def test_event_to_findings() -> None:
     )
 
     assert next(iter(finding.findings)) == f"<{expected_build_url}|pipeline link>"
-
-
-def load_json_resource(filename: str) -> Any:
-    with open(os.path.join("tests", "resources", filename), "r") as json_file:
-        resource = json.load(json_file)
-    return resource

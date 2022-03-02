@@ -1,4 +1,5 @@
 from itertools import chain
+from json import loads
 from os import environ
 from typing import Callable, Dict, Set, List
 
@@ -51,6 +52,9 @@ class Config:
     def get_github_webhook_host_ignore_list(self) -> List[str]:
         return self._get_env("GITHUB_WEBHOOK_HOST_IGNORE_LIST").split(",")
 
+    def get_guardduty_runbook_url(self) -> str:
+        return self._get_env("GUARDDUTY_RUNBOOK_URL")
+
     def get_vpc_audit_report_key(self) -> str:
         return self._get_env("VPC_AUDIT_REPORT_KEY")
 
@@ -85,6 +89,20 @@ class Config:
 
     def get_notification_mappings(self) -> Set[NotificationMappingConfig]:
         return self._fetch_config_files("mappings/", NotificationMappingConfig.from_dict)
+
+    def get_slack_mappings_filename(self) -> str:
+        return f"guardduty_alerts_mappings/{self._get_env('SLACK_MAPPINGS_FILENAME')}"
+
+    def get_slack_mappings(self) -> Dict[str, List[str]]:
+        s3 = AwsClientFactory().get_s3_client(self.get_aws_account(), self.get_config_bucket_read_role())
+        return dict(loads(s3.read_raw_object(self.get_config_bucket(), self.get_slack_mappings_filename())))
+
+    def get_account_mappings_filename(self) -> str:
+        return f"guardduty_alerts_mappings/{self._get_env('ACCOUNT_MAPPINGS_FILENAME')}"
+
+    def get_account_mappings(self) -> Dict[str, str]:
+        s3 = AwsClientFactory().get_s3_client(self.get_aws_account(), self.get_config_bucket_read_role())
+        return dict(loads(s3.read_raw_object(self.get_config_bucket(), self.get_account_mappings_filename())))
 
     @staticmethod
     def _get_env(key: str) -> str:
