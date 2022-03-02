@@ -118,6 +118,7 @@ class TestComplianceAlerter(TestCase):
                 "SLACK_TOKEN_KEY": slack_token_key,
                 "SSM_READ_ROLE": "the-ssm-read-role",
                 "VPC_AUDIT_REPORT_KEY": vpc_key,
+                "LOG_LEVEL": "DEBUG",
             },
             clear=True,
         ).start()

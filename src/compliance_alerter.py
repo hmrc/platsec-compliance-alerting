@@ -1,4 +1,5 @@
-from logging import getLogger
+import logging
+from logging import Logger
 from typing import Any, Dict, List, Set
 import json
 
@@ -18,13 +19,26 @@ config = Config()
 
 
 def main(events: Dict[str, Any]) -> None:
+    logger = configure_logging()
+
     if "EventSource" in events["Records"][0] and events["Records"][0]["EventSource"] == "aws:sns":
         findings = handle_sns_events(events)
     else:
         findings = analyse(fetch(events))
 
     slack_messages = map(filter(findings))
-    send(slack_messages)
+    send(logger, slack_messages)
+
+
+def configure_logging() -> Logger:
+    logger = logging.getLogger()
+    logger.setLevel(Config.get_log_level())
+    logging.getLogger("botocore").setLevel(logging.ERROR)
+    logging.getLogger("boto3").setLevel(logging.ERROR)
+    logging.getLogger("requests").setLevel(logging.ERROR)
+    logging.getLogger("urllib3").setLevel(logging.ERROR)
+    logging.getLogger("s3transfer").setLevel(logging.ERROR)
+    return logger
 
 
 def handle_sns_events(events: Dict[str, Any]) -> Set[Findings]:
@@ -39,7 +53,7 @@ def handle_sns_events(events: Dict[str, Any]) -> Set[Findings]:
         elif type == GuardDuty.Type:
             findings.add(GuardDuty(config).create_finding(message))
         else:
-            getLogger(__name__).warning(f"Received unknown event with detailType '{type}'. Ignoring...")
+            logging.getLogger(__name__).warning(f"Received unknown event with detailType '{type}'. Ignoring...")
     return findings
 
 
@@ -59,5 +73,6 @@ def map(notifications: Set[Findings]) -> List[SlackMessage]:
     return NotificationMapper().do_map(notifications, config.get_notification_mappings())
 
 
-def send(slack_messages: List[SlackMessage]) -> None:
+def send(logger: Logger, slack_messages: List[SlackMessage]) -> None:
+    logger.debug("Sending the following messages: %s", slack_messages)
     SlackNotifier(config.get_slack_notifier_config()).send_messages(slack_messages)
