@@ -1,0 +1,115 @@
+{
+  "version": "0",
+  "id": "29cc9880-571c-ca45-f9d4-6f8592ecc0fe",
+  "detail-type": "GuardDuty Finding",
+  "source": "aws.guardduty",
+  "account": "123456789012",
+  "time": "2022-03-01T14:30:00Z",
+  "region": "eu-west-2",
+  "resources": [],
+  "detail": {
+    "schemaVersion": "2.0",
+    "accountId": "123456789012",
+    "region": "eu-west-2",
+    "partition": "aws",
+    "id": "a6bfa2f07893be4f3c3174d5af7e2f80",
+    "arn": "arn:aws:guardduty:eu-west-2:123456789012:detector/30bb9f186bb1f62568740093ffcee96b/finding/a6bfa2f07893be4f3c3174d5af7e2f80",
+    "type": "Policy:S3/BucketBlockPublicAccessDisabled",
+    "resource": {
+      "resourceType": "AccessKey",
+      "accessKeyDetails": {
+        "accessKeyId": "ASIAUN7WV6J25JBV2AW4",
+        "principalId": "AROAUN7WV6J26LUPOL64R:1646143845616685103",
+        "userType": "AssumedRole",
+        "userName": "RoleSandboxAccess"
+      },
+      "s3BucketDetails": [
+        {
+          "arn": "arn:aws:s3:::test-gd-324237984731208478901374",
+          "name": "test-gd-324237984731208478901374",
+          "defaultServerSideEncryption": null,
+          "createdAt": 1.646144449E9,
+          "tags": [],
+          "owner": {
+            "id": "89cb63da4b300f2cbb24354e2b51a573c56087fdc9b0c1de9cfde8b473f78c39"
+          },
+          "publicAccess": {
+            "permissionConfiguration": {
+              "bucketLevelPermissions": {
+                "accessControlList": {
+                  "allowsPublicReadAccess": false,
+                  "allowsPublicWriteAccess": false
+                },
+                "bucketPolicy": {
+                  "allowsPublicReadAccess": false,
+                  "allowsPublicWriteAccess": false
+                },
+                "blockPublicAccess": {
+                  "ignorePublicAcls": false,
+                  "restrictPublicBuckets": false,
+                  "blockPublicAcls": false,
+                  "blockPublicPolicy": false
+                }
+              },
+              "accountLevelPermissions": {
+                "blockPublicAccess": {
+                  "ignorePublicAcls": false,
+                  "restrictPublicBuckets": false,
+                  "blockPublicAcls": false,
+                  "blockPublicPolicy": false
+                }
+              }
+            },
+            "effectivePermission": "NOT_PUBLIC"
+          },
+          "type": "Destination"
+        }
+      ]
+    },
+    "service": {
+      "serviceName": "guardduty",
+      "detectorId": "30bb9f186bb1f62568740093ffcee96b",
+      "action": {
+        "actionType": "AWS_API_CALL",
+        "awsApiCallAction": {
+          "api": "PutBucketPublicAccessBlock",
+          "serviceName": "s3.amazonaws.com",
+          "callerType": "Remote IP",
+          "remoteIpDetails": {
+            "ipAddressV4": "111.111.111.111",
+            "organization": {
+              "asn": "6871",
+              "asnOrg": "British Telecommunications PLC",
+              "isp": "bt",
+              "org": "bt"
+            },
+            "country": {
+              "countryName": "United Kingdom"
+            },
+            "city": {
+              "cityName": "London"
+            },
+            "geoLocation": {
+              "lat": 0,
+              "lon": -0
+            }
+          },
+          "affectedResources": {
+            "AWS::S3::Bucket": "test-gd-324237984731208478901374"
+          }
+        }
+      },
+      "resourceRole": "TARGET",
+      "additionalInfo": {},
+      "eventFirstSeen": "2022-03-01T14:20:48.000Z",
+      "eventLastSeen": "2022-03-01T14:20:49.000Z",
+      "archived": false,
+      "count": 1
+    },
+    "severity": 2,
+    "createdAt": "2022-03-01T14:27:24.071Z",
+    "updatedAt": "2022-03-01T14:27:24.071Z",
+    "title": "Amazon S3 Block Public Access was disabled for S3 bucket test-gd-324237984731208478901374.",
+    "description": "Amazon S3 Block Public Access was disabled for S3 bucket test-gd-324237984731208478901374 by RoleSandboxAccess calling PutBucketPublicAccessBlock. If this behavior is not expected, it may indicate a configuration mistake or that your credentials are compromised."
+  }
+}
