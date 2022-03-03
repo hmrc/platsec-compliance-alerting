@@ -18,14 +18,10 @@ from src.sns.guardduty import GuardDuty
 config = Config()
 
 
-def main(events: Dict[str, Any]) -> None:
+def main(event: Dict[str, Any]) -> None:
     logger = configure_logging()
 
-    if "EventSource" in events["Records"][0] and events["Records"][0]["EventSource"] == "aws:sns":
-        findings = handle_sns_events(events)
-    else:
-        findings = analyse(fetch(events))
-
+    findings = handle_sns_event(event) if is_sns_event(event) else analyse(fetch(event))
     slack_messages = map(filter(findings))
     send(logger, slack_messages)
 
@@ -41,7 +37,11 @@ def configure_logging() -> Logger:
     return logger
 
 
-def handle_sns_events(events: Dict[str, Any]) -> Set[Findings]:
+def is_sns_event(event: Dict[str, Any]) -> bool:
+    return "EventSource" in event.get("Records", [{}])[0] and event["Records"][0].get("EventSource") == "aws:sns"
+
+
+def handle_sns_event(events: Dict[str, Any]) -> Set[Findings]:
     findings: Set[Findings] = set()
     for record in events["Records"]:
         message = json.loads(record["Sns"]["Message"])
