@@ -20,6 +20,7 @@ config = Config()
 
 def main(events: Dict[str, Any]) -> None:
     logger = configure_logging()
+    logger.debug("Received the following events: %s", events)
 
     if "EventSource" in events["Records"][0] and events["Records"][0]["EventSource"] == "aws:sns":
         findings = handle_sns_events(events)
