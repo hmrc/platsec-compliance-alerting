@@ -24,11 +24,10 @@ def test_event_to_findings(*_: Mock) -> None:
     assert finding.findings == {
         "*Type:* `Policy:S3/BucketBlockPublicAccessDisabled`",
         "*Severity:* `2`",
-        "*Team:* <team-a>",
-        "*First seen:* 2022-03-01T14:20:48.000Z",
-        "*Last seen:* 2022-03-01T14:20:49.000Z",
+        "*Team:* team-a",
+        "*Timestamp:* 2022-03-01 14:20:49+00:00",
         (
             "*Links:* <https://eu-west-2.console.aws.amazon.com/guardduty/home?region=eu-west-2#/findings?fId=a6bfa2f07"
-            "|GuardDuty Console> <the-runbook-url|Runbook>"
+            "|GuardDuty Console> | <the-runbook-url|Runbook>"
         ),
     }
