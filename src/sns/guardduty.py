@@ -1,3 +1,4 @@
+from dateutil import parser
 from functools import reduce
 from typing import Dict, Any
 
@@ -24,10 +25,9 @@ class GuardDuty:
             findings={
                 f"*Type:* `{message['detail']['type']}`",
                 f"*Severity:* `{message['detail']['severity']}`",
-                f"*Team:* <{self._get_team_name(account_name)}>",
+                f"*Team:* {self._get_team_name(account_name)}",
                 f"*Links:* {self._build_links(message)}",
-                f"*First seen:* {GuardDuty._traverse(message, 'detail', 'service', 'eventFirstSeen')}",
-                f"*Last seen:* {GuardDuty._traverse(message, 'detail', 'service', 'eventLastSeen')}",
+                f"*Timestamp:* {parser.parse(GuardDuty._traverse(message, 'detail', 'service', 'eventLastSeen'))}",
             },
         )
 
@@ -41,7 +41,7 @@ class GuardDuty:
             f"fId={message['detail']['id']}"
         )
         runbook_link = self.config.get_guardduty_runbook_url()
-        return f"<{gd_link}|GuardDuty Console> <{runbook_link}|Runbook>"
+        return f"<{gd_link}|GuardDuty Console> | <{runbook_link}|Runbook>"
 
     def _get_account_name(self, account_id: str) -> str:
         for acc_id, acc_name in self.config.get_account_mappings().items():
