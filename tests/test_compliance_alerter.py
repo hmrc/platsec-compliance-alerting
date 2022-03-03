@@ -12,6 +12,7 @@ import json
 from moto import mock_s3, mock_ssm, mock_sts
 
 from src import compliance_alerter
+from src.data.exceptions import UnsupportedEventException
 
 from tests.fixtures.github_compliance import github_report
 from tests.fixtures.github_webhook_compliance import github_webhook_report
@@ -85,6 +86,11 @@ class TestComplianceAlerter(TestCase):
 
     def test_unknown_sns_event(self) -> None:
         compliance_alerter.main(TestComplianceAlerter.load_json_resource("unknown_sns_event.json"))
+        self._assert_no_slack_message_sent()
+
+    def test_unsupported_event(self) -> None:
+        with self.assertRaisesRegex(UnsupportedEventException, "a_value"):
+            compliance_alerter.main({"a_key": "a_value"})
         self._assert_no_slack_message_sent()
 
     @staticmethod
