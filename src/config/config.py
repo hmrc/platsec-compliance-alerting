@@ -6,6 +6,7 @@ from typing import Callable, Dict, Set, List
 from src import T, error
 from src.clients.aws_s3_client import AwsS3Client
 from src.clients.aws_client_factory import AwsClientFactory
+from src.clients.aws_org_client import AwsOrgClient
 from src.config.notification_filter_config import NotificationFilterConfig
 from src.config.notification_mapping_config import NotificationMappingConfig
 from src.data.exceptions import ComplianceAlertingException, MissingConfigException, InvalidConfigException
@@ -73,6 +74,12 @@ class Config:
     def get_ssm_read_role(self) -> str:
         return self._get_env("SSM_READ_ROLE")
 
+    def get_org_account(self) -> str:
+        return self._get_env("ORG_ACCOUNT")
+
+    def get_org_read_role(self) -> str:
+        return self._get_env("ORG_READ_ROLE")
+
     def get_slack_notifier_config(self) -> SlackNotifierConfig:
         ssm = AwsClientFactory().get_ssm_client(self.get_aws_account(), self.get_ssm_read_role())
         return SlackNotifierConfig(
@@ -83,6 +90,9 @@ class Config:
 
     def get_report_s3_client(self) -> AwsS3Client:
         return AwsClientFactory().get_s3_client(self.get_aws_account(), self.get_report_bucket_read_role())
+
+    def get_org_client(self) -> AwsOrgClient:
+        return AwsClientFactory().get_org_client(self.get_org_account(), self.get_org_read_role())
 
     def get_notification_filters(self) -> Set[NotificationFilterConfig]:
         return self._fetch_config_files("filters/", NotificationFilterConfig.from_dict)
