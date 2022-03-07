@@ -5,7 +5,7 @@ from src.clients.aws_org_client import AwsOrgClient
 import boto3
 
 
-@mock_organizations
+@mock_organizations  # type: ignore
 def test_get_account_details() -> None:
     client = boto3.client("organizations")
 
@@ -20,7 +20,7 @@ def test_get_account_details() -> None:
     assert result.identifier == account_id
 
 
-@mock_organizations
+@mock_organizations  # type: ignore
 def test_get_account_details_fails() -> None:
     client = boto3.client("organizations")
 

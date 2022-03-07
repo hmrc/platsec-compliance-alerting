@@ -98,13 +98,13 @@ class TestComplianceAlerter(TestCase):
         self._assert_slack_message_sent_to_channel("the-alerting-channel")
         self._assert_slack_message_sent("test-account-name")
 
-    def set_event_account_id(self, account_id, test_event):
+    def set_event_account_id(self, account_id: str, test_event: Dict[str, Any]) -> Dict[str, Any]:
         # moto does not let us set the expected account id
         # so we change the event to match the mocked value
         message = json.loads(test_event["Records"][0]["Sns"]["Message"])
         message["detail"]["accountId"] = account_id
         test_event["Records"][0]["Sns"]["Message"] = json.dumps(message)
-        return test_event
+        return dict(test_event)
 
     def test_unknown_sns_event(self) -> None:
         compliance_alerter.main(TestComplianceAlerter.load_json_resource("unknown_sns_event.json"))
@@ -230,7 +230,7 @@ class TestComplianceAlerter(TestCase):
         account_id = org.create_account(AccountName="test-account-name", Email="example@example.com")[
             "CreateAccountStatus"
         ]["AccountId"]
-        return account_id
+        return str(account_id)
 
     @staticmethod
     def _delete_ssm_parameters() -> None:
