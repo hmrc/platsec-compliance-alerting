@@ -7,6 +7,7 @@ from typing import Any, Dict
 class Account:
     identifier: str
     name: str = ""
+    slack_handle: str = ""
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Account):

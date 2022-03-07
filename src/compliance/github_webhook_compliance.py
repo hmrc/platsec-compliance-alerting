@@ -4,12 +4,14 @@ from urllib.parse import urlparse
 from src.compliance.analyser import Analyser
 from src.config.config import Config
 from src.data.audit import Audit
-from src.data.account import Account
 from src.data.findings import Findings
 
 
 class GithubWebhookCompliance(Analyser):
     webhooks: Dict[str, Set[str]] = {}
+
+    def __init__(self, config: Config):
+        self.config = config
 
     def analyse(self, audit: Audit) -> Set[Findings]:
         for repositories in audit.report:
@@ -37,7 +39,7 @@ class GithubWebhookCompliance(Analyser):
 
     def _set_all_findings(self, webhook: str, findings: Set[str]) -> Findings:
         return Findings(
-            Account("Github webhook", f"`{webhook}`"),
+            description=f"`{webhook}`",
             compliance_item_type="github_repository_webhook",
             item=webhook,
             findings=findings,
@@ -53,5 +55,4 @@ class GithubWebhookCompliance(Analyser):
         return bool(host in self._get_ignore_list())
 
     def _get_ignore_list(self) -> List[str]:
-        config = Config()
-        return config.get_github_webhook_host_ignore_list()
+        return self.config.get_github_webhook_host_ignore_list()

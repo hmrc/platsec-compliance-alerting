@@ -1,6 +1,9 @@
 from unittest import TestCase
+from unittest.mock import Mock
 
+from src.clients.aws_org_client import AwsOrgClient
 from src.config.notification_mapping_config import NotificationMappingConfig
+from src.data.account import Account
 from src.notification_mapper import NotificationMapper
 from src.slack_notifier import SlackMessage
 
@@ -11,9 +14,19 @@ findings_a = findings(item="item-a", findings={"a-1", "a-2"}, account=account(id
 findings_b = findings(item="item-b", findings={"finding b"}, account=account(identifier="222", name="aaa"))
 findings_c = findings(item="item-c", findings={"finding c"}, account=account(identifier="333", name="ccc"))
 
-msg_a = SlackMessage(["central", "channel-2"], "bbb (111)", "item-a", "a-1\na-2", "#ff4d4d")
-msg_b = SlackMessage(["central", "channel-1"], "aaa (222)", "item-b", "finding b", "#ff4d4d")
-msg_c = SlackMessage(["central", "channel-1", "channel-2"], "ccc (333)", "item-c", "finding c", "#ff4d4d")
+msg_a = SlackMessage(
+    channels=["central", "channel-2"], header="aaa (111) team-a", title="item-a", text="a-1\na-2", color="#ff4d4d"
+)
+msg_b = SlackMessage(
+    channels=["central", "channel-1"], header="bbb (222) team-a", title="item-b", text="finding b", color="#ff4d4d"
+)
+msg_c = SlackMessage(
+    channels=["central", "channel-1", "channel-2"],
+    header="ccc (333) team-b",
+    title="item-c",
+    text="finding c",
+    color="#ff4d4d",
+)
 
 
 class TestNotificationMapper(TestCase):
@@ -24,8 +37,16 @@ class TestNotificationMapper(TestCase):
 
         all_findings = {findings_a, findings_b, findings_c}
         mappings = {mapping_0, mapping_1, mapping_2}
-        slack_messages = NotificationMapper().do_map(all_findings, mappings)
-        self.assertEqual([msg_b, msg_a, msg_c], slack_messages)
+
+        mock_client = Mock(spec=AwsOrgClient)
+        mock_client.get_account.side_effect = lambda account_id: Account(
+            name=({"111": "aaa", "222": "bbb", "333": "ccc"}[account_id]),
+            identifier=account_id,
+            slack_handle=({"111": "team-a", "222": "team-a", "333": "team-b"}[account_id]),
+        )
+
+        slack_messages = NotificationMapper().do_map(all_findings, mappings, mock_client)
+        assert slack_messages == [msg_a, msg_b, msg_c]
 
     def test_findings_mapper_with_account_mapping(self) -> None:
         mapping_0 = NotificationMappingConfig("central")
@@ -35,31 +56,48 @@ class TestNotificationMapper(TestCase):
 
         all_findings = {findings_a, findings_b, findings_c}
         mappings = {mapping_0, mapping_1, mapping_2, mapping_3}
-        slack_messages = NotificationMapper().do_map(all_findings, mappings)
-        self.assertEqual([msg_b, msg_a, msg_c], slack_messages)
+
+        mock_client = Mock(spec=AwsOrgClient)
+        mock_client.get_account.side_effect = lambda account_id: Account(
+            name=({"111": "aaa", "222": "bbb", "333": "ccc"}[account_id]),
+            identifier=account_id,
+            slack_handle={"111": "team-a", "222": "team-a", "333": "team-b"}[account_id],
+        )
+
+        slack_messages = NotificationMapper().do_map(all_findings, mappings, mock_client)
+        assert slack_messages == [msg_a, msg_b, msg_c]
 
     def test_can_send_item_types_to_specific_channel(self) -> None:
         mapping_1 = NotificationMappingConfig("channel-1", compliance_item_types=["s3_bucket"])
         mapping_2 = NotificationMappingConfig("channel-2", compliance_item_types=["iam_access_key"])
 
-        bucket_findings = findings(compliance_item_type="s3_bucket", account=account(name="a"))
-        access_key_findings = findings(compliance_item_type="iam_access_key", account=account(name="b"))
-        slack_messages = NotificationMapper().do_map(
-            {bucket_findings, access_key_findings},
-            {mapping_1, mapping_2},
+        bucket_findings = findings(
+            item="test-1", compliance_item_type="s3_bucket", account=account(name="aaa", identifier="111")
         )
-        self.assertIn("channel-1", slack_messages[0].channels)
-        self.assertIn("channel-2", slack_messages[1].channels)
+        access_key_findings = findings(
+            item="test-2", compliance_item_type="iam_access_key", account=account(name="bbb", identifier="222")
+        )
+
+        mock = Mock(spec=AwsOrgClient)
+        mock.get_account.return_value = account()
+
+        slack_messages = NotificationMapper().do_map(
+            {bucket_findings, access_key_findings}, {mapping_1, mapping_2}, mock
+        )
+        assert "channel-1" in slack_messages[0].channels
+        assert "channel-2" in slack_messages[1].channels
 
     def test_channel_with_no_filters_gets_all_notifications(self) -> None:
         mapping = NotificationMappingConfig("all-channel")
         bucket_findings = findings(compliance_item_type="s3_bucket", account=account(name="a"))
         access_key_findings = findings(compliance_item_type="iam_access_key", account=account(name="b"))
 
-        slack_messages = NotificationMapper().do_map(
-            {bucket_findings, access_key_findings},
-            {mapping},
+        mock_client = Mock(spec=AwsOrgClient)
+        mock_client.get_account.side_effect = lambda account_id: Account(
+            name=({"1234": "team-a"}[account_id]), identifier=account_id
         )
+
+        slack_messages = NotificationMapper().do_map({bucket_findings, access_key_findings}, {mapping}, mock_client)
 
         self.assertEqual(2, len(slack_messages))
         self.assertEqual([["all-channel"], ["all-channel"]], [sm.channels for sm in slack_messages])
@@ -74,9 +112,15 @@ class TestNotificationMapper(TestCase):
         access_key_findings = findings(compliance_item_type="iam_access_key", account=acct_a, item="key")
         unmapped_findings = findings(compliance_item_type="s3_bucket", account=account(name="b", identifier="2"))
 
+        mock_client = Mock(spec=AwsOrgClient)
+        mock_client.get_account.side_effect = lambda account_id: Account(
+            name={"1": "aaa", "2": "bbb"}[account_id],
+            identifier=account_id,
+            slack_handle={"1": "team-a", "2": "team-b"}[account_id],
+        )
+
         slack_messages = NotificationMapper().do_map(
-            {bucket_findings, access_key_findings, unmapped_findings},
-            {mapping_1, mapping_2},
+            {bucket_findings, access_key_findings, unmapped_findings}, {mapping_1, mapping_2}, mock_client
         )
 
         ch_1_messages = [sm for sm in slack_messages if "channel-1" in sm.channels]
@@ -89,7 +133,7 @@ class TestNotificationMapper(TestCase):
         description = "additional context about the item"
         f = findings(description=description, findings={"finding-a", "finding-b"})
 
-        slack_messages = NotificationMapper().do_map({f}, set())
+        slack_messages = NotificationMapper().do_map({f}, set(), Mock(spec=AwsOrgClient))
 
         expected_text = f"{description}\n\nfinding-a\nfinding-b"
         self.assertEqual(expected_text, slack_messages[0].text)

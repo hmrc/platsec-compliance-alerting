@@ -2,7 +2,7 @@ from unittest import TestCase
 from unittest.mock import patch
 
 import os
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import boto3
 import httpretty
@@ -42,6 +42,7 @@ slack_token_key = "the-slack-token-key"
 @httpretty.activate
 class TestComplianceAlerter(TestCase):
     def setUp(self) -> None:
+        self._account_id = self._setup_org_sub_account()
         self._setup_environment()
         self._setup_report_bucket()
         self._setup_config_bucket()
@@ -57,6 +58,7 @@ class TestComplianceAlerter(TestCase):
         compliance_alerter.main(self.build_event(s3_key))
         self._assert_slack_message_sent_to_channel("the-alerting-channel")
         self._assert_slack_message_sent("bad-bucket")
+        self._assert_slack_message_sent("@some-team-name")
 
     def test_compliance_alerter_main_github_audit(self) -> None:
         compliance_alerter.main(self.build_event(github_key))
@@ -72,23 +74,36 @@ class TestComplianceAlerter(TestCase):
         compliance_alerter.main(self.build_event(vpc_key))
         self._assert_slack_message_sent_to_channel("the-alerting-channel")
         self._assert_slack_message_sent("VPC flow logs compliance enforcement success")
+        self._assert_slack_message_sent("@some-team-name")
 
     def test_compliance_alerter_main_password_policy_audit(self) -> None:
         compliance_alerter.main(self.build_event(password_policy_key))
         self._assert_slack_message_sent_to_channel("the-alerting-channel")
         self._assert_slack_message_sent("password policy compliance enforcement success")
+        self._assert_slack_message_sent("@some-team-name")
 
     def test_codepipeline_sns_event(self) -> None:
-        compliance_alerter.main(TestComplianceAlerter.load_json_resource("codepipeline_event.json"))
+        test_event = self.set_event_account_id(
+            account_id=self._account_id,
+            test_event=TestComplianceAlerter.load_json_resource("codepipeline_event.json"),
+        )
+        compliance_alerter.main(test_event)
         self._assert_slack_message_sent_to_channel("codepipeline-alerts")
+        self._assert_slack_message_sent("@some-team-name")
 
     def test_codebuild_sns_event(self) -> None:
-        compliance_alerter.main(TestComplianceAlerter.load_json_resource("codebuild_event.json"))
+        test_event = self.set_event_account_id(
+            account_id=self._account_id,
+            test_event=TestComplianceAlerter.load_json_resource("codebuild_event.json"),
+        )
+        compliance_alerter.main(test_event)
+
         self._assert_slack_message_sent_to_channel("codebuild-alerts")
+        self._assert_slack_message_sent("@some-team-name")
 
     def test_guardduty_sns_event(self) -> None:
         test_event = self.set_event_account_id(
-            account_id=self._setup_org_sub_account(),
+            account_id=self._account_id,
             test_event=TestComplianceAlerter.load_json_resource("guardduty_event.json"),
         )
 
@@ -97,12 +112,13 @@ class TestComplianceAlerter(TestCase):
         self._assert_slack_message_sent_to_channel("guardduty-alerts")
         self._assert_slack_message_sent_to_channel("the-alerting-channel")
         self._assert_slack_message_sent("test-account-name")
+        self._assert_slack_message_sent("@some-team-name")
 
     def set_event_account_id(self, account_id: str, test_event: Dict[str, Any]) -> Dict[str, Any]:
         # moto does not let us set the expected account id
         # so we change the event to match the mocked value
         message = json.loads(test_event["Records"][0]["Sns"]["Message"])
-        message["detail"]["accountId"] = account_id
+        message["account"] = account_id
         test_event["Records"][0]["Sns"]["Message"] = json.dumps(message)
         return dict(test_event)
 
@@ -140,7 +156,6 @@ class TestComplianceAlerter(TestCase):
                 "GUARDDUTY_RUNBOOK_URL": "the-gd-runbook",
                 "PASSWORD_POLICY_AUDIT_REPORT_KEY": password_policy_key,
                 "SLACK_API_URL": slack_api_url,
-                "SLACK_MAPPINGS_FILENAME": "the-slack-mappings",
                 "SLACK_USERNAME_KEY": slack_username_key,
                 "SLACK_TOKEN_KEY": slack_token_key,
                 "SSM_READ_ROLE": "the-ssm-read-role",
@@ -152,15 +167,24 @@ class TestComplianceAlerter(TestCase):
             clear=True,
         ).start()
 
-    @staticmethod
-    def _setup_report_bucket() -> None:
+    def _setup_report_bucket(self) -> None:
         s3 = boto3.client("s3")
         s3.create_bucket(Bucket=report)
-        s3.put_object(Bucket=report, Key=s3_key, Body=json.dumps(s3_report))
+        s3.put_object(Bucket=report, Key=s3_key, Body=json.dumps(self.set_account_id_in_bucket_report(s3_report)))
+        s3.put_object(
+            Bucket=report,
+            Key=password_policy_key,
+            Body=json.dumps(self.set_account_id_in_bucket_report(password_policy_report)),
+        )
+        s3.put_object(Bucket=report, Key=vpc_key, Body=json.dumps(self.set_account_id_in_bucket_report(vpc_report)))
+
         s3.put_object(Bucket=report, Key=github_key, Body=json.dumps(github_report))
         s3.put_object(Bucket=report, Key=github_webhook_key, Body=json.dumps(github_webhook_report))
-        s3.put_object(Bucket=report, Key=vpc_key, Body=json.dumps(vpc_report))
-        s3.put_object(Bucket=report, Key=password_policy_key, Body=json.dumps(password_policy_report))
+
+    def set_account_id_in_bucket_report(self, report_list: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        for report in report_list:
+            report["account"]["identifier"] = self._account_id
+        return report_list
 
     @staticmethod
     def _setup_config_bucket() -> None:
@@ -205,11 +229,6 @@ class TestComplianceAlerter(TestCase):
             Key="mappings/guardduty",
             Body=json.dumps([{"channel": "guardduty-alerts", "compliance_item_types": ["guardduty"]}]),
         )
-        s3.put_object(
-            Bucket=config,
-            Key="guardduty_alerts_mappings/the-slack-mappings",
-            Body=json.dumps({"team-a": ["account-1", "account-2"]}),
-        )
 
     @staticmethod
     def _setup_ssm_parameters() -> None:
@@ -224,6 +243,12 @@ class TestComplianceAlerter(TestCase):
         account_id = org.create_account(AccountName="test-account-name", Email="example@example.com")[
             "CreateAccountStatus"
         ]["AccountId"]
+        org.tag_resource(
+            ResourceId=account_id,
+            Tags=[
+                {"Key": "team_slack_handle", "Value": "@some-team-name"},
+            ],
+        )
         return str(account_id)
 
     @staticmethod

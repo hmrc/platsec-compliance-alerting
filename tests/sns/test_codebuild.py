@@ -9,6 +9,7 @@ def test_event_to_findings() -> None:
     message = json.loads(load_json_resource("codebuild_event.json")["Records"][0]["Sns"]["Message"])
 
     finding = CodeBuild().create_finding(message)
+    assert finding.account
     assert finding.account.identifier == "123456789012"
     assert finding.compliance_item_type == "codebuild"
     assert finding.item == "ua-test FAILED"

@@ -19,7 +19,7 @@ def create_account() -> Account:
 
 
 def findings(
-    account: Account = account(),
+    account: Optional[Account] = account(),
     compliance_item_type: str = "item_type",
     item: str = "test-item",
     findings: Optional[Set[str]] = None,
