@@ -107,13 +107,6 @@ class Config:
         s3 = AwsClientFactory().get_s3_client(self.get_aws_account(), self.get_config_bucket_read_role())
         return dict(loads(s3.read_raw_object(self.get_config_bucket(), self.get_slack_mappings_filename())))
 
-    def get_account_mappings_filename(self) -> str:
-        return f"guardduty_alerts_mappings/{self._get_env('ACCOUNT_MAPPINGS_FILENAME')}"
-
-    def get_account_mappings(self) -> Dict[str, str]:
-        s3 = AwsClientFactory().get_s3_client(self.get_aws_account(), self.get_config_bucket_read_role())
-        return dict(loads(s3.read_raw_object(self.get_config_bucket(), self.get_account_mappings_filename())))
-
     @staticmethod
     def _get_env(key: str) -> str:
         try:
