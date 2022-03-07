@@ -5,6 +5,7 @@ from botocore.exceptions import BotoCoreError, ClientError
 
 from dataclasses import dataclass
 
+from src.clients.aws_org_client import AwsOrgClient
 from src.clients.aws_s3_client import AwsS3Client
 from src.clients.aws_ssm_client import AwsSsmClient
 from src.data.exceptions import ClientFactoryException
@@ -23,6 +24,9 @@ class AwsClientFactory:
 
     def get_ssm_client(self, account: str, role: str) -> AwsSsmClient:
         return AwsSsmClient(self._get_client("ssm", account, role))
+
+    def get_org_client(self, account: str, role: str) -> AwsOrgClient:
+        return AwsOrgClient(self._get_client("organizations", account, role))
 
     def _get_client(self, service_name: str, account: str, role: str) -> BaseClient:
         assumed_role = self._assume_role(account, role)

@@ -9,7 +9,7 @@ import httpretty
 
 import json
 
-from moto import mock_s3, mock_ssm, mock_sts
+from moto import mock_s3, mock_ssm, mock_sts, mock_organizations
 
 from src import compliance_alerter
 from src.data.exceptions import UnsupportedEventException
@@ -38,6 +38,7 @@ slack_token_key = "the-slack-token-key"
 @mock_s3
 @mock_ssm
 @mock_sts
+@mock_organizations
 @httpretty.activate
 class TestComplianceAlerter(TestCase):
     def setUp(self) -> None:
@@ -54,22 +55,27 @@ class TestComplianceAlerter(TestCase):
 
     def test_compliance_alerter_main_s3_audit(self) -> None:
         compliance_alerter.main(self.build_event(s3_key))
+        self._assert_slack_message_sent_to_channel("the-alerting-channel")
         self._assert_slack_message_sent("bad-bucket")
 
     def test_compliance_alerter_main_github_audit(self) -> None:
         compliance_alerter.main(self.build_event(github_key))
+        self._assert_slack_message_sent_to_channel("the-alerting-channel")
         self._assert_slack_message_sent("bad-repo-no-signing")
 
     def test_compliance_alerter_main_github_webhook(self) -> None:
         compliance_alerter.main(self.build_event(github_webhook_key))
+        self._assert_slack_message_sent_to_channel("the-alerting-channel")
         self._assert_slack_message_sent("https://unknown-host.com")
 
     def test_compliance_alerter_main_vpc_audit(self) -> None:
         compliance_alerter.main(self.build_event(vpc_key))
+        self._assert_slack_message_sent_to_channel("the-alerting-channel")
         self._assert_slack_message_sent("VPC flow logs compliance enforcement success")
 
     def test_compliance_alerter_main_password_policy_audit(self) -> None:
         compliance_alerter.main(self.build_event(password_policy_key))
+        self._assert_slack_message_sent_to_channel("the-alerting-channel")
         self._assert_slack_message_sent("password policy compliance enforcement success")
 
     def test_codepipeline_sns_event(self) -> None:
@@ -81,8 +87,24 @@ class TestComplianceAlerter(TestCase):
         self._assert_slack_message_sent_to_channel("codebuild-alerts")
 
     def test_guardduty_sns_event(self) -> None:
-        compliance_alerter.main(TestComplianceAlerter.load_json_resource("guardduty_event.json"))
+        test_event = self.set_event_account_id(
+            account_id=self._setup_org_sub_account(),
+            test_event=TestComplianceAlerter.load_json_resource("guardduty_event.json"),
+        )
+
+        compliance_alerter.main(test_event)
+
         self._assert_slack_message_sent_to_channel("guardduty-alerts")
+        self._assert_slack_message_sent_to_channel("the-alerting-channel")
+        self._assert_slack_message_sent("test-account-name")
+
+    def set_event_account_id(self, account_id: str, test_event: Dict[str, Any]) -> Dict[str, Any]:
+        # moto does not let us set the expected account id
+        # so we change the event to match the mocked value
+        message = json.loads(test_event["Records"][0]["Sns"]["Message"])
+        message["detail"]["accountId"] = account_id
+        test_event["Records"][0]["Sns"]["Message"] = json.dumps(message)
+        return dict(test_event)
 
     def test_unknown_sns_event(self) -> None:
         compliance_alerter.main(TestComplianceAlerter.load_json_resource("unknown_sns_event.json"))
@@ -125,6 +147,8 @@ class TestComplianceAlerter(TestCase):
                 "SSM_READ_ROLE": "the-ssm-read-role",
                 "VPC_AUDIT_REPORT_KEY": vpc_key,
                 "LOG_LEVEL": "DEBUG",
+                "ORG_ACCOUNT": "ORG-ACCOUNT-ID-12374234",
+                "ORG_READ_ROLE": "the-org-read-role",
             },
             clear=True,
         ).start()
@@ -200,6 +224,15 @@ class TestComplianceAlerter(TestCase):
         ssm.put_parameter(Name=slack_token_key, Value="the-slack-username", Type="SecureString")
 
     @staticmethod
+    def _setup_org_sub_account() -> str:
+        org = boto3.client("organizations")
+        org.create_organization(FeatureSet="ALL")
+        account_id = org.create_account(AccountName="test-account-name", Email="example@example.com")[
+            "CreateAccountStatus"
+        ]["AccountId"]
+        return str(account_id)
+
+    @staticmethod
     def _delete_ssm_parameters() -> None:
         ssm = boto3.client("ssm")
         ssm.delete_parameter(Name=slack_username_key)
@@ -220,7 +253,6 @@ class TestComplianceAlerter(TestCase):
     def _assert_slack_message_sent(self, message: str) -> None:
         message_request = httpretty.last_request().body.decode("utf-8")
         self.assertIn(message, message_request)
-        self.assertIn('"slackChannels": ["alerts", "the-alerting-channel"]', message_request)
 
     def _assert_slack_message_sent_to_channel(self, channel: str) -> None:
         last_request = httpretty.last_request()

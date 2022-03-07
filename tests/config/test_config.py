@@ -6,6 +6,7 @@ from unittest.mock import Mock, patch, call
 
 import pytest
 
+from src.clients.aws_org_client import AwsOrgClient
 from src.clients.aws_s3_client import AwsS3Client
 from src.config.config import Config
 from src.config.notification_filter_config import NotificationFilterConfig
@@ -132,6 +133,18 @@ def test_get_report_s3_client(get_s3_client: Any, monkeypatch: Any) -> None:
     assert Config().get_report_s3_client() is s3_client
 
     get_s3_client.assert_called_with("88", "read-report")
+
+
+@patch("src.clients.aws_client_factory.AwsClientFactory.get_org_client")
+def test_get_org_client(get_org_client: Any, monkeypatch: Any) -> None:
+    monkeypatch.setenv("ORG_ACCOUNT", "99")
+    monkeypatch.setenv("ORG_READ_ROLE", "read-org")
+    org_client = AwsOrgClient(Mock())
+    get_org_client.return_value = org_client
+
+    assert Config().get_org_client() is org_client
+
+    get_org_client.assert_called_with("99", "read-org")
 
 
 @patch("src.clients.aws_client_factory.AwsClientFactory.get_s3_client")

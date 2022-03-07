@@ -29,6 +29,15 @@ class TestAwsClientFactory(TestCase):
         with patch.object(AwsClientFactory, "_get_client", side_effect=_get_client):
             self.assertEqual(boto_ssm_client, AwsClientFactory().get_ssm_client("ssm-acc", "ssm-role")._ssm)
 
+    def test_get_org_client(self) -> None:
+        boto = Mock()
+
+        def _get_client(service_name: str, account: str, role: str) -> BaseClient:
+            return boto if service_name == "organizations" and account == "org-acc" and role == "org-role" else None
+
+        with patch.object(AwsClientFactory, "_get_client", side_effect=_get_client):
+            self.assertEqual(boto, AwsClientFactory().get_org_client("org-acc", "org-role")._org)
+
     def test_get_client(self) -> None:
         boto_credentials = {
             "Credentials": {
