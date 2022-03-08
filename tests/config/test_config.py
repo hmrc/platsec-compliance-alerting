@@ -145,17 +145,3 @@ def test_get_org_client(get_org_client: Any, monkeypatch: Any) -> None:
     assert Config().get_org_client() is org_client
 
     get_org_client.assert_called_with("99", "read-org")
-
-
-@patch("src.clients.aws_client_factory.AwsClientFactory.get_s3_client")
-def test_get_slack_mappings(get_s3_client: Any, monkeypatch: Any) -> None:
-    monkeypatch.setenv("AWS_ACCOUNT", "88")
-    monkeypatch.setenv("CONFIG_BUCKET_READ_ROLE", "config-bucket-read-role")
-    monkeypatch.setenv("CONFIG_BUCKET", "config-bucket")
-    monkeypatch.setenv("SLACK_MAPPINGS_FILENAME", "slack-map-file")
-    s3_client = Mock(spec=AwsS3Client, read_raw_object=Mock(return_value='{"team-a": ["account-1", "account-2"]}'))
-    get_s3_client.return_value = s3_client
-
-    assert {"team-a": ["account-1", "account-2"]} == Config().get_slack_mappings()
-
-    get_s3_client.assert_called_with("88", "config-bucket-read-role")

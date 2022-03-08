@@ -6,17 +6,17 @@ from src.data.account import Account
 
 @dataclass(eq=True, unsafe_hash=True)
 class Findings:
-    account: Account
     compliance_item_type: str
     item: str
     findings: FrozenSet[str]
     description: Optional[str]
+    account: Optional[Account] = None
 
     def __init__(
         self,
-        account: Account,
         compliance_item_type: str,
         item: str,
+        account: Optional[Account] = None,
         findings: Optional[Set[str]] = None,
         description: Optional[str] = None,
     ):

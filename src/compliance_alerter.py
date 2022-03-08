@@ -22,7 +22,7 @@ def main(event: Dict[str, Any]) -> None:
     logger = configure_logging()
 
     findings = handle_sns_event(event) if is_sns_event(event) else analyse(fetch(event))
-    slack_messages = map(filter(findings))
+    slack_messages = apply_mappings(apply_filters(findings))
     send(logger, slack_messages)
 
 
@@ -65,12 +65,12 @@ def analyse(audit: Audit) -> Set[Findings]:
     return AuditAnalyser().analyse(audit, config)
 
 
-def filter(notifications: Set[Findings]) -> Set[Findings]:
+def apply_filters(notifications: Set[Findings]) -> Set[Findings]:
     return FindingsFilter().do_filter(notifications, config.get_notification_filters())
 
 
-def map(notifications: Set[Findings]) -> List[SlackMessage]:
-    return NotificationMapper().do_map(notifications, config.get_notification_mappings())
+def apply_mappings(notifications: Set[Findings]) -> List[SlackMessage]:
+    return NotificationMapper().do_map(notifications, config.get_notification_mappings(), config.get_org_client())
 
 
 def send(logger: Logger, slack_messages: List[SlackMessage]) -> None:

@@ -1,7 +1,6 @@
 from typing import Any, Dict, Set
 
 from src.data.audit import Audit
-from src.data.account import Account
 from src.data.findings import Findings
 from src.compliance.analyser import Analyser
 
@@ -20,7 +19,7 @@ class GithubCompliance(Analyser):
             findings.add("repository should have admin permissions")
 
         return Findings(
-            Account("Github", f"<https://www.github.com/{repository['nameWithOwner']}|{repository['name']}>"),
+            description=f"<https://www.github.com/{repository['nameWithOwner']}|{repository['name']}>",
             compliance_item_type="github_repository",
             item=repository["name"],
             findings=findings,
