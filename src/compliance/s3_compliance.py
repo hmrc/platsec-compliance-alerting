@@ -17,8 +17,7 @@ class S3Compliance(Analyser):
     def _check_bucket_rules(self, account: Dict[str, str], bucket: Dict[str, Any]) -> Findings:
         findings = set()
 
-        if not self._is_encrypted(bucket):
-            findings.add("bucket should be encrypted")
+        findings.update(self._check_encryption_bucket_rules(bucket))
 
         if not self._is_private(bucket):
             findings.add("bucket should not allow public access")
@@ -49,12 +48,24 @@ class S3Compliance(Analyser):
             if not self._has_content_deny(bucket):
                 findings.add("bucket should have a resource policy with a default deny action")
         return findings
+    
+    def _check_encryption_bucket_rules(self, bucket: Dict[str, Any]) -> Set[str]:
+        findings = set()
+        if self._is_encrypted(bucket):
+            if not _is_rotation_enabled(bucket["kms_key"]):
+                findings.add("kms key should have rotation enabled")
+        else:
+            findings.add("bucket should be encrypted")
+        return findings
 
     def _is_enabled(self, key: str, bucket: Dict[str, Any]) -> bool:
         return bool(bucket.get(key, {}).get("enabled"))
 
     def _is_encrypted(self, bucket: Dict[str, Any]) -> bool:
         return self._is_enabled("encryption", bucket)
+    
+    def _is_rotation_enabled(self, kms_key: Dict[str, Any]) -> bool:
+        return bool(kms_key.get(key, {}).get("rotation_enabled"))
 
     def _is_tagged(self, key: str, bucket: Dict[str, Any]) -> bool:
         return bool("unset" != bucket.get("data_tagging", {}).get(key, "unset"))
