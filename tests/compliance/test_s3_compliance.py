@@ -74,8 +74,7 @@ class TestS3Compliance(TestCase):
             report=s3_report,
         )
         notifications = S3Compliance().analyse(audit)
-        self.assertEqual(
-            {
+        assert notifications == {
                 findings(
                     account=account("111222333444", "another-account"),
                     compliance_item_type="s3_bucket",
@@ -86,6 +85,7 @@ class TestS3Compliance(TestCase):
                         "bucket should have a resource policy with a default deny action",
                         "bucket should have data expiry tag",
                         "bucket should have logging enabled",
+                        "kms key should have rotation enabled",
                     },
                 ),
                 findings(
@@ -121,6 +121,5 @@ class TestS3Compliance(TestCase):
                         "bucket should have logging enabled",
                     },
                 ),
-            },
-            notifications,
-        )
+            }
+        
