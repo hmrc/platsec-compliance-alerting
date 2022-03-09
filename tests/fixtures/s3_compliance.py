@@ -13,6 +13,7 @@ s3_report = [
                     "secure_transport": {},
                     "data_tagging": {"expiry": "not_unset", "sensitivity": "not_unset"},
                     "logging": {"enabled": True},
+                    "kms_key": {"rotation_enabled": True},
                 },
                 {
                     "name": "bad-bucket",
@@ -21,6 +22,7 @@ s3_report = [
                     "public_access_block": {"enabled": True},
                     "data_tagging": {"expiry": "1-week", "sensitivity": "unset"},
                     "logging": {"enabled": False},
+                    "kms_key": {"rotation_enabled": False},
                 },
             ]
         },
@@ -39,6 +41,7 @@ s3_report = [
                     "public_access_block": {"enabled": False},
                     "data_tagging": {"expiry": "unset", "sensitivity": "high"},
                     "logging": {},
+                    "kms_key": {"rotation_enabled": False},
                 },
             ]
         },
@@ -58,6 +61,7 @@ s3_report = [
                     "data_tagging": {"expiry": "1-week", "sensitivity": "high"},
                     "content_deny": {"enabled": True},
                     "logging": {"enabled": True},
+                    "kms_key": {"rotation_enabled": True},
                 },
             ]
         },
@@ -76,6 +80,7 @@ s3_report = [
                     "public_access_block": {"enabled": False},
                     "data_tagging": {"expiry": "unset", "sensitivity": "low"},
                     "logging": {},
+                    "kms_key": {"rotation_enabled": False},
                 },
             ]
         },
