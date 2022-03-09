@@ -48,7 +48,7 @@ class S3Compliance(Analyser):
             if not self._has_content_deny(bucket):
                 findings.add("bucket should have a resource policy with a default deny action")
         return findings
-    
+
     def _check_encryption_bucket_rules(self, bucket: Dict[str, Any]) -> Set[str]:
         findings = set()
         if self._is_encrypted(bucket):
@@ -63,7 +63,7 @@ class S3Compliance(Analyser):
 
     def _is_encrypted(self, bucket: Dict[str, Any]) -> bool:
         return self._is_enabled("encryption", bucket)
-    
+
     def _is_rotation_enabled(self, bucket: Dict[str, Any]) -> bool:
         kms_key = bucket.get("kms_key", {})
         return bool(kms_key.get("rotation_enabled"))
