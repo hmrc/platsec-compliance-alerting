@@ -19,7 +19,7 @@ class AuditAnalyser:
         config_map: Dict[str, Analyser] = {
             config.get_github_audit_report_key(): GithubCompliance(),
             config.get_github_webhook_report_key(): GithubWebhookCompliance(config),
-            config.get_s3_audit_report_key(): S3Compliance(),
+            config.get_s3_audit_report_key(): S3Compliance(config),
             config.get_iam_audit_report_key(): IamCompliance(),
             config.get_vpc_audit_report_key(): VpcCompliance(),
             config.get_password_policy_audit_report_key(): PasswordPolicyCompliance(),

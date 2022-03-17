@@ -1,18 +1,25 @@
 from typing import Any, Dict, Set
 
+from src.config.config import Config
 from src.data.audit import Audit
 from src.data.account import Account
 from src.data.findings import Findings
 from src.compliance.analyser import Analyser
+from src.compliance.summarised_s3_compliance import SummarisedS3Compliance
 
 
 class S3Compliance(Analyser):
+    def __init__(self, config: Config) -> None:
+        self.config = config
+
     def analyse(self, audit: Audit) -> Set[Findings]:
-        return {
+        findings = {
             self._check_bucket_rules(report["account"], bucket)
             for report in audit.report
             for bucket in report["results"]["buckets"]
         }
+        findings.update(SummarisedS3Compliance(self.config).summarise(findings))
+        return findings
 
     def _check_bucket_rules(self, account: Dict[str, str], bucket: Dict[str, Any]) -> Findings:
         findings = set()

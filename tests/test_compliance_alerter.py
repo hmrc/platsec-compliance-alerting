@@ -140,6 +140,7 @@ class TestComplianceAlerter(TestCase):
         patch.dict(
             os.environ,
             {
+                "AUDIT_REPORT_DASHBOARD_URL": "the-dashboard",
                 "AWS_ACCESS_KEY_ID": "the-access-key-id",
                 "AWS_SECRET_ACCESS_KEY": "the-secret-access-key",
                 "AWS_DEFAULT_REGION": "us-east-1",

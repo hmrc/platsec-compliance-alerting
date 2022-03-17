@@ -22,6 +22,9 @@ class Config:
     def get_config_bucket_read_role(self) -> str:
         return self._get_env("CONFIG_BUCKET_READ_ROLE")
 
+    def get_audit_report_dashboard_url(self) -> str:
+        return self._get_env("AUDIT_REPORT_DASHBOARD_URL")
+
     @staticmethod
     def get_log_level() -> str:
         log_level_cfg = environ.get("LOG_LEVEL", "WARNING")
