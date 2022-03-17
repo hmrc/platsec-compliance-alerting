@@ -25,3 +25,7 @@ class Findings:
         self.item = item
         self.findings = frozenset(findings) if findings else frozenset()
         self.description = description
+
+    @property
+    def account_name(self) -> str:
+        return self.account.name if self.account else "unknown account"
