@@ -13,9 +13,9 @@ class SummarisedS3Compliance:
             Findings(
                 account=finding.account,
                 compliance_item_type="s3_compliance_summary",
-                description=f"Here is a detailed S3 audit report: {self.config.get_audit_report_dashboard_url()}",
+                description=f"Account {finding.account_name} has S3 buckets that do not comply with the policy",
                 item=finding.account_name,
-                findings={f"Account {finding.account_name} has S3 buckets that do not comply with the policy"},
+                findings={f"Here is a detailed S3 audit report: {self.config.get_audit_report_dashboard_url()}"},
             )
             for finding in findings
             if finding.findings

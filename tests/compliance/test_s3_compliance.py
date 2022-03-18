@@ -61,16 +61,16 @@ bad_bucket_low_sensitivity_finding = findings(
 an_account_finding = findings(
     account=account("555666777444", "an-account"),
     compliance_item_type="s3_compliance_summary",
-    description="Here is a detailed S3 audit report: the-dashboard",
+    description="Account an-account has S3 buckets that do not comply with the policy",
     item="an-account",
-    findings={"Account an-account has S3 buckets that do not comply with the policy"},
+    findings={"Here is a detailed S3 audit report: the-dashboard"},
 )
 another_account_finding = findings(
     account=account("111222333444", "another-account"),
     compliance_item_type="s3_compliance_summary",
-    description="Here is a detailed S3 audit report: the-dashboard",
+    description="Account another-account has S3 buckets that do not comply with the policy",
     item="another-account",
-    findings={"Account another-account has S3 buckets that do not comply with the policy"},
+    findings={"Here is a detailed S3 audit report: the-dashboard"},
 )
 
 
