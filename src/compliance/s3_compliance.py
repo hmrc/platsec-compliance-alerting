@@ -56,10 +56,12 @@ class S3Compliance(Analyser):
 
     def _check_encryption_bucket_rules(self, bucket: Dict[str, Any]) -> Set[str]:
         findings = set()
-        if not self._is_encrypted(bucket):
+        if self._is_encrypted(bucket):
+            if self._is_encrypted_with_cmk(bucket):
+                if not self._is_rotation_enabled(bucket):
+                    findings.add("bucket kms key should have rotation enabled")
+        else:
             findings.add("bucket should be encrypted")
-        elif not self._is_rotation_enabled(bucket):
-            findings.add("bucket kms key should have rotation enabled")
         return findings
 
     def _is_enabled(self, key: str, bucket: Dict[str, Any]) -> bool:
@@ -67,6 +69,10 @@ class S3Compliance(Analyser):
 
     def _is_encrypted(self, bucket: Dict[str, Any]) -> bool:
         return self._is_enabled("encryption", bucket)
+
+    def _is_encrypted_with_cmk(self, bucket: Dict[str, Any]) -> bool:
+        encryption = bucket.get("encryption", {})
+        return bool("cmk" == encryption.get("type"))
 
     def _is_rotation_enabled(self, bucket: Dict[str, Any]) -> bool:
         return bool(bucket.get("kms_key", {}).get("rotation_enabled"))

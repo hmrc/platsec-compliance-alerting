@@ -136,6 +136,12 @@ class TestS3Compliance(TestCase):
     def test_bucket_has_logging_enforced(self) -> None:
         self.assertTrue(s3_compliance._is_enabled("logging", {"logging": {"enabled": True}}))
 
+    def test_bucket_is_encrypted_with_cmk(self) -> None:
+        self.assertTrue(s3_compliance._is_encrypted_with_cmk({"encryption": {"type": "cmk"}}))
+
+    def test_bucket_is_not_encrypted_with_cmk(self) -> None:
+        self.assertFalse(s3_compliance._is_encrypted_with_cmk({"encryption": {"type": "aes"}}))
+
     def test_analyse_s3_audit(self) -> None:
         audit = Audit(type="s3", report=s3_report)
         notifications = s3_compliance.analyse(audit)

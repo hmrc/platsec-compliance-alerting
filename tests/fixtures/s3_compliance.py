@@ -8,7 +8,7 @@ s3_report = [
             "buckets": [
                 {
                     "name": "good-bucket",
-                    "encryption": {"enabled": True},
+                    "encryption": {"enabled": True, "type": "cmk"},
                     "public_access_block": {"enabled": True},
                     "secure_transport": {},
                     "data_tagging": {"expiry": "not_unset", "sensitivity": "not_unset"},
@@ -36,7 +36,7 @@ s3_report = [
             "buckets": [
                 {
                     "name": "mischievous-bucket",
-                    "encryption": {"enabled": True},
+                    "encryption": {"enabled": True, "type": "cmk"},
                     "secure_transport": {},
                     "public_access_block": {"enabled": False},
                     "data_tagging": {"expiry": "unset", "sensitivity": "high"},
@@ -55,7 +55,7 @@ s3_report = [
             "buckets": [
                 {
                     "name": "good-bucket-high-sensitivity",
-                    "encryption": {"enabled": True},
+                    "encryption": {"enabled": True, "type": "cmk"},
                     "secure_transport": {"enabled": True},
                     "public_access_block": {"enabled": True},
                     "data_tagging": {"expiry": "1-week", "sensitivity": "high"},
