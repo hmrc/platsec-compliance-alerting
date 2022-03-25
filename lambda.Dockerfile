@@ -3,6 +3,7 @@ ARG FUNCTION_DIR="/platsec-compliance-alerting"
 
 FROM python:${PYTHON_VERSION}-slim as build-image
 RUN apt-get update \
+    && apt-get upgrade -y \
     && apt-get install -y \
     g++ \
     make \
@@ -10,6 +11,7 @@ RUN apt-get update \
     unzip \
     libcurl4-openssl-dev \
     && rm -rf /var/lib/apt/lists/*
+
 ARG FUNCTION_DIR
 WORKDIR ${FUNCTION_DIR}
 ARG PIP_PIPENV_VERSION
