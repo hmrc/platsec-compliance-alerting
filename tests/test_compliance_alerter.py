@@ -2,6 +2,7 @@ from unittest import TestCase
 from unittest.mock import patch
 
 import os
+from copy import deepcopy
 from typing import Any, Dict, List
 
 import boto3
@@ -18,6 +19,7 @@ from tests.fixtures.github_compliance import github_report
 from tests.fixtures.github_webhook_compliance import github_webhook_report
 from tests.fixtures.s3_compliance_alerter import s3_report
 from tests.fixtures.vpc_compliance import vpc_report
+from tests.fixtures.vpc_peering_compliance import vpc_peering_audit
 from tests.fixtures.password_policy_compliance import password_policy_report
 
 channel = "the-alerting-channel"
@@ -29,6 +31,7 @@ github_key = "github_audit"
 github_webhook_key = "github_webhook"
 github_webhook_host_ignore_list = "known-host.com,known-host2.com"
 vpc_key = "vpc_audit"
+vpc_peering_key = "vpc_peering_audit"
 password_policy_key = "password_policy_audit"
 slack_api_url = "https://the-slack-api-url.com"
 slack_username_key = "the-slack-username-key"
@@ -74,6 +77,12 @@ class TestComplianceAlerter(TestCase):
         compliance_alerter.main(self.build_event(vpc_key))
         self._assert_slack_message_sent_to_channel("the-alerting-channel")
         self._assert_slack_message_sent("VPC flow logs compliance enforcement success")
+        self._assert_slack_message_sent("@some-team-name")
+
+    def test_compliance_alerter_main_vpc_peering_audit(self) -> None:
+        compliance_alerter.main(self.build_event(vpc_peering_key))
+        self._assert_slack_message_sent_to_channel("vpc-peering-alerts")
+        self._assert_slack_message_sent("vpc peering connection with unknown account")
         self._assert_slack_message_sent("@some-team-name")
 
     def test_compliance_alerter_main_password_policy_audit(self) -> None:
@@ -161,6 +170,7 @@ class TestComplianceAlerter(TestCase):
                 "SLACK_TOKEN_KEY": slack_token_key,
                 "SSM_READ_ROLE": "the-ssm-read-role",
                 "VPC_AUDIT_REPORT_KEY": vpc_key,
+                "VPC_PEERING_AUDIT_REPORT_KEY": vpc_peering_key,
                 "LOG_LEVEL": "DEBUG",
                 "ORG_ACCOUNT": "ORG-ACCOUNT-ID-12374234",
                 "ORG_READ_ROLE": "the-org-read-role",
@@ -171,18 +181,22 @@ class TestComplianceAlerter(TestCase):
     def _setup_report_bucket(self) -> None:
         s3 = boto3.client("s3")
         s3.create_bucket(Bucket=report)
-        s3.put_object(Bucket=report, Key=s3_key, Body=json.dumps(self.set_account_id_in_bucket_report(s3_report)))
+        s3.put_object(Bucket=report, Key=s3_key, Body=json.dumps(self.set_account_id_in_report(s3_report)))
         s3.put_object(
             Bucket=report,
             Key=password_policy_key,
-            Body=json.dumps(self.set_account_id_in_bucket_report(password_policy_report)),
+            Body=json.dumps(self.set_account_id_in_report(password_policy_report)),
         )
-        s3.put_object(Bucket=report, Key=vpc_key, Body=json.dumps(self.set_account_id_in_bucket_report(vpc_report)))
-
+        s3.put_object(Bucket=report, Key=vpc_key, Body=json.dumps(self.set_account_id_in_report(vpc_report)))
+        s3.put_object(
+            Bucket=report,
+            Key=vpc_peering_key,
+            Body=json.dumps(self.set_account_id_in_report(deepcopy(vpc_peering_audit))),
+        )
         s3.put_object(Bucket=report, Key=github_key, Body=json.dumps(github_report))
         s3.put_object(Bucket=report, Key=github_webhook_key, Body=json.dumps(github_webhook_report))
 
-    def set_account_id_in_bucket_report(self, report_list: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def set_account_id_in_report(self, report_list: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         for report in report_list:
             report["account"]["identifier"] = self._account_id
         return report_list
@@ -229,6 +243,11 @@ class TestComplianceAlerter(TestCase):
             Bucket=config,
             Key="mappings/guardduty",
             Body=json.dumps([{"channel": "guardduty-alerts", "compliance_item_types": ["guardduty"]}]),
+        )
+        s3.put_object(
+            Bucket=config,
+            Key="mappings/vpc_peering",
+            Body=json.dumps([{"channel": "vpc-peering-alerts", "compliance_item_types": ["vpc_peering"]}]),
         )
 
     @staticmethod
