@@ -6,6 +6,7 @@ from src.compliance.s3_compliance import S3Compliance
 from src.compliance.github_compliance import GithubCompliance
 from src.compliance.github_webhook_compliance import GithubWebhookCompliance
 from src.compliance.vpc_compliance import VpcCompliance
+from src.compliance.vpc_peering_compliance import VpcPeeringCompliance
 from src.compliance.password_policy_compliance import PasswordPolicyCompliance
 from src.config.config import Config
 from src.data.audit import Audit
@@ -23,6 +24,7 @@ class AuditAnalyser:
             config.get_iam_audit_report_key(): IamCompliance(),
             config.get_vpc_audit_report_key(): VpcCompliance(),
             config.get_password_policy_audit_report_key(): PasswordPolicyCompliance(),
+            config.get_vpc_peering_audit_report_key(): VpcPeeringCompliance(),
         }
 
         for audit_key, audit_analyser in config_map.items():

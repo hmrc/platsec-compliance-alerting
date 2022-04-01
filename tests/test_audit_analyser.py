@@ -7,6 +7,7 @@ from src.compliance.s3_compliance import S3Compliance
 from src.compliance.github_compliance import GithubCompliance
 from src.compliance.github_webhook_compliance import GithubWebhookCompliance
 from src.compliance.vpc_compliance import VpcCompliance
+from src.compliance.vpc_peering_compliance import VpcPeeringCompliance
 from src.compliance.password_policy_compliance import PasswordPolicyCompliance
 from src.config.config import Config
 from src.data.audit import Audit
@@ -21,6 +22,7 @@ from tests.test_types_generator import findings
 @patch.object(Config, "get_iam_audit_report_key", return_value="audit_iam.json")
 @patch.object(Config, "get_vpc_audit_report_key", return_value="audit_vpc_flow_logs.json")
 @patch.object(Config, "get_password_policy_audit_report_key", return_value="audit_password_policy.json")
+@patch.object(Config, "get_vpc_peering_audit_report_key", return_value="audit_vpc_peering.json")
 class TestAuditAnalyser(TestCase):
     def test_check_s3_compliance(self, *_: Mock) -> None:
         notifications = {findings(item="item-1"), findings(item="item-2")}
@@ -71,6 +73,14 @@ class TestAuditAnalyser(TestCase):
         with patch.object(VpcCompliance, "analyse", return_value=notifications) as vpc_compliance:
             self.assertEqual(notifications, AuditAnalyser().analyse(audit, Config()))
         vpc_compliance.assert_called_once_with(audit)
+
+    def test_check_vpc_peering_compliance(self, *_: Mock) -> None:
+        notifications = {findings(item="item-1"), findings(item="item-2")}
+        audit = Audit(type="audit_vpc_peering.json", report=[{"report": "val-1"}, {"report": "val-2"}])
+
+        with patch.object(VpcPeeringCompliance, "analyse", return_value=notifications) as vpc_peering_compliance:
+            self.assertEqual(notifications, AuditAnalyser().analyse(audit, Config()))
+        vpc_peering_compliance.assert_called_once_with(audit)
 
     def test_check_password_policy_compliance(self, *_: Mock) -> None:
         the_findings = {findings(item="item-1"), findings(item="item-2")}
