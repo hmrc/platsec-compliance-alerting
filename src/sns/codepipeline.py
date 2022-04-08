@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, Set, Sequence
 
 from src.data.account import Account
 from src.data.findings import Findings
@@ -19,12 +19,19 @@ class CodePipeline:
         link = CodePipeline.generate_pipeline_link(
             execution_id=execution_id, pipeline_name=pipeline_name, region=region
         )
+        findings = CodePipeline.generate_error_messages(failed_actions=message["additionalAttributes"]["failedActions"])
+        findings.add(link)
+
         return Findings(
             compliance_item_type="codepipeline",
             account=account,
             item=title,
-            findings={link},
+            findings=findings,
         )
+
+    @staticmethod
+    def generate_error_messages(failed_actions: Sequence[Dict[str, str]]) -> Set[str]:
+        return set(map(lambda e: e["additionalInformation"], failed_actions))
 
     @staticmethod
     def generate_pipeline_link(execution_id: str, pipeline_name: str, region: str) -> str:
