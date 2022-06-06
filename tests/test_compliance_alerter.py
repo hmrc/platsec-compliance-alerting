@@ -116,11 +116,17 @@ class TestComplianceAlerter(TestCase):
             test_event=TestComplianceAlerter.load_json_resource("guardduty_event.json"),
         )
 
+        # we want to alert with the name of the sub account not the main guardduty account
+        sub_account_id = self._setup_org_sub_account(account_name="sub-account-name")
+        message = json.loads(test_event["Records"][0]["Sns"]["Message"])
+        message["detail"]["accountId"] = sub_account_id
+        test_event["Records"][0]["Sns"]["Message"] = json.dumps(message)
+
         compliance_alerter.main(test_event)
 
         self._assert_slack_message_sent_to_channel("guardduty-alerts")
         self._assert_slack_message_sent_to_channel("the-alerting-channel")
-        self._assert_slack_message_sent("test-account-name")
+        self._assert_slack_message_sent("sub-account-name")
         self._assert_slack_message_sent("@some-team-name")
 
     def set_event_account_id(self, account_id: str, test_event: Dict[str, Any]) -> Dict[str, Any]:
@@ -257,12 +263,12 @@ class TestComplianceAlerter(TestCase):
         ssm.put_parameter(Name=slack_token_key, Value="the-slack-username", Type="SecureString")
 
     @staticmethod
-    def _setup_org_sub_account() -> str:
+    def _setup_org_sub_account(account_name="test-account-name") -> str:
         org = boto3.client("organizations")
         org.create_organization(FeatureSet="ALL")
-        account_id = org.create_account(AccountName="test-account-name", Email="example@example.com")[
-            "CreateAccountStatus"
-        ]["AccountId"]
+        account_id = org.create_account(AccountName=account_name, Email="example@example.com")["CreateAccountStatus"][
+            "AccountId"
+        ]
         org.tag_resource(
             ResourceId=account_id,
             Tags=[

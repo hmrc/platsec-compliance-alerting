@@ -14,10 +14,9 @@ class GuardDuty:
     Type: str = "GuardDuty Finding"
 
     def create_finding(self, message: Dict[str, Any]) -> Findings:
-
         return Findings(
             compliance_item_type="guardduty",
-            account=Account(identifier=message["account"]),
+            account=Account(identifier=message["detail"]["accountId"]),
             item="GuardDuty alert",
             description=message["detail"]["title"],
             findings={

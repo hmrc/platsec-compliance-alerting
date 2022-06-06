@@ -15,7 +15,7 @@ def test_event_to_findings(*_: Mock) -> None:
     finding = GuardDuty(Config()).create_finding(message)
 
     assert finding.account
-    assert finding.account.identifier == "123456789012"
+    assert finding.account.identifier == "987654321098"
     assert finding.account.name == ""
     assert finding.description == "Amazon S3 Block Public Access was disabled for S3 bucket test-gd-32423."
     assert finding.compliance_item_type == "guardduty"
