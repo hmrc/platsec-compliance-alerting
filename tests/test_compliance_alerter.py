@@ -263,7 +263,7 @@ class TestComplianceAlerter(TestCase):
         ssm.put_parameter(Name=slack_token_key, Value="the-slack-username", Type="SecureString")
 
     @staticmethod
-    def _setup_org_sub_account(account_name="test-account-name") -> str:
+    def _setup_org_sub_account(account_name: str = "test-account-name") -> str:
         org = boto3.client("organizations")
         org.create_organization(FeatureSet="ALL")
         account_id = org.create_account(AccountName=account_name, Email="example@example.com")["CreateAccountStatus"][
