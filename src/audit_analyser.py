@@ -1,6 +1,7 @@
 from typing import Set, Dict
 
 from src.compliance.analyser import Analyser
+from src.compliance.ec2_compliance import Ec2Compliance
 from src.compliance.iam_compliance import IamCompliance
 from src.compliance.s3_compliance import S3Compliance
 from src.compliance.github_compliance import GithubCompliance
@@ -25,6 +26,7 @@ class AuditAnalyser:
             config.get_vpc_audit_report_key(): VpcCompliance(),
             config.get_password_policy_audit_report_key(): PasswordPolicyCompliance(),
             config.get_vpc_peering_audit_report_key(): VpcPeeringCompliance(),
+            config.get_ec2_audit_report_key(): Ec2Compliance(),
         }
 
         for audit_key, audit_analyser in config_map.items():
