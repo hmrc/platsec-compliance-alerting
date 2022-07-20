@@ -64,6 +64,9 @@ class Config:
     def get_vpc_peering_audit_report_key(self) -> str:
         return self._get_env("VPC_PEERING_AUDIT_REPORT_KEY")
 
+    def get_ec2_audit_report_key(self) -> str:
+        return self._get_env("EC2_AUDIT_REPORT_KEY")
+
     def get_password_policy_audit_report_key(self) -> str:
         return self._get_env("PASSWORD_POLICY_AUDIT_REPORT_KEY")
 
