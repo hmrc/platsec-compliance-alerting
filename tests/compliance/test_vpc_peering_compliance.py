@@ -1,3 +1,5 @@
+from logging import getLogger
+
 from src.compliance.vpc_peering_compliance import VpcPeeringCompliance
 
 from tests.fixtures.vpc_peering_compliance import vpc_peering_audit
@@ -24,4 +26,4 @@ finding_3 = findings(
 
 def test_analyse_vpc_peering_audit() -> None:
     audit = create_audit(type="vpc_peering_audit.json", report=vpc_peering_audit)
-    assert VpcPeeringCompliance().analyse(audit) == {finding_1, finding_2, finding_3}
+    assert VpcPeeringCompliance().analyse(getLogger(), audit) == {finding_1, finding_2, finding_3}

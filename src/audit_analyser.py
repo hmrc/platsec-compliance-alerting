@@ -1,3 +1,4 @@
+from logging import Logger
 from typing import Set, Dict
 
 from src.compliance.analyser import Analyser
@@ -17,7 +18,7 @@ from src.data.exceptions import UnsupportedAuditException
 
 class AuditAnalyser:
     @staticmethod
-    def analyse(audit: Audit, config: Config) -> Set[Findings]:
+    def analyse(logger: Logger, audit: Audit, config: Config) -> Set[Findings]:
         config_map: Dict[str, Analyser] = {
             config.get_github_audit_report_key(): GithubCompliance(),
             config.get_github_webhook_report_key(): GithubWebhookCompliance(config),
@@ -31,6 +32,6 @@ class AuditAnalyser:
 
         for audit_key, audit_analyser in config_map.items():
             if audit.type.startswith(audit_key):
-                return audit_analyser.analyse(audit)
+                return audit_analyser.analyse(logger, audit)
 
         raise UnsupportedAuditException(audit.type)

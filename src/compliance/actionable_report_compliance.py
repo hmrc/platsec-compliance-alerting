@@ -1,4 +1,5 @@
 from json import dumps
+from logging import Logger
 from typing import Any, Dict, Optional, Sequence, Set
 
 from src.compliance.action_describer import ActionDescriber, BriefActionDescriber, DetailedActionDescriber
@@ -17,7 +18,7 @@ class ActionableReportCompliance(Analyser):
         self.item = item
         self.action = BriefActionDescriber()
 
-    def analyse(self, audit: Audit) -> Set[Findings]:
+    def analyse(self, logger: Logger, audit: Audit) -> Set[Findings]:
         return {
             self._account_findings(
                 account=Account.from_dict(report["account"]),

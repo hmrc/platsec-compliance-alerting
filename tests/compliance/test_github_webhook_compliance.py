@@ -1,3 +1,4 @@
+from logging import getLogger
 from unittest.mock import Mock
 
 from src.config.config import Config
@@ -44,7 +45,7 @@ def test_check() -> None:
         type="github_webhook_report1.json",
         report=github_webhook_report,
     )
-    notifications = GithubWebhookCompliance(get_config()).analyse(audit)
+    notifications = GithubWebhookCompliance(get_config()).analyse(getLogger(), audit)
 
     expected_findings = {
         findings(

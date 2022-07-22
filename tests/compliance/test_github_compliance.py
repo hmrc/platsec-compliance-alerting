@@ -1,3 +1,4 @@
+from logging import getLogger
 from unittest import TestCase
 
 from tests.fixtures.github_compliance import github_report
@@ -57,7 +58,7 @@ class TestGithubCompliance(TestCase):
             type="github_admin_report.json",
             report=github_report,
         )
-        notifications = GithubCompliance().analyse(audit)
+        notifications = GithubCompliance().analyse(getLogger(), audit)
         expected_findings = {
             findings(
                 account=None,

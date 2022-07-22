@@ -1,3 +1,4 @@
+from logging import Logger
 from typing import Any, Dict, Set, List
 from urllib.parse import urlparse
 
@@ -13,7 +14,7 @@ class GithubWebhookCompliance(Analyser):
     def __init__(self, config: Config):
         self.config = config
 
-    def analyse(self, audit: Audit) -> Set[Findings]:
+    def analyse(self, logger: Logger, audit: Audit) -> Set[Findings]:
         for repositories in audit.report:
             for webhook in repositories["Webhooks"]:
                 self._check_webhook_rules(repositories["RepositoryName"], webhook)

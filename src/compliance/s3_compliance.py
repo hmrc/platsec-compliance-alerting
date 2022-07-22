@@ -1,3 +1,4 @@
+from logging import Logger
 from typing import Any, Dict, Set
 
 from src.config.config import Config
@@ -12,7 +13,7 @@ class S3Compliance(Analyser):
     def __init__(self, config: Config) -> None:
         self.config = config
 
-    def analyse(self, audit: Audit) -> Set[Findings]:
+    def analyse(self, logger: Logger, audit: Audit) -> Set[Findings]:
         findings = {
             self._check_bucket_compliancy(report["account"], bucket)
             for report in audit.report

@@ -1,3 +1,4 @@
+from logging import Logger
 from typing import Set
 
 from src.data.audit import Audit
@@ -7,5 +8,5 @@ from src.compliance.analyser import Analyser
 
 
 class PasswordPolicyCompliance(Analyser):
-    def analyse(self, audit: Audit) -> Set[Findings]:
-        return DetailedActionableReportCompliance("password_policy", "password policy").analyse(audit)
+    def analyse(self, logger: Logger, audit: Audit) -> Set[Findings]:
+        return DetailedActionableReportCompliance("password_policy", "password policy").analyse(logger, audit)

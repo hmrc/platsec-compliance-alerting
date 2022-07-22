@@ -1,3 +1,4 @@
+from logging import getLogger
 from os import environ
 
 from unittest import TestCase
@@ -79,7 +80,7 @@ class TestS3Compliance(TestCase):
     def test_analyse_s3_audit(self) -> None:
         self.maxDiff = None
         audit = Audit(type="s3", report=s3_report)
-        notifications = s3_compliance.analyse(audit)
+        notifications = s3_compliance.analyse(getLogger(), audit)
         assert len(notifications) == 7
         assert mischievous_bucket_finding in notifications
         assert bad_bucket_finding in notifications
