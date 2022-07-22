@@ -19,7 +19,8 @@ class Ec2Compliance(Analyser):
                     image_creation_date = datetime.fromisoformat(instance["image_creation_date"])
                 except ValueError:
                     logger.error(
-                        f"'{instance['image_creation_date']}'does not match the date pattern"
+                        f"image_creation_date '{instance['image_creation_date']}'"
+                        f" for instance '{instance['id']}' does not match the date pattern"
                         f" YYY-MM-DD[*HH[:MM[:SS[.fff[fff]]]][+HH:MM[:SS[.ffffff]]]]"
                     )
                     continue
