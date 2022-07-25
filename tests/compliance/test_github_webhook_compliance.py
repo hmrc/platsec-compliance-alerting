@@ -1,3 +1,4 @@
+from logging import getLogger
 from unittest.mock import Mock
 
 from src.config.config import Config
@@ -16,27 +17,41 @@ def get_config() -> Mock:
 
 
 def test_webhook_is_insecure_url() -> None:
-    assert GithubWebhookCompliance(get_config())._is_insecure_url({"config": {"insecure_url": 1}})
+    assert GithubWebhookCompliance(logger=getLogger(), config=get_config())._is_insecure_url(
+        {"config": {"insecure_url": 1}}
+    )
 
 
 def test_webhook_is_secure_url() -> None:
-    assert not (GithubWebhookCompliance(get_config())._is_insecure_url({"config": {"insecure_url": 0}}))
+    assert not (
+        GithubWebhookCompliance(logger=getLogger(), config=get_config())._is_insecure_url(
+            {"config": {"insecure_url": 0}}
+        )
+    )
 
 
 def test_webhook_in_ignore_host_list() -> None:
-    assert GithubWebhookCompliance(get_config())._in_ignore_host_list("https://known-host.com")
+    assert GithubWebhookCompliance(logger=getLogger(), config=get_config())._in_ignore_host_list(
+        "https://known-host.com"
+    )
 
 
 def test_webhook_not_in_ignore_host_list() -> None:
-    assert not GithubWebhookCompliance(get_config())._in_ignore_host_list("https://unknown-host.com")
+    assert not GithubWebhookCompliance(logger=getLogger(), config=get_config())._in_ignore_host_list(
+        "https://unknown-host.com"
+    )
 
 
 def test_webhook_with_port_in_ignore_list() -> None:
-    assert GithubWebhookCompliance(get_config())._in_ignore_host_list("https://known-host.com:8443")
+    assert GithubWebhookCompliance(logger=getLogger(), config=get_config())._in_ignore_host_list(
+        "https://known-host.com:8443"
+    )
 
 
 def test_webhook_with_port_and_path_in_ignore_host_list() -> None:
-    assert GithubWebhookCompliance(get_config())._in_ignore_host_list("https://known-host.com:8443/something")
+    assert GithubWebhookCompliance(logger=getLogger(), config=get_config())._in_ignore_host_list(
+        "https://known-host.com:8443/something"
+    )
 
 
 def test_check() -> None:
@@ -44,7 +59,7 @@ def test_check() -> None:
         type="github_webhook_report1.json",
         report=github_webhook_report,
     )
-    notifications = GithubWebhookCompliance(get_config()).analyse(audit)
+    notifications = GithubWebhookCompliance(logger=getLogger(), config=get_config()).analyse(audit)
 
     expected_findings = {
         findings(

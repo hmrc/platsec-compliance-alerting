@@ -1,3 +1,4 @@
+from logging import getLogger
 from os import environ
 
 from unittest import TestCase
@@ -71,7 +72,7 @@ another_account_finding = findings(
     findings={"Here is a detailed S3 audit report: the-dashboard"},
 )
 
-s3_compliance = S3Compliance(Config())
+s3_compliance = S3Compliance(getLogger(), Config())
 
 
 @patch.dict(environ, {"AUDIT_REPORT_DASHBOARD_URL": "the-dashboard"}, clear=True)

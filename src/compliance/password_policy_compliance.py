@@ -8,4 +8,6 @@ from src.compliance.analyser import Analyser
 
 class PasswordPolicyCompliance(Analyser):
     def analyse(self, audit: Audit) -> Set[Findings]:
-        return DetailedActionableReportCompliance("password_policy", "password policy").analyse(audit)
+        return DetailedActionableReportCompliance(
+            logger=self.logger, item_type="password_policy", item="password policy"
+        ).analyse(audit)

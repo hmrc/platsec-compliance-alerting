@@ -1,3 +1,4 @@
+from logging import Logger
 from typing import Any, Dict, Set
 
 from src.config.config import Config
@@ -9,8 +10,9 @@ from src.compliance.summarised_s3_compliance import SummarisedS3Compliance
 
 
 class S3Compliance(Analyser):
-    def __init__(self, config: Config) -> None:
+    def __init__(self, logger: Logger, config: Config) -> None:
         self.config = config
+        super().__init__(logger=logger)
 
     def analyse(self, audit: Audit) -> Set[Findings]:
         findings = {

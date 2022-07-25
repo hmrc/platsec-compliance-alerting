@@ -8,4 +8,4 @@ from src.compliance.analyser import Analyser
 
 class VpcCompliance(Analyser):
     def analyse(self, audit: Audit) -> Set[Findings]:
-        return ActionableReportCompliance("vpc", "VPC flow logs").analyse(audit)
+        return ActionableReportCompliance(self.logger, "vpc", "VPC flow logs").analyse(audit)

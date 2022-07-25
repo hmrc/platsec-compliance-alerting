@@ -21,7 +21,7 @@ config = Config()
 def main(event: Dict[str, Any]) -> None:
     logger = configure_logging()
 
-    findings = handle_sns_event(event) if is_sns_event(event) else analyse(fetch(event))
+    findings = handle_sns_event(event) if is_sns_event(event) else analyse(logger, fetch(event))
     slack_messages = apply_mappings(apply_filters(findings))
     send(logger, slack_messages)
 
@@ -61,8 +61,8 @@ def fetch(event: Dict[str, Any]) -> Audit:
     return AuditFetcher().fetch_audit(config.get_report_s3_client(), event)
 
 
-def analyse(audit: Audit) -> Set[Findings]:
-    return AuditAnalyser().analyse(audit, config)
+def analyse(logger: Logger, audit: Audit) -> Set[Findings]:
+    return AuditAnalyser().analyse(logger, audit, config)
 
 
 def apply_filters(notifications: Set[Findings]) -> Set[Findings]:

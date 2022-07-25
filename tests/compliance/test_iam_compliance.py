@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from logging import getLogger
 from typing import List, Dict, Any
 from zoneinfo import ZoneInfo
 
@@ -29,7 +30,7 @@ def test_no_violations() -> None:
     account = create_account()
     audit = create_audit([(create_account_report(account, good_keys))])
 
-    notifications = IamCompliance().analyse(audit)
+    notifications = IamCompliance(getLogger()).analyse(audit)
 
     assert sorted(notifications, key=lambda x: x.item) == [
         Findings(
@@ -82,7 +83,7 @@ def test_keys_older_than_30_days() -> None:
         [(create_account_report(account1, keys_account1)), (create_account_report(account2, keys_account2))]
     )
 
-    notifications = IamCompliance().analyse(audit)
+    notifications = IamCompliance(getLogger()).analyse(audit)
 
     assert sorted(notifications, key=lambda x: x.item) == [
         Findings(

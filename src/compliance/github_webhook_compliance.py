@@ -1,3 +1,4 @@
+from logging import Logger
 from typing import Any, Dict, Set, List
 from urllib.parse import urlparse
 
@@ -10,8 +11,9 @@ from src.data.findings import Findings
 class GithubWebhookCompliance(Analyser):
     webhooks: Dict[str, Set[str]] = {}
 
-    def __init__(self, config: Config):
+    def __init__(self, logger: Logger, config: Config):
         self.config = config
+        super().__init__(logger=logger)
 
     def analyse(self, audit: Audit) -> Set[Findings]:
         for repositories in audit.report:

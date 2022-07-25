@@ -1,4 +1,5 @@
 from json import dumps
+from logging import Logger
 from typing import Any, Dict, Optional, Sequence, Set
 
 from src.compliance.action_describer import ActionDescriber, BriefActionDescriber, DetailedActionDescriber
@@ -12,10 +13,11 @@ from src.data.findings import Findings
 class ActionableReportCompliance(Analyser):
     action: ActionDescriber
 
-    def __init__(self, item_type: str, item: str):
+    def __init__(self, logger: Logger, item_type: str, item: str):
         self.item_type = item_type
         self.item = item
         self.action = BriefActionDescriber()
+        super().__init__(logger=logger)
 
     def analyse(self, audit: Audit) -> Set[Findings]:
         return {
@@ -71,8 +73,8 @@ class ActionableReportCompliance(Analyser):
 
 
 class DetailedActionableReportCompliance(ActionableReportCompliance):
-    def __init__(self, item_type: str, item: str):
-        super().__init__(item_type=item_type, item=item)
+    def __init__(self, logger: Logger, item_type: str, item: str):
+        super().__init__(item_type=item_type, item=item, logger=logger)
         self.action = DetailedActionDescriber()
 
     def _build_description(self, actions: Sequence[Action], results: Dict[str, Any]) -> Optional[str]:
