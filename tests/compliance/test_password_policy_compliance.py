@@ -14,7 +14,7 @@ def test_empty_findings_when_audit_has_no_actions() -> None:
     audit = _password_policy_audit(acc)
     prettified_results = '```{\n    "some_results": "some_value"\n}```'
     expected_description = f"password policy compliance is met\n{prettified_results}"
-    assert PasswordPolicyCompliance().analyse(getLogger(), audit) == _findings(acc, expected_description)
+    assert PasswordPolicyCompliance(getLogger()).analyse(audit) == _findings(acc, expected_description)
 
 
 def test_vpc_compliance_not_met_when_audit_has_actions() -> None:
@@ -26,7 +26,7 @@ def test_vpc_compliance_not_met_when_audit_has_actions() -> None:
     expected_description = f"password policy compliance is not met\n{prettified_results}"
     expected_actions = {'required: a\nb\n```{\n    "some_details": "bla"\n}```'}
     expected_findings = _findings(acc, expected_description, expected_actions)
-    assert PasswordPolicyCompliance().analyse(getLogger(), audit) == expected_findings
+    assert PasswordPolicyCompliance(getLogger()).analyse(audit) == expected_findings
 
 
 def test_vpc_compliance_enforcement_success_when_all_actions_applied() -> None:
@@ -42,7 +42,7 @@ def test_vpc_compliance_enforcement_success_when_all_actions_applied() -> None:
     expected_description = f"password policy compliance enforcement success\n{prettified_results}"
     expected_actions = {'applied: a\n```{\n    "some_key": 1\n}```\nb'}
     expected_findings = _findings(acc, expected_description, expected_actions)
-    assert expected_findings == PasswordPolicyCompliance().analyse(getLogger(), audit)
+    assert expected_findings == PasswordPolicyCompliance(getLogger()).analyse(audit)
 
 
 def test_vpc_compliance_enforcement_failure_when_any_action_failed() -> None:
@@ -58,7 +58,7 @@ def test_vpc_compliance_enforcement_failure_when_any_action_failed() -> None:
     expected_description = f"password policy compliance enforcement failure\n{prettified_results}"
     expected_actions = {'applied: a\nfailed: b\n```{\n    "a_key": 42\n}```\nerror: boom'}
     expected_findings = _findings(acc, expected_description, expected_actions)
-    assert PasswordPolicyCompliance().analyse(getLogger(), audit) == expected_findings
+    assert PasswordPolicyCompliance(getLogger()).analyse(audit) == expected_findings
 
 
 def _password_policy_audit(acc: Account, actions: Optional[Sequence[Dict[str, Any]]] = None) -> Audit:

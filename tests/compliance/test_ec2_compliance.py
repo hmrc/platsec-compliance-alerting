@@ -10,7 +10,7 @@ from tests.test_types_generator import create_audit
 def test_ec2_analyse_returns_nothing_when_ami_new() -> None:
     good_account = Account("1234", "good_account")
     audit = create_audit(type="audit_ec2", report=[create_ec2_report(good_account, [create_instance_metadata()])])
-    assert Ec2Compliance().analyse(getLogger(), audit) == set()
+    assert Ec2Compliance(getLogger()).analyse(audit) == set()
 
 
 def test_ec2_analyse_returns_nothing_when_missing_ami_age() -> None:
@@ -20,7 +20,7 @@ def test_ec2_analyse_returns_nothing_when_missing_ami_age() -> None:
     metadata["image_creation_date"] = "unknown"
     audit = create_audit(type="audit_ec2", report=[create_ec2_report(bad_account, [metadata])])
 
-    assert len(Ec2Compliance().analyse(logger, audit)) == 0
+    assert len(Ec2Compliance(logger).analyse(audit)) == 0
 
 
 def test_ec2_analyse_returns_findings_when_old_ami() -> None:
@@ -40,7 +40,7 @@ def test_ec2_analyse_returns_findings_when_old_ami() -> None:
             ),
         ],
     )
-    assert len(Ec2Compliance().analyse(getLogger(), audit)) == 2
+    assert len(Ec2Compliance(getLogger()).analyse(audit)) == 2
 
 
 def create_instance_metadata(

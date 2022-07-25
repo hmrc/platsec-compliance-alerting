@@ -11,10 +11,11 @@ from src.data.findings import Findings
 class GithubWebhookCompliance(Analyser):
     webhooks: Dict[str, Set[str]] = {}
 
-    def __init__(self, config: Config):
+    def __init__(self, logger: Logger, config: Config):
         self.config = config
+        super().__init__(logger=logger)
 
-    def analyse(self, logger: Logger, audit: Audit) -> Set[Findings]:
+    def analyse(self, audit: Audit) -> Set[Findings]:
         for repositories in audit.report:
             for webhook in repositories["Webhooks"]:
                 self._check_webhook_rules(repositories["RepositoryName"], webhook)

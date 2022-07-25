@@ -10,10 +10,11 @@ from src.compliance.summarised_s3_compliance import SummarisedS3Compliance
 
 
 class S3Compliance(Analyser):
-    def __init__(self, config: Config) -> None:
+    def __init__(self, logger: Logger, config: Config) -> None:
         self.config = config
+        super().__init__(logger=logger)
 
-    def analyse(self, logger: Logger, audit: Audit) -> Set[Findings]:
+    def analyse(self, audit: Audit) -> Set[Findings]:
         findings = {
             self._check_bucket_compliancy(report["account"], bucket)
             for report in audit.report

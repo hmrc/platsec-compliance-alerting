@@ -1,4 +1,3 @@
-from logging import Logger
 from typing import Any, Dict, Optional, Set
 
 from src.compliance.analyser import Analyser
@@ -8,7 +7,7 @@ from src.data.findings import Findings
 
 
 class VpcPeeringCompliance(Analyser):
-    def analyse(self, logger: Logger, audit: Audit) -> Set[Findings]:
+    def analyse(self, audit: Audit) -> Set[Findings]:
         return {
             self._analyse_peering_connection(pcx, Account.from_dict(report["account"]))
             for report in audit.report

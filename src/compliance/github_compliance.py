@@ -1,4 +1,3 @@
-from logging import Logger
 from typing import Any, Dict, Set
 
 from src.data.audit import Audit
@@ -7,7 +6,7 @@ from src.compliance.analyser import Analyser
 
 
 class GithubCompliance(Analyser):
-    def analyse(self, logger: Logger, audit: Audit) -> Set[Findings]:
+    def analyse(self, audit: Audit) -> Set[Findings]:
         return {self._check_repository_rules(repository) for repository in audit.report if not repository["isFork"]}
 
     def _check_repository_rules(self, repository: Dict[str, Any]) -> Findings:

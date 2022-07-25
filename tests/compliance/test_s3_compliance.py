@@ -72,7 +72,7 @@ another_account_finding = findings(
     findings={"Here is a detailed S3 audit report: the-dashboard"},
 )
 
-s3_compliance = S3Compliance(Config())
+s3_compliance = S3Compliance(getLogger(), Config())
 
 
 @patch.dict(environ, {"AUDIT_REPORT_DASHBOARD_URL": "the-dashboard"}, clear=True)
@@ -80,7 +80,7 @@ class TestS3Compliance(TestCase):
     def test_analyse_s3_audit(self) -> None:
         self.maxDiff = None
         audit = Audit(type="s3", report=s3_report)
-        notifications = s3_compliance.analyse(getLogger(), audit)
+        notifications = s3_compliance.analyse(audit)
         assert len(notifications) == 7
         assert mischievous_bucket_finding in notifications
         assert bad_bucket_finding in notifications

@@ -20,18 +20,18 @@ class AuditAnalyser:
     @staticmethod
     def analyse(logger: Logger, audit: Audit, config: Config) -> Set[Findings]:
         config_map: Dict[str, Analyser] = {
-            config.get_github_audit_report_key(): GithubCompliance(),
-            config.get_github_webhook_report_key(): GithubWebhookCompliance(config),
-            config.get_s3_audit_report_key(): S3Compliance(config),
-            config.get_iam_audit_report_key(): IamCompliance(),
-            config.get_vpc_audit_report_key(): VpcCompliance(),
-            config.get_password_policy_audit_report_key(): PasswordPolicyCompliance(),
-            config.get_vpc_peering_audit_report_key(): VpcPeeringCompliance(),
-            config.get_ec2_audit_report_key(): Ec2Compliance(),
+            config.get_github_audit_report_key(): GithubCompliance(logger),
+            config.get_github_webhook_report_key(): GithubWebhookCompliance(logger, config),
+            config.get_s3_audit_report_key(): S3Compliance(logger, config),
+            config.get_iam_audit_report_key(): IamCompliance(logger),
+            config.get_vpc_audit_report_key(): VpcCompliance(logger),
+            config.get_password_policy_audit_report_key(): PasswordPolicyCompliance(logger),
+            config.get_vpc_peering_audit_report_key(): VpcPeeringCompliance(logger),
+            config.get_ec2_audit_report_key(): Ec2Compliance(logger),
         }
 
         for audit_key, audit_analyser in config_map.items():
             if audit.type.startswith(audit_key):
-                return audit_analyser.analyse(logger, audit)
+                return audit_analyser.analyse(audit)
 
         raise UnsupportedAuditException(audit.type)

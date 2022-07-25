@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from logging import Logger
 from typing import Set
 
 from src.compliance.analyser import Analyser
@@ -11,14 +10,14 @@ MAX_AMI_AGE_DAYS: int = 90
 
 
 class Ec2Compliance(Analyser):
-    def analyse(self, logger: Logger, audit: Audit) -> Set[Findings]:
+    def analyse(self, audit: Audit) -> Set[Findings]:
         findings = set()
         for account in audit.report:
             for instance in account["results"]["ec2_instances"]:
                 try:
                     image_creation_date = datetime.fromisoformat(instance["image_creation_date"])
                 except ValueError:
-                    logger.error(
+                    self.logger.error(
                         f"image_creation_date '{instance['image_creation_date']}'"
                         f" for instance '{instance['id']}' does not match the date pattern"
                         f" YYY-MM-DD[*HH[:MM[:SS[.fff[fff]]]][+HH:MM[:SS[.ffffff]]]]"

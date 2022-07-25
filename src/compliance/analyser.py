@@ -7,10 +7,14 @@ from typing import Set
 
 
 class Analyser(ABC):
+    logger: Logger
+
+    def __init__(self, logger: Logger):
+        self.logger = logger
+
     @abstractmethod
-    def analyse(self, logger: Logger, audit: Audit) -> Set[Findings]:
+    def analyse(self, audit: Audit) -> Set[Findings]:
         """
-        :param logger:
         :param audit: an audit report
         :return: set of notifications for findings in the audit report
         """
