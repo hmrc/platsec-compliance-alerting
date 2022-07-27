@@ -14,8 +14,13 @@ class Ec2Compliance(Analyser):
         findings = set()
         for account in audit.report:
             for instance in account["results"]["ec2_instances"]:
+                image_creation_date = instance.get("image_creation_date")
+                if image_creation_date is None:
+                    self.logger.warning(f"image_creation_date for '{instance['id']}' missing")
+                    continue
+
                 try:
-                    image_creation_date = datetime.fromisoformat(instance["image_creation_date"])
+                    image_creation_date = datetime.fromisoformat(image_creation_date)
                 except ValueError:
                     self.logger.error(
                         f"image_creation_date '{instance['image_creation_date']}'"
