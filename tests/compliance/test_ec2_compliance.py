@@ -9,15 +9,29 @@ from tests.test_types_generator import create_audit
 
 def test_ec2_analyse_returns_nothing_when_ami_new() -> None:
     good_account = Account("1234", "good_account")
-    audit = create_audit(type="audit_ec2", report=[create_ec2_report(good_account, [create_instance_metadata()])])
+    audit = create_audit(
+        type="audit_ec2",
+        report=[
+            create_ec2_report(good_account, [create_instance_metadata(image_creation_date=datetime.now(timezone.utc))])
+        ],
+    )
     assert Ec2Compliance(getLogger()).analyse(audit) == set()
 
 
 def test_ec2_analyse_returns_nothing_when_missing_ami_age() -> None:
     logger = getLogger()
     bad_account = Account("1235", "bad_account")
+    metadata = create_instance_metadata(image_creation_date=None)
+    audit = create_audit(type="audit_ec2", report=[create_ec2_report(bad_account, [metadata])])
+
+    assert len(Ec2Compliance(logger).analyse(audit)) == 0
+
+
+def test_ec2_analyse_returns_nothing_invalid_ami_age() -> None:
+    logger = getLogger()
+    bad_account = Account("1235", "bad_account")
     metadata = create_instance_metadata()
-    metadata["image_creation_date"] = "unknown"
+    metadata["image_creation_date"] = "evil value"
     audit = create_audit(type="audit_ec2", report=[create_ec2_report(bad_account, [metadata])])
 
     assert len(Ec2Compliance(logger).analyse(audit)) == 0
@@ -29,7 +43,7 @@ def test_ec2_analyse_returns_findings_when_old_ami() -> None:
     audit = create_audit(
         type="audit_ec2",
         report=[
-            create_ec2_report(good_account, [create_instance_metadata()]),
+            create_ec2_report(good_account, [create_instance_metadata(image_creation_date=datetime.now(timezone.utc))]),
             create_ec2_report(
                 bad_account,
                 [
@@ -48,13 +62,11 @@ def create_instance_metadata(
 ) -> Dict[str, Any]:
     if launch_time is None:
         launch_time = datetime.now(timezone.utc)
-    if image_creation_date is None:
-        image_creation_date = datetime.now(timezone.utc)
     return {
         "id": "i-12f312f312f31",
         "component": "test-component",
         "image_id": "ami-19034814134fa",
-        "image_creation_date": image_creation_date.isoformat(),  # "2022-05-19T15:18:07+00:00",
+        "image_creation_date": image_creation_date.isoformat() if image_creation_date else None,
         "launch_time": launch_time.isoformat(),  # "2022-05-19T15:18:07+00:00"
         "metadata_options_http_tokens": "optional",
     }
