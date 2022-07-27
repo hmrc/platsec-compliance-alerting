@@ -16,7 +16,7 @@ class Ec2Compliance(Analyser):
             for instance in account["results"]["ec2_instances"]:
                 image_creation_date = instance.get("image_creation_date")
                 if image_creation_date is None:
-                    self.logger.warning(f"image_creation_date for '{instance['image_creation_date']}' missing")
+                    self.logger.warning(f"image_creation_date for '{instance['id']}' missing")
                     continue
 
                 try:
