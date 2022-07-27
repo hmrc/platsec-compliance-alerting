@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
-from logging import getLogger
 from typing import List, Dict, Any, Optional
+from unittest.mock import Mock
 
 from src.compliance.ec2_compliance import Ec2Compliance
 from src.data.account import Account
@@ -15,26 +15,24 @@ def test_ec2_analyse_returns_nothing_when_ami_new() -> None:
             create_ec2_report(good_account, [create_instance_metadata(image_creation_date=datetime.now(timezone.utc))])
         ],
     )
-    assert Ec2Compliance(getLogger()).analyse(audit) == set()
+    assert Ec2Compliance(logger=Mock()).analyse(audit) == set()
 
 
 def test_ec2_analyse_returns_nothing_when_missing_ami_age() -> None:
-    logger = getLogger()
     bad_account = Account("1235", "bad_account")
     metadata = create_instance_metadata(image_creation_date=None)
     audit = create_audit(type="audit_ec2", report=[create_ec2_report(bad_account, [metadata])])
 
-    assert len(Ec2Compliance(logger).analyse(audit)) == 0
+    assert len(Ec2Compliance(logger=Mock()).analyse(audit)) == 0
 
 
 def test_ec2_analyse_returns_nothing_invalid_ami_age() -> None:
-    logger = getLogger()
     bad_account = Account("1235", "bad_account")
     metadata = create_instance_metadata()
     metadata["image_creation_date"] = "evil value"
     audit = create_audit(type="audit_ec2", report=[create_ec2_report(bad_account, [metadata])])
 
-    assert len(Ec2Compliance(logger).analyse(audit)) == 0
+    assert len(Ec2Compliance(logger=Mock()).analyse(audit)) == 0
 
 
 def test_ec2_analyse_returns_findings_when_old_ami() -> None:
@@ -54,7 +52,7 @@ def test_ec2_analyse_returns_findings_when_old_ami() -> None:
             ),
         ],
     )
-    assert len(Ec2Compliance(getLogger()).analyse(audit)) == 2
+    assert len(Ec2Compliance(logger=Mock()).analyse(audit)) == 2
 
 
 def create_instance_metadata(
