@@ -4,6 +4,7 @@ from unittest.mock import Mock
 
 from src.compliance.ec2_compliance import Ec2Compliance
 from src.data.account import Account
+from src.data.findings import Findings
 from tests.test_types_generator import create_audit
 
 
@@ -53,6 +54,37 @@ def test_ec2_analyse_returns_findings_when_old_ami() -> None:
         ],
     )
     assert len(Ec2Compliance(logger=Mock()).analyse(audit)) == 2
+
+
+def test_ec2_analyse_old_ami_output() -> None:
+    bad_account = Account("1235", "bad_account")
+    audit = create_audit(
+        type="audit_ec2",
+        report=[
+            create_ec2_report(
+                bad_account,
+                [
+                    create_instance_metadata(image_creation_date=(datetime.now(timezone.utc) - timedelta(days=12345))),
+                ],
+            ),
+        ],
+    )
+    result = Ec2Compliance(logger=Mock()).analyse(audit)
+    assert len(result) == 1
+    findings: Findings = result.pop()
+    assert findings.compliance_item_type == "ami_creation_age"
+    assert findings.account == bad_account
+    assert findings.item == "test-component"
+    assert (
+        findings.description == "Running image AMI created over 90 days ago."
+        " The older an AMI becomes the higher the likelihood"
+        " the image is missing important security patches."
+    )
+    assert findings.findings == {
+        "Instance:  `i-12f312f312f31`",
+        "Component: `test-component`",
+        "Created:   `12345` days ago. ",
+    }
 
 
 def create_instance_metadata(

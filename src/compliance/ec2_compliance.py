@@ -33,17 +33,17 @@ class Ec2Compliance(Analyser):
                 if image_creation_days_ago > MAX_AMI_AGE_DAYS:
                     findings.add(
                         Findings(
-                            account=Account.from_dict(account["account"]),
                             compliance_item_type="ami_creation_age",
+                            account=Account.from_dict(account["account"]),
                             item=instance["component"],
+                            findings={
+                                f"Instance:  `{instance['id']}`",
+                                f"Component: `{instance['component']}`",
+                                f"Created:   `{image_creation_days_ago}` days ago. ",
+                            },
                             description=f"Running image AMI created over {MAX_AMI_AGE_DAYS} days ago."
                             " The older an AMI becomes the higher the likelihood"
                             " the image is missing important security patches.",
-                            findings={
-                                f"Instance:  `{instance['id']}`"
-                                f"Component: `{instance['component']}`"
-                                f"Created:   `{image_creation_days_ago}` days ago. ",
-                            },
                         )
                     )
 
