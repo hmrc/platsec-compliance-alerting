@@ -13,24 +13,31 @@ def test_ec2_analyse_returns_nothing_when_ami_new() -> None:
     audit = create_audit(
         type="audit_ec2",
         report=[
-            create_ec2_report(good_account, [create_instance_metadata(image_creation_date=datetime.now(timezone.utc))])
+            create_ec2_report(
+                good_account,
+                [
+                    create_instance_metadata(image_creation_date=datetime.now(timezone.utc)),
+                    create_instance_metadata(image_creation_date=None, launch_time=datetime.now(timezone.utc)),
+                ],
+            )
         ],
     )
     assert Ec2Compliance(logger=Mock()).analyse(audit) == set()
-
-
-def test_ec2_analyse_returns_nothing_when_missing_ami_age() -> None:
-    bad_account = Account("1235", "bad_account")
-    metadata = create_instance_metadata(image_creation_date=None)
-    audit = create_audit(type="audit_ec2", report=[create_ec2_report(bad_account, [metadata])])
-
-    assert len(Ec2Compliance(logger=Mock()).analyse(audit)) == 0
 
 
 def test_ec2_analyse_returns_nothing_invalid_ami_age() -> None:
     bad_account = Account("1235", "bad_account")
     metadata = create_instance_metadata()
     metadata["image_creation_date"] = "evil value"
+    audit = create_audit(type="audit_ec2", report=[create_ec2_report(bad_account, [metadata])])
+
+    assert len(Ec2Compliance(logger=Mock()).analyse(audit)) == 0
+
+
+def test_ec2_analyse_returns_nothing_invalid_instance_age() -> None:
+    bad_account = Account("1235", "bad_account")
+    metadata = create_instance_metadata(image_creation_date=None)
+    metadata["launch_time"] = "evil value"
     audit = create_audit(type="audit_ec2", report=[create_ec2_report(bad_account, [metadata])])
 
     assert len(Ec2Compliance(logger=Mock()).analyse(audit)) == 0
@@ -83,7 +90,32 @@ def test_ec2_analyse_old_ami_output() -> None:
     assert findings.findings == {
         "Instance:  `i-12f312f312f31`",
         "Component: `test-component`",
-        "Created:   `12345` days ago. ",
+        "Created:   `12345` days ago.",
+    }
+
+
+def test_ec2_analyse_falls_back_to_instance_age_when_missing_ami_age() -> None:
+    bad_account = Account("1235", "bad_account")
+    metadata = create_instance_metadata(
+        image_creation_date=None, launch_time=datetime.now(timezone.utc) - timedelta(days=99)
+    )
+    audit = create_audit(type="audit_ec2", report=[create_ec2_report(bad_account, [metadata])])
+
+    result = Ec2Compliance(logger=Mock()).analyse(audit)
+    assert len(result) == 1
+    findings: Findings = result.pop()
+    assert findings.compliance_item_type == "ami_creation_age"
+    assert findings.account == bad_account
+    assert findings.item == "test-component"
+    assert (
+        findings.description == "Running image AMI has been deleted but instance has been running for over 90 days!"
+        " The older an instance becomes the higher the likelihood"
+        " the image is missing important security patches."
+    )
+    assert findings.findings == {
+        "Instance:  `i-12f312f312f31`",
+        "Component: `test-component`",
+        "Started:   `99` days ago.",
     }
 
 
