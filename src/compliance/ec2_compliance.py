@@ -21,7 +21,7 @@ class Ec2Compliance(Analyser):
                     try:
                         launch_time = datetime.fromisoformat(instance["launch_time"])
                     except ValueError:
-                        self.log_date_parse_error(instance["id"], instance["launch_time"])
+                        self.log_date_parse_error(field_name="launch_time", instance=instance)
                         continue
                     launch_time_days_ago = (datetime.now(timezone.utc) - launch_time).days
                     if launch_time_days_ago > MAX_AMI_AGE_DAYS:
@@ -44,7 +44,7 @@ class Ec2Compliance(Analyser):
                     try:
                         image_creation_date = datetime.fromisoformat(image_creation_date)
                     except ValueError:
-                        self.log_date_parse_error(instance["id"], instance["image_creation_date"])
+                        self.log_date_parse_error(field_name="image_creation_date", instance=instance)
                         continue
 
                     image_creation_days_ago = (datetime.now(timezone.utc) - image_creation_date).days
@@ -78,9 +78,9 @@ class Ec2Compliance(Analyser):
             description=description,
         )
 
-    def log_date_parse_error(self, instance_id: str, date_string: str) -> None:
+    def log_date_parse_error(self, field_name: str, instance: Dict[str, str]) -> None:
         self.logger.error(
-            f"image_creation_date '{date_string}'"
-            f" for instance '{instance_id}' does not match the date pattern"
+            f"{field_name} '{instance.get(field_name)}'"
+            f" for instance '{instance['id']}' does not match the date pattern"
             f" YYY-MM-DD[*HH[:MM[:SS[.fff[fff]]]][+HH:MM[:SS[.ffffff]]]]"
         )
