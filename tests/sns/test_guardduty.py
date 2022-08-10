@@ -28,4 +28,5 @@ def test_event_to_findings(*_: Mock) -> None:
             "*Links:* <https://eu-west-2.console.aws.amazon.com/guardduty/home?region=eu-west-2#/findings?fId=a6bfa2f07"
             "|GuardDuty Console> | <the-runbook-url|Runbook>"
         ),
+        "*Region:* eu-west-2",
     }
