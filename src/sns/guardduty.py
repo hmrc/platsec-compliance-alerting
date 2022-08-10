@@ -24,6 +24,7 @@ class GuardDuty:
                 f"*Severity:* `{message['detail']['severity']}`",
                 f"*Links:* {self._build_links(message)}",
                 f"*Timestamp:* {parser.parse(GuardDuty._traverse(message, 'detail', 'service', 'eventLastSeen'))}",
+                f"*Region:* {message['region']}",
             },
         )
 
