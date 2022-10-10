@@ -71,6 +71,21 @@ another_account_finding = findings(
     item="another-account",
     findings={"Here is a detailed S3 audit report: the-dashboard"},
 )
+logging_skipped_good_bucket_finding = findings(
+    account=account("998877665544", "yet-another-account"),
+    compliance_item_type="s3_bucket",
+    item="logging-skipped-good-bucket",
+    findings=set(),
+)
+logging_skipped_bad_bucket_finding = findings(
+    account=account("998877665544", "yet-another-account"),
+    compliance_item_type="s3_bucket",
+    item="logging-skipped-bad-bucket",
+    findings={
+        "bucket should be encrypted",
+        "bucket should have tags for expiry and sensitivity",
+    },
+)
 
 s3_compliance = S3Compliance(getLogger(), Config())
 
@@ -81,7 +96,7 @@ class TestS3Compliance(TestCase):
         self.maxDiff = None
         audit = Audit(type="s3", report=s3_report)
         notifications = s3_compliance.analyse(audit)
-        assert len(notifications) == 7
+        assert len(notifications) == 10
         assert mischievous_bucket_finding in notifications
         assert bad_bucket_finding in notifications
         assert good_bucket_finding in notifications
@@ -89,3 +104,5 @@ class TestS3Compliance(TestCase):
         assert bad_bucket_low_sensitivity_finding in notifications
         assert an_account_finding in notifications
         assert another_account_finding in notifications
+        assert logging_skipped_bad_bucket_finding in notifications
+        assert logging_skipped_good_bucket_finding in notifications

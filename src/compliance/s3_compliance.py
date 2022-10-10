@@ -27,6 +27,12 @@ class S3Compliance(Analyser):
         findings = set()
         for key in bucket["compliancy"]:
             if not bucket["compliancy"][key]["compliant"]:
+                if (
+                    key == "logging"
+                    and "skipped" in bucket["compliancy"]["logging"]
+                    and bucket["compliancy"]["logging"]["skipped"]
+                ):
+                    continue
                 findings.add(bucket["compliancy"][key]["message"])
 
         return Findings(
