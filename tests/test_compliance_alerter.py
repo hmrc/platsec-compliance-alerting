@@ -182,6 +182,7 @@ class TestComplianceAlerter(TestCase):
                 "LOG_LEVEL": "DEBUG",
                 "ORG_ACCOUNT": "ORG-ACCOUNT-ID-12374234",
                 "ORG_READ_ROLE": "the-org-read-role",
+                "VPC_RESOLVER_AUDIT_REPORT_KEY": "vpc resolver audit report key",
             },
             clear=True,
         ).start()

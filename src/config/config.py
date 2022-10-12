@@ -61,6 +61,9 @@ class Config:
     def get_vpc_audit_report_key(self) -> str:
         return self._get_env("VPC_AUDIT_REPORT_KEY")
 
+    def get_vpc_resolver_audit_report_key(self) -> str:
+        return self._get_env("VPC_RESOLVER_AUDIT_REPORT_KEY")
+
     def get_vpc_peering_audit_report_key(self) -> str:
         return self._get_env("VPC_PEERING_AUDIT_REPORT_KEY")
 
