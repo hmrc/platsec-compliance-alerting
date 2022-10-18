@@ -1,6 +1,7 @@
 from logging import Logger
 from typing import Set, Dict
 
+from src.compliance.actionable_report_compliance import ActionableReportCompliance
 from src.compliance.analyser import Analyser
 from src.compliance.ec2_compliance import Ec2Compliance
 from src.compliance.iam_compliance import IamCompliance
@@ -28,6 +29,9 @@ class AuditAnalyser:
             config.get_password_policy_audit_report_key(): PasswordPolicyCompliance(logger),
             config.get_vpc_peering_audit_report_key(): VpcPeeringCompliance(logger),
             config.get_ec2_audit_report_key(): Ec2Compliance(logger),
+            config.get_vpc_resolver_audit_report_key(): ActionableReportCompliance(
+                logger=logger, item_type="vpc_dns_log", item="vpc dns log"
+            ),
         }
 
         for audit_key, audit_analyser in config_map.items():

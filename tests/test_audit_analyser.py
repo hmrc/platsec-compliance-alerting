@@ -1,6 +1,7 @@
 from logging import getLogger
 from unittest import TestCase
 from unittest.mock import Mock, patch
+from src.compliance.actionable_report_compliance import ActionableReportCompliance
 
 from src.audit_analyser import AuditAnalyser
 from src.compliance.ec2_compliance import Ec2Compliance
@@ -26,6 +27,7 @@ from tests.test_types_generator import findings
 @patch.object(Config, "get_password_policy_audit_report_key", return_value="audit_password_policy.json")
 @patch.object(Config, "get_vpc_peering_audit_report_key", return_value="audit_vpc_peering.json")
 @patch.object(Config, "get_ec2_audit_report_key", return_value="audit_ec2.json")
+@patch.object(Config, "get_vpc_resolver_audit_report_key", return_value="audit_vpc_resolver_logs.json")
 class TestAuditAnalyser(TestCase):
     def test_check_s3_compliance(self, *_: Mock) -> None:
         logger = getLogger()
@@ -112,3 +114,12 @@ class TestAuditAnalyser(TestCase):
     def test_check_unsupported_audit(self, *_: Mock) -> None:
         with self.assertRaisesRegex(UnsupportedAuditException, "wat"):
             AuditAnalyser().analyse(getLogger(), Audit(type="wat", report=[]), Config())
+
+    def test_check_vpc_resolver_compliance(self, *_: Mock) -> None:
+        logger = getLogger()
+        notifications = {findings(item="item-1"), findings(item="item-2")}
+        audit = Audit(type="audit_vpc_resolver_logs.json", report=[{"report": "val-1"}, {"report": "val-2"}])
+
+        with patch.object(ActionableReportCompliance, "analyse", return_value=notifications) as vpc_compliance:
+            self.assertEqual(notifications, AuditAnalyser().analyse(logger, audit, Config()))
+        vpc_compliance.assert_called_once_with(audit)
