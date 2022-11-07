@@ -9,16 +9,17 @@ from src.data.findings import Findings
 class VpcPeeringCompliance(Analyser):
     def analyse(self, audit: Audit) -> Set[Findings]:
         return {
-            self._analyse_peering_connection(pcx, Account.from_dict(report["account"]))
+            self._analyse_peering_connection(pcx, Account.from_dict(report["account"]), report["region"])
             for report in audit.report
             for pcx in report["results"]["vpc_peering_connections"]
         }
 
-    def _analyse_peering_connection(self, pcx: Dict[str, Any], account: Account) -> Findings:
+    def _analyse_peering_connection(self, pcx: Dict[str, Any], account: Account, region_name: str) -> Findings:
         return Findings(
             compliance_item_type="vpc_peering",
             item=pcx["id"],
             account=account,
+            region_name=region_name,
             findings=self._check_for_unknown_accounts(pcx),
         )
 

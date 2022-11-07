@@ -11,15 +11,18 @@ class Findings:
     findings: FrozenSet[str]
     description: Optional[str]
     account: Optional[Account] = None
+    region_name: Optional[str] = None
 
     def __init__(
         self,
         compliance_item_type: str,
         item: str,
+        region_name: Optional[str] = None,
         account: Optional[Account] = None,
         findings: Optional[Set[str]] = None,
         description: Optional[str] = None,
     ):
+        self.region_name = region_name
         self.account = account
         self.compliance_item_type = compliance_item_type
         self.item = item

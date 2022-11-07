@@ -1,6 +1,7 @@
 vpc_report = [
     {
         "account": {"identifier": "111222333444", "name": "the-account"},
+        "region": "test-region-name",
         "description": "audit VPC flow logs compliance",
         "results": {
             "vpcs": [{"id": "vpc-1a1a1a1a1a1a1a1a1"}],

@@ -12,6 +12,7 @@ class SummarisedS3Compliance:
         return {
             Findings(
                 account=finding.account,
+                region_name=finding.region_name,
                 compliance_item_type="s3_compliance_summary",
                 description=f"Account {finding.account_name} has S3 buckets that do not comply with the policy",
                 item=finding.account_name,

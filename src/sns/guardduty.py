@@ -17,6 +17,7 @@ class GuardDuty:
         return Findings(
             compliance_item_type="guardduty",
             account=Account(identifier=message["detail"]["accountId"]),
+            region_name=message["region"],
             item="GuardDuty alert",
             description=message["detail"]["title"],
             findings={
@@ -24,7 +25,6 @@ class GuardDuty:
                 f"*Severity:* `{message['detail']['severity']}`",
                 f"*Links:* {self._build_links(message)}",
                 f"*Timestamp:* {parser.parse(GuardDuty._traverse(message, 'detail', 'service', 'eventLastSeen'))}",
-                f"*Region:* {message['region']}",
             },
         )
 

@@ -140,6 +140,7 @@ def create_ec2_report(account: Account, ec2_instances: List[Dict[str, Any]]) -> 
             "identifier": account.identifier,
             "name": account.name,
         },
+        "region": "test-region-name",
         "description": "audit EC2 instances",
         "results": {"ec2_instances": ec2_instances},
     }

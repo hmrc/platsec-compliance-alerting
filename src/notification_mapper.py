@@ -15,7 +15,7 @@ class NotificationMapper:
             [
                 SlackMessage(
                     channels=sorted(NotificationMapper._find_channels(notification, mappings)),
-                    header=self.build_header(org_client, notification.account),
+                    header=self.build_header(org_client, notification.region_name, notification.account),
                     title=notification.item,
                     text=NotificationMapper._create_message_text(notification),
                     color="#ff4d4d",
@@ -25,12 +25,14 @@ class NotificationMapper:
             key=lambda msg: (msg.header, msg.title),
         )
 
-    def build_header(self, org_client: AwsOrgClient, account: Optional[Account]) -> str:
+    def build_header(self, org_client: AwsOrgClient, region_name: Optional[str], account: Optional[Account]) -> str:
+        if region_name is None:
+            region_name = ""
         if account is None:
             return ""
         else:
             account = org_client.get_account(account_id=account.identifier)
-            return f"{account.name} ({account.identifier}) {account.slack_handle}"
+            return f"{account.name} ({account.identifier}) {region_name} {account.slack_handle}"
 
     @staticmethod
     def _find_channels(notification: Findings, mappings: Set[NotificationMappingConfig]) -> Set[str]:

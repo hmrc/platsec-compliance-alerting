@@ -16,14 +16,14 @@ class S3Compliance(Analyser):
 
     def analyse(self, audit: Audit) -> Set[Findings]:
         findings = {
-            self._check_bucket_compliancy(report["account"], bucket)
+            self._check_bucket_compliancy(report["account"], report["region"], bucket)
             for report in audit.report
             for bucket in report["results"]["buckets"]
         }
         findings.update(SummarisedS3Compliance(self.config).summarise(findings))
         return findings
 
-    def _check_bucket_compliancy(self, account: Dict[str, str], bucket: Dict[str, Any]) -> Findings:
+    def _check_bucket_compliancy(self, account: Dict[str, str], region_name: str, bucket: Dict[str, Any]) -> Findings:
         findings = set()
         for key in bucket["compliancy"]:
             if not bucket["compliancy"][key]["compliant"]:
@@ -37,6 +37,7 @@ class S3Compliance(Analyser):
 
         return Findings(
             account=Account.from_dict(account),
+            region_name=region_name,
             compliance_item_type="s3_bucket",
             item=bucket["name"],
             findings=findings,

@@ -35,6 +35,7 @@ def test_no_violations() -> None:
     assert sorted(notifications, key=lambda x: x.item) == [
         Findings(
             account=account,
+            region_name="test-region-name",
             compliance_item_type="iam_access_key",
             item="key1_id",
             findings=set(),
@@ -42,6 +43,7 @@ def test_no_violations() -> None:
         ),
         Findings(
             account=account,
+            region_name="test-region-name",
             compliance_item_type="iam_access_key",
             item="key2_id",
             findings=set(),
@@ -88,6 +90,7 @@ def test_keys_older_than_30_days() -> None:
     assert sorted(notifications, key=lambda x: x.item) == [
         Findings(
             account=account1,
+            region_name="test-region-name",
             compliance_item_type="iam_access_key",
             item="key1_id",
             findings={EXPECTED_OLD_KEY_VIOLATION},
@@ -95,6 +98,7 @@ def test_keys_older_than_30_days() -> None:
         ),
         Findings(
             account=account1,
+            region_name="test-region-name",
             compliance_item_type="iam_access_key",
             item="key2_id",
             findings={EXPECTED_OLD_KEY_VIOLATION},
@@ -102,6 +106,7 @@ def test_keys_older_than_30_days() -> None:
         ),
         Findings(
             account=account2,
+            region_name="test-region-name",
             compliance_item_type="iam_access_key",
             item="key3_id",
             findings=set(),
@@ -109,6 +114,7 @@ def test_keys_older_than_30_days() -> None:
         ),
         Findings(
             account=account2,
+            region_name="test-region-name",
             compliance_item_type="iam_access_key",
             item="key4_id",
             findings={EXPECTED_OLD_KEY_VIOLATION},
@@ -134,6 +140,7 @@ def create_account_report(account: Account, access_keys: List[Dict[str, Any]]) -
             "identifier": account.identifier,
             "name": account.name,
         },
+        "region": "test-region-name",
         "description": "audit_iam",
         "results": {"iam_access_keys": dates_as_strings},
     }

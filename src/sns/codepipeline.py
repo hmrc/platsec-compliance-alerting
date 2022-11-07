@@ -25,6 +25,7 @@ class CodePipeline:
         return Findings(
             compliance_item_type="codepipeline",
             account=account,
+            region_name=region,
             item=title,
             findings=findings,
         )
