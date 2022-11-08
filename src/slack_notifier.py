@@ -15,7 +15,7 @@ class SlackMessage:
     text: str
     color: str
 
-    def __init__(self, channels: List[str], header: str, title: str, text: str, color: str = "#36a64f"):
+    def __init__(self, channels: List[str], header: str, title: str, text: str, color: str):
         self.channels = list(filter(None, channels))
         self.header = header
         self.title = title

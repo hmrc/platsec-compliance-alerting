@@ -1,6 +1,7 @@
 from logging import getLogger
 from typing import Any, Dict, Optional, Sequence, Set
 
+from src.data.severity import Severity
 from tests.test_types_generator import create_account, create_audit, findings
 
 from src.compliance.password_policy_compliance import PasswordPolicyCompliance
@@ -14,7 +15,7 @@ def test_empty_findings_when_audit_has_no_actions() -> None:
     audit = _password_policy_audit(acc)
     prettified_results = '```{\n    "some_results": "some_value"\n}```'
     expected_description = f"password policy compliance is met\n{prettified_results}"
-    assert PasswordPolicyCompliance(getLogger()).analyse(audit) == _findings(acc, expected_description)
+    assert PasswordPolicyCompliance(getLogger()).analyse(audit) == _findings(Severity.LOW, acc, expected_description)
 
 
 def test_vpc_compliance_not_met_when_audit_has_actions() -> None:
@@ -25,7 +26,7 @@ def test_vpc_compliance_not_met_when_audit_has_actions() -> None:
     prettified_results = '```{\n    "some_results": "some_value"\n}```'
     expected_description = f"password policy compliance is not met\n{prettified_results}"
     expected_actions = {'required: a\nb\n```{\n    "some_details": "bla"\n}```'}
-    expected_findings = _findings(acc, expected_description, expected_actions)
+    expected_findings = _findings(Severity.HIGH, acc, expected_description, expected_actions)
     assert PasswordPolicyCompliance(getLogger()).analyse(audit) == expected_findings
 
 
@@ -41,7 +42,7 @@ def test_vpc_compliance_enforcement_success_when_all_actions_applied() -> None:
     prettified_results = '```{\n    "some_results": "some_value"\n}```'
     expected_description = f"password policy compliance enforcement success\n{prettified_results}"
     expected_actions = {'applied: a\n```{\n    "some_key": 1\n}```\nb'}
-    expected_findings = _findings(acc, expected_description, expected_actions)
+    expected_findings = _findings(Severity.LOW, acc, expected_description, expected_actions)
     assert expected_findings == PasswordPolicyCompliance(getLogger()).analyse(audit)
 
 
@@ -57,7 +58,7 @@ def test_vpc_compliance_enforcement_failure_when_any_action_failed() -> None:
     prettified_results = '```{\n    "some_results": "some_value"\n}```'
     expected_description = f"password policy compliance enforcement failure\n{prettified_results}"
     expected_actions = {'applied: a\nfailed: b\n```{\n    "a_key": 42\n}```\nerror: boom'}
-    expected_findings = _findings(acc, expected_description, expected_actions)
+    expected_findings = _findings(Severity.HIGH, acc, expected_description, expected_actions)
     assert PasswordPolicyCompliance(getLogger()).analyse(audit) == expected_findings
 
 
@@ -74,9 +75,12 @@ def _password_policy_audit(acc: Account, actions: Optional[Sequence[Dict[str, An
     )
 
 
-def _findings(acc: Account, desc: Optional[str] = None, find: Optional[Set[str]] = None) -> Set[Findings]:
+def _findings(
+    severity: Severity, acc: Account, desc: Optional[str] = None, find: Optional[Set[str]] = None
+) -> Set[Findings]:
     return {
         findings(
+            severity=severity,
             account=acc,
             compliance_item_type="password_policy",
             item="password policy",

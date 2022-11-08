@@ -8,6 +8,7 @@ from src.data.account import Account
 from src.data.action import Action
 from src.data.audit import Audit
 from src.data.findings import Findings
+from src.data.severity import Severity
 
 
 class ActionableReportCompliance(Analyser):
@@ -40,6 +41,7 @@ class ActionableReportCompliance(Analyser):
             item=self.item,
             description=self._build_description(actions, results),
             findings=self._build_findings(actions),
+            severity=self._build_severity(actions),
         )
 
     def _build_description(self, actions: Sequence[Action], results: Dict[str, Any]) -> Optional[str]:
@@ -62,6 +64,12 @@ class ActionableReportCompliance(Analyser):
         if self._any_failed(actions):
             return {f"applied: {self.action.describe_applied(actions)}\nfailed: {self.action.describe_failed(actions)}"}
         return None
+
+    def _build_severity(self, actions: Sequence[Action]) -> Severity:
+        if self._any_failed(actions) or self._none_applied(actions):
+            return Severity.HIGH
+        else:
+            return Severity.LOW
 
     @staticmethod
     def _none_applied(actions: Sequence[Action]) -> bool:

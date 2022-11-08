@@ -4,15 +4,20 @@ from unittest.mock import Mock
 from src.clients.aws_org_client import AwsOrgClient
 from src.config.notification_mapping_config import NotificationMappingConfig
 from src.data.account import Account
+from src.data.severity import Severity
 from src.notification_mapper import NotificationMapper
 from src.slack_notifier import SlackMessage
 
 from tests.test_types_generator import account, findings
 
 
-findings_a = findings(item="item-a", findings={"a-1", "a-2"}, account=account(identifier="111", name="bbb"))
+findings_a = findings(
+    severity=Severity.HIGH, item="item-a", findings={"a-1", "a-2"}, account=account(identifier="111", name="bbb")
+)
 findings_b = findings(item="item-b", findings={"finding b"}, account=account(identifier="222", name="aaa"))
-findings_c = findings(item="item-c", findings={"finding c"}, account=account(identifier="333", name="ccc"))
+findings_c = findings(
+    severity=Severity.LOW, item="item-c", findings={"finding c"}, account=account(identifier="333", name="ccc")
+)
 
 msg_a = SlackMessage(
     channels=["central", "channel-2"],
@@ -33,7 +38,7 @@ msg_c = SlackMessage(
     header="ccc (333) test-region-name team-b",
     title="item-c",
     text="finding c",
-    color="#ff4d4d",
+    color="#ffffff",
 )
 
 
