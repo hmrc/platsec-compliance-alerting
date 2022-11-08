@@ -23,15 +23,19 @@ class ActionableReportCompliance(Analyser):
         return {
             self._account_findings(
                 account=Account.from_dict(report["account"]),
+                region_name=report["region"],
                 actions=[Action.from_dict(action) for action in report["results"]["enforcement_actions"]],
                 results=report["results"],
             )
             for report in audit.report
         }
 
-    def _account_findings(self, account: Account, actions: Sequence[Action], results: Dict[str, Any]) -> Findings:
+    def _account_findings(
+        self, account: Account, region_name: str, actions: Sequence[Action], results: Dict[str, Any]
+    ) -> Findings:
         return Findings(
             account=account,
+            region_name=region_name,
             compliance_item_type=self.item_type,
             item=self.item,
             description=self._build_description(actions, results),

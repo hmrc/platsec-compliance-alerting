@@ -4,6 +4,7 @@ s3_report = [
             "identifier": "555666777444",
             "name": "an-account",
         },
+        "region": "test-region-name",
         "results": {
             "buckets": [
                 {
@@ -69,6 +70,7 @@ s3_report = [
             "identifier": "111222333444",
             "name": "another-account",
         },
+        "region": "test-region-name",
         "results": {
             "buckets": [
                 {
@@ -106,6 +108,7 @@ s3_report = [
             "identifier": "999999999999",
             "name": "another-account-2",
         },
+        "region": "test-region-name",
         "results": {
             "buckets": [
                 {
@@ -146,6 +149,7 @@ s3_report = [
             "identifier": "555666777444",
             "name": "an-account",
         },
+        "region": "test-region-name",
         "results": {
             "buckets": [
                 {
@@ -188,6 +192,7 @@ s3_report = [
             "identifier": "998877665544",
             "name": "yet-another-account",
         },
+        "region": "test-region-name",
         "results": {
             "buckets": [
                 {

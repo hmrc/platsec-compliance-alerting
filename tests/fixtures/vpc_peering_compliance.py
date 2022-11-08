@@ -1,6 +1,7 @@
 vpc_peering_audit = [
     {
         "account": {"identifier": "111222333444", "name": "account-1"},
+        "region": "test-region-name",
         "description": "audit VPC peering connections",
         "results": {
             "vpc_peering_connections": [
@@ -29,6 +30,7 @@ vpc_peering_audit = [
     },
     {
         "account": {"identifier": "787878787878", "name": "account-2"},
+        "region": "test-region-name",
         "description": "audit VPC peering connections",
         "results": {
             "vpc_peering_connections": [

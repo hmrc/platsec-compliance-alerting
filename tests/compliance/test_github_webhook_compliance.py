@@ -64,6 +64,7 @@ def test_check() -> None:
     expected_findings = {
         findings(
             account=None,
+            region_name=None,
             description="`https://known-host.com`",
             compliance_item_type="github_repository_webhook",
             item="https://known-host.com",
@@ -73,6 +74,7 @@ def test_check() -> None:
         ),
         findings(
             account=None,
+            region_name=None,
             description="`https://unknown-host.com`",
             compliance_item_type="github_repository_webhook",
             item="https://unknown-host.com",

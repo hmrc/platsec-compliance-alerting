@@ -73,6 +73,7 @@ class Ec2Compliance(Analyser):
         return Findings(
             compliance_item_type="ami_creation_age",
             account=Account.from_dict(account["account"]),
+            region_name=account["region"],
             item=instance["component"],
             findings=findings,
             description=description,

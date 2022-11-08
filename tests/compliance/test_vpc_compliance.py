@@ -48,6 +48,7 @@ def _vpc_audit(acc: Account, actions: Optional[Sequence[Dict[str, Any]]] = None)
         report=[
             {
                 "account": {"identifier": acc.identifier, "name": acc.name},
+                "region": "test-region-name",
                 "results": {"enforcement_actions": actions or []},
             }
         ],

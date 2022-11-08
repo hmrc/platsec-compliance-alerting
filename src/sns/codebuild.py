@@ -25,6 +25,7 @@ class CodeBuild:
         return Findings(
             compliance_item_type="codebuild",
             account=account,
+            region_name=region,
             item=title,
             findings={f"<{codebuild_url}|build> | <{logs_url}|logs>"},
         )

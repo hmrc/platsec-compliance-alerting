@@ -15,14 +15,22 @@ findings_b = findings(item="item-b", findings={"finding b"}, account=account(ide
 findings_c = findings(item="item-c", findings={"finding c"}, account=account(identifier="333", name="ccc"))
 
 msg_a = SlackMessage(
-    channels=["central", "channel-2"], header="aaa (111) team-a", title="item-a", text="a-1\na-2", color="#ff4d4d"
+    channels=["central", "channel-2"],
+    header="aaa (111) test-region-name team-a",
+    title="item-a",
+    text="a-1\na-2",
+    color="#ff4d4d",
 )
 msg_b = SlackMessage(
-    channels=["central", "channel-1"], header="bbb (222) team-a", title="item-b", text="finding b", color="#ff4d4d"
+    channels=["central", "channel-1"],
+    header="bbb (222) test-region-name team-a",
+    title="item-b",
+    text="finding b",
+    color="#ff4d4d",
 )
 msg_c = SlackMessage(
     channels=["central", "channel-1", "channel-2"],
-    header="ccc (333) team-b",
+    header="ccc (333) test-region-name team-b",
     title="item-c",
     text="finding c",
     color="#ff4d4d",

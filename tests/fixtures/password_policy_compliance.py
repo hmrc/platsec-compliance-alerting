@@ -1,6 +1,7 @@
 password_policy_report = [
     {
         "account": {"identifier": "979897989798", "name": "compliant-account"},
+        "region": "test-region-name",
         "description": "audit password policy compliance",
         "results": {
             "password_policy": {
@@ -19,6 +20,7 @@ password_policy_report = [
     },
     {
         "account": {"identifier": "000000000000", "name": "bad-account"},
+        "region": "test-region-name",
         "description": "audit password policy compliance",
         "results": {
             "password_policy": {

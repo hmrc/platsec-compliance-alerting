@@ -25,6 +25,7 @@ class IamCompliance(Analyser):
                 notifications.add(
                     Findings(
                         account=account,
+                        region_name=report["region"],
                         compliance_item_type="iam_access_key",
                         item=access_key["id"],
                         findings=self._get_findings(access_key),

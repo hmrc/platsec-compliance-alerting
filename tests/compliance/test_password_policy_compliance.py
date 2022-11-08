@@ -67,6 +67,7 @@ def _password_policy_audit(acc: Account, actions: Optional[Sequence[Dict[str, An
         report=[
             {
                 "account": {"identifier": acc.identifier, "name": acc.name},
+                "region": "test-region-name",
                 "results": {"some_results": "some_value", "enforcement_actions": actions or []},
             }
         ],

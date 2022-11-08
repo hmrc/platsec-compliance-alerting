@@ -17,6 +17,7 @@ def test_event_to_findings(*_: Mock) -> None:
     assert finding.account
     assert finding.account.identifier == "987654321098"
     assert finding.account.name == ""
+    assert finding.region_name == "eu-west-2"
     assert finding.description == "Amazon S3 Block Public Access was disabled for S3 bucket test-gd-32423."
     assert finding.compliance_item_type == "guardduty"
     assert finding.item == "GuardDuty alert"
@@ -28,5 +29,4 @@ def test_event_to_findings(*_: Mock) -> None:
             "*Links:* <https://eu-west-2.console.aws.amazon.com/guardduty/home?region=eu-west-2#/findings?fId=a6bfa2f07"
             "|GuardDuty Console> | <the-runbook-url|Runbook>"
         ),
-        "*Region:* eu-west-2",
     }

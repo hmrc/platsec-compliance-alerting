@@ -22,11 +22,13 @@ def findings(
     account: Optional[Account] = account(),
     compliance_item_type: str = "item_type",
     item: str = "test-item",
+    region_name: Optional[str] = "test-region-name",
     findings: Optional[Set[str]] = None,
     description: Optional[str] = None,
 ) -> Findings:
     return Findings(
         account=account,
+        region_name=region_name,
         compliance_item_type=compliance_item_type,
         item=item,
         description=description,
