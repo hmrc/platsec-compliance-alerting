@@ -8,7 +8,7 @@ import pytest
 
 from src.slack_notifier import SlackMessage, SlackNotifier, SlackNotifierConfig, SlackNotifierException
 
-
+TEST_COLOUR = "some-colour"
 SLACK_MESSAGE = SlackMessage(["channel-a", "channel-b"], "a-header", "a-title", "a-text", "#c1e7c6")
 API_URL = "https://fake-api-url.com/"
 USER = "user"
@@ -78,7 +78,7 @@ def test_send_message() -> None:
 @httpretty.activate  # type: ignore
 def test_send_message_with_no_channel() -> None:
     _register_slack_api_success()
-    _create_slack_notifier().send_message(SlackMessage(["", ""], "a-header", "a-title", "a-text"))
+    _create_slack_notifier().send_message(SlackMessage(["", ""], "a-header", "a-title", "a-text", TEST_COLOUR))
     assert len(httpretty.latest_requests()) == 0, "Message should not have been sent"
 
 
@@ -88,9 +88,9 @@ def test_send_messages(caplog: Any) -> None:
     _register_slack_api_failure(500)
     _register_slack_api_success()
     messages = [
-        SlackMessage(["channel"], "success-header-1", "title", "text"),
-        SlackMessage(["channel"], "failure-header", "title", "text"),
-        SlackMessage(["channel"], "success-header-2", "title", "text"),
+        SlackMessage(["channel"], "success-header-1", "title", "text", TEST_COLOUR),
+        SlackMessage(["channel"], "failure-header", "title", "text", TEST_COLOUR),
+        SlackMessage(["channel"], "success-header-2", "title", "text", TEST_COLOUR),
     ]
 
     with caplog.at_level(logging.INFO):

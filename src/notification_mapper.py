@@ -18,7 +18,7 @@ class NotificationMapper:
                     header=self.build_header(org_client, notification.region_name, notification.account),
                     title=notification.item,
                     text=NotificationMapper._create_message_text(notification),
-                    color="#ff4d4d",
+                    color=notification.severity,
                 )
                 for notification in notifications
             ],

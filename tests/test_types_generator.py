@@ -5,6 +5,7 @@ from typing import Optional, Set, List, Dict, Any
 from src.data.account import Account
 from src.data.audit import Audit
 from src.data.findings import Findings
+from src.data.severity import Severity
 
 
 def account(identifier: str = "1234", name: str = "test-account") -> Account:
@@ -19,6 +20,7 @@ def create_account() -> Account:
 
 
 def findings(
+    severity: Severity = Severity.HIGH,
     account: Optional[Account] = account(),
     compliance_item_type: str = "item_type",
     item: str = "test-item",
@@ -27,6 +29,7 @@ def findings(
     description: Optional[str] = None,
 ) -> Findings:
     return Findings(
+        severity=severity,
         account=account,
         region_name=region_name,
         compliance_item_type=compliance_item_type,
