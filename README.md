@@ -1,7 +1,7 @@
 # platsec-compliance-alerting
 
 PlatSec Compliance Alerting analyses audit reports produced by [PlatSec AWS Scanner][scanner] and raises alerts on
-non-compliant resources. 
+non-compliant resources.
 
 ## Configuration
 
@@ -85,6 +85,18 @@ been signed-off and documented:
 - `reason`: explains why this item should not be alerted on, ideally links to a document illustrating the decision
 
 Alert filtering config files should be saved in the config bucket and prefixed with `filters/`.
+
+## CI/CD pipeline
+
+### Where can I find a CI/CD pipeline for this code base?
+
+- [PR build job](https://build.tax.service.gov.uk/job/platform-security/job/platsec-compliance-alerting-pr-builder)
+- [Deployment pipeline](https://eu-west-2.console.aws.amazon.com/codesuite/codepipeline/pipelines/compliance-alerting/view?region=eu-west-2)
+
+### How is the CI/CD pipeline configured?
+
+- PR build job is configured on [Jenkins](https://build.tax.service.gov.uk/job/platform-security/job/platsec-compliance-alerting-pr-builder)
+- Codepipeline pipeline config for deployment can be found in [platsec-ci-terraform repo](https://github.com/hmrc/platsec-ci-terraform/blob/main/pipelines.tf#L21)
 
 ## Licence
 
