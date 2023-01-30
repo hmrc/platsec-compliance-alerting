@@ -26,3 +26,5 @@ yarn-error.log
 coverage.xml
 __pycache__
 .vscode
+report.html
+.DS_Store
