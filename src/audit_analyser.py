@@ -38,4 +38,8 @@ class AuditAnalyser:
             if audit.type.startswith(audit_key):
                 return audit_analyser.analyse(audit)
 
-        raise UnsupportedAuditException(audit.type)
+        if audit.type in config.get_ignorable_report_keys():
+            logger.warning(f"Ignoring unsupported key '{audit.type}' as it is present in ignorable_report_keys config")
+            return set()
+        else:
+            raise UnsupportedAuditException(audit.type)
