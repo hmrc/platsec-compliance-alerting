@@ -73,6 +73,9 @@ class Config:
     def get_password_policy_audit_report_key(self) -> str:
         return self._get_env("PASSWORD_POLICY_AUDIT_REPORT_KEY")
 
+    def get_ignorable_report_keys(self) -> List[str]:
+        return self._get_env("IGNORABLE_REPORT_KEYS").split(",")
+
     def get_slack_api_url(self) -> str:
         return self._get_env("SLACK_API_URL")
 
