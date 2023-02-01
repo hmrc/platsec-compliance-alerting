@@ -35,4 +35,4 @@ class GithubCompliance(Analyser):
         return bool(repository["teamPermissions"] == "ADMIN")
 
     def _has_wiki_enabled(self, repository: Dict[str, Any]) -> bool:
-        return repository["hasWikiEnabled"] == True
+        return repository["hasWikiEnabled"] is True
