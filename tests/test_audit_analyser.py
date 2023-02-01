@@ -28,6 +28,7 @@ from tests.test_types_generator import findings
 @patch.object(Config, "get_vpc_peering_audit_report_key", return_value="audit_vpc_peering.json")
 @patch.object(Config, "get_ec2_audit_report_key", return_value="audit_ec2.json")
 @patch.object(Config, "get_vpc_resolver_audit_report_key", return_value="audit_vpc_resolver_logs.json")
+@patch.object(Config, "get_public_query_audit_report_key", return_value="audit_route53_query_logs.json")
 @patch.object(
     Config,
     "get_ignorable_report_keys",
@@ -132,3 +133,9 @@ class TestAuditAnalyser(TestCase):
         with patch.object(ActionableReportCompliance, "analyse", return_value=notifications) as vpc_compliance:
             self.assertEqual(notifications, AuditAnalyser().analyse(logger, audit, Config()))
         vpc_compliance.assert_called_once_with(audit)
+
+    def test_check_public_query_compliance(self, *_: Mock) -> None:
+        logger = getLogger()
+        public_query_handler = AuditAnalyser.config_map(logger, Config())["audit_route53_query_logs.json"]
+        self.assertEqual(public_query_handler.item_type, "public_query_log")
+        self.assertIsInstance(public_query_handler, ActionableReportCompliance)
