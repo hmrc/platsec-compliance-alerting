@@ -5,7 +5,6 @@ from src.data.findings import Findings
 
 
 class CodePipeline:
-
     Type: str = "CodePipeline Pipeline Execution State Change"
 
     @staticmethod
