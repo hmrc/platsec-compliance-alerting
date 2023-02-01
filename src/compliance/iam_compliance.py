@@ -14,7 +14,7 @@ AGE_VIOLATION_MESSAGE = f"key is older than {ACCEPTABLE_MAX_AGE.days} days"
 class IamCompliance(Analyser):
     def __init__(self, logger: Logger) -> None:
         self._max_age = datetime.now(timezone.utc) - ACCEPTABLE_MAX_AGE
-        super().__init__(logger=logger)
+        super().__init__(logger=logger, item_type="iam_access_key")
 
     def analyse(self, audit: Audit) -> Set[Findings]:
         notifications = set()
@@ -26,7 +26,7 @@ class IamCompliance(Analyser):
                     Findings(
                         account=account,
                         region_name=report["region"],
-                        compliance_item_type="iam_access_key",
+                        compliance_item_type=self.item_type,
                         item=access_key["id"],
                         findings=self._get_findings(access_key),
                         description=IamCompliance._make_description(access_key),
