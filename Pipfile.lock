@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "57a267925d20c349f890790055a4ed58d96c4abe74926c518ae288092d85f01c"
+            "sha256": "243924bb850b7227520d2a48e4b1781855fb8a1ee1ed0048bdf59867196a1264"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -532,8 +532,6 @@
         },
         "pathspec": {
             "hashes": [
-                "sha256:3a66eb970cbac598f9e5ccb5b2cf58930cd8e3ed86d393d541eaf2d8b1705229",
-                "sha256:64d338d4e0914e91c1792321e6907b5a593f1ab1851de7fc269557a21b30ebbc",
                 "sha256:3a66eb970cbac598f9e5ccb5b2cf58930cd8e3ed86d393d541eaf2d8b1705229",
                 "sha256:64d338d4e0914e91c1792321e6907b5a593f1ab1851de7fc269557a21b30ebbc"
             ],

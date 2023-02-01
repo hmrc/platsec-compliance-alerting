@@ -12,22 +12,14 @@ class TestGithubCompliance(TestCase):
     def test_repository_is_signed(self) -> None:
         self.assertTrue(
             GithubCompliance(getLogger())._is_signed(
-                {
-                    "branchProtectionRules": {
-                        "nodes": [{"requiresCommitSignatures": True}]
-                    }
-                }
+                {"branchProtectionRules": {"nodes": [{"requiresCommitSignatures": True}]}}
             )
         )
 
     def test_repository_is_not_signed(self) -> None:
         self.assertFalse(
             GithubCompliance(getLogger())._is_signed(
-                {
-                    "branchProtectionRules": {
-                        "nodes": [{"requiresCommitSignatures": False}]
-                    }
-                }
+                {"branchProtectionRules": {"nodes": [{"requiresCommitSignatures": False}]}}
             )
         )
 
@@ -60,28 +52,16 @@ class TestGithubCompliance(TestCase):
         )
 
     def test_repository_has_wiki_enabled(self) -> None:
-        self.assertTrue(
-            GithubCompliance(getLogger())._has_wiki_enabled({"hasWikiEnabled": True})
-        )
+        self.assertTrue(GithubCompliance(getLogger())._has_wiki_enabled({"hasWikiEnabled": True}))
 
     def test_repository_has_wiki_disabled(self) -> None:
-        self.assertFalse(
-            GithubCompliance(getLogger())._has_wiki_enabled({"hasWikiEnabled": False})
-        )
+        self.assertFalse(GithubCompliance(getLogger())._has_wiki_enabled({"hasWikiEnabled": False}))
 
     def test_repository_is_admin_permission(self) -> None:
-        self.assertTrue(
-            GithubCompliance(getLogger())._is_admin_permission(
-                {"teamPermissions": "ADMIN"}
-            )
-        )
+        self.assertTrue(GithubCompliance(getLogger())._is_admin_permission({"teamPermissions": "ADMIN"}))
 
     def test_repository_is_not_admin_permission(self) -> None:
-        self.assertFalse(
-            GithubCompliance(getLogger())._is_admin_permission(
-                {"teamPermissions": "WRITE"}
-            )
-        )
+        self.assertFalse(GithubCompliance(getLogger())._is_admin_permission({"teamPermissions": "WRITE"}))
 
     def test_check(self) -> None:
         audit = Audit(
