@@ -30,6 +30,7 @@ from src.slack_notifier import SlackNotifierConfig
         ("GUARDDUTY_RUNBOOK_URL", Config().get_guardduty_runbook_url),
         ("VPC_AUDIT_REPORT_KEY", Config().get_vpc_audit_report_key),
         ("VPC_PEERING_AUDIT_REPORT_KEY", Config().get_vpc_peering_audit_report_key),
+        ("IGNORABLE_REPORT_KEYS", Config().get_ignorable_report_keys),
         ("PASSWORD_POLICY_AUDIT_REPORT_KEY", Config().get_password_policy_audit_report_key),
         ("SLACK_API_URL", Config().get_slack_api_url),
         ("SLACK_USERNAME_KEY", Config().get_slack_username_key),
@@ -66,6 +67,12 @@ def test_get_unsupported_log_level(monkeypatch: Any) -> None:
 
     assert "LOG_LEVEL" in str(ice)
     assert "banana" in str(ice)
+
+
+def test_get_ignorable_report_keys(monkeypatch: Any) -> None:
+    monkeypatch.setenv("IGNORABLE_REPORT_KEYS", "key_1.json,key_2.json")
+
+    assert Config().get_ignorable_report_keys() == ["key_1.json", "key_2.json"]
 
 
 @patch("src.clients.aws_client_factory.AwsClientFactory.get_ssm_client")
