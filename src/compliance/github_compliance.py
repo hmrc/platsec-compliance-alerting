@@ -18,6 +18,9 @@ class GithubCompliance(Analyser):
         if not self._is_admin_permission(repository):
             findings.add("repository should have admin permissions")
 
+        if self._has_wiki_enabled(repository):
+            findings.add("repository has wiki enabled")
+
         return Findings(
             description=f"<https://www.github.com/{repository['nameWithOwner']}|{repository['name']}>",
             compliance_item_type="github_repository",
@@ -30,3 +33,6 @@ class GithubCompliance(Analyser):
 
     def _is_admin_permission(self, repository: Dict[str, Any]) -> bool:
         return bool(repository["teamPermissions"] == "ADMIN")
+
+    def _has_wiki_enabled(self, repository: Dict[str, Any]) -> bool:
+        return repository["hasWikiEnabled"] is True
