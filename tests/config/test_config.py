@@ -31,6 +31,7 @@ from src.slack_notifier import SlackNotifierConfig
         ("VPC_AUDIT_REPORT_KEY", Config().get_vpc_audit_report_key),
         ("VPC_PEERING_AUDIT_REPORT_KEY", Config().get_vpc_peering_audit_report_key),
         ("IGNORABLE_REPORT_KEYS", Config().get_ignorable_report_keys),
+        ("PUBLIC_QUERY_AUDIT_REPORT_KEY", Config().get_public_query_audit_report_key),
         ("PASSWORD_POLICY_AUDIT_REPORT_KEY", Config().get_password_policy_audit_report_key),
         ("SLACK_API_URL", Config().get_slack_api_url),
         ("SLACK_USERNAME_KEY", Config().get_slack_username_key),

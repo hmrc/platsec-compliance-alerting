@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from typing import Set, Dict, Any
+from logging import Logger
 
 from src.compliance.analyser import Analyser
 from src.data.account import Account
@@ -10,6 +11,9 @@ MAX_AMI_AGE_DAYS: int = 90
 
 
 class Ec2Compliance(Analyser):
+    def __init__(self, logger: Logger) -> None:
+        super().__init__(logger=logger, item_type="ami_creation_age")
+
     def analyse(self, audit: Audit) -> Set[Findings]:
         findings = set()
         for account in audit.report:

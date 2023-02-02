@@ -9,8 +9,9 @@ from typing import Set
 class Analyser(ABC):
     logger: Logger
 
-    def __init__(self, logger: Logger):
+    def __init__(self, logger: Logger, item_type: str):
         self.logger = logger
+        self.item_type = item_type
 
     @abstractmethod
     def analyse(self, audit: Audit) -> Set[Findings]:

@@ -1,4 +1,5 @@
 from typing import Any, Dict, Set
+from logging import Logger
 
 from src.data.audit import Audit
 from src.data.findings import Findings
@@ -6,6 +7,9 @@ from src.compliance.analyser import Analyser
 
 
 class GithubCompliance(Analyser):
+    def __init__(self, logger: Logger) -> None:
+        super().__init__(logger=logger, item_type="github_repository")
+
     def analyse(self, audit: Audit) -> Set[Findings]:
         return {self._check_repository_rules(repository) for repository in audit.report if not repository["isFork"]}
 
@@ -23,7 +27,7 @@ class GithubCompliance(Analyser):
 
         return Findings(
             description=f"<https://www.github.com/{repository['nameWithOwner']}|{repository['name']}>",
-            compliance_item_type="github_repository",
+            compliance_item_type=self.item_type,
             item=repository["name"],
             findings=findings,
         )

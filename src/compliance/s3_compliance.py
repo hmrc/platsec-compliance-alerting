@@ -12,7 +12,7 @@ from src.compliance.summarised_s3_compliance import SummarisedS3Compliance
 class S3Compliance(Analyser):
     def __init__(self, logger: Logger, config: Config) -> None:
         self.config = config
-        super().__init__(logger=logger)
+        super().__init__(logger=logger, item_type="s3_bucket")
 
     def analyse(self, audit: Audit) -> Set[Findings]:
         findings = {
@@ -38,7 +38,7 @@ class S3Compliance(Analyser):
         return Findings(
             account=Account.from_dict(account),
             region_name=region_name,
-            compliance_item_type="s3_bucket",
+            compliance_item_type=self.item_type,
             item=bucket["name"],
             findings=findings,
         )

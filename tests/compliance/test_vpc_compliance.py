@@ -3,8 +3,8 @@ from typing import Any, Dict, Optional, Sequence, Set
 
 from src.data.severity import Severity
 from tests.test_types_generator import create_account, create_audit, findings
+from src.compliance.actionable_report_compliance import ActionableReportCompliance
 
-from src.compliance.vpc_compliance import VpcCompliance
 from src.data.account import Account
 from src.data.audit import Audit
 from src.data.findings import Findings
@@ -13,16 +13,16 @@ from src.data.findings import Findings
 def test_empty_findings_when_audit_has_no_actions() -> None:
     acc = create_account()
     audit = _vpc_audit(acc)
-    assert _vpc_findings(Severity.LOW, acc, "VPC flow logs compliance is met") == VpcCompliance(getLogger()).analyse(
-        audit
-    )
+    assert _vpc_findings(Severity.LOW, acc, "VPC flow logs compliance is met") == ActionableReportCompliance(
+        getLogger(), "vpc", "VPC flow logs"
+    ).analyse(audit)
 
 
 def test_vpc_compliance_not_met_when_audit_has_actions() -> None:
     acc = create_account()
     audit = _vpc_audit(acc, actions=[{"description": "a"}, {"description": "b", "details": "bla"}])
     expected_findings = _vpc_findings(Severity.HIGH, acc, "VPC flow logs compliance is not met", {"required: a, b"})
-    assert expected_findings == VpcCompliance(getLogger()).analyse(audit)
+    assert expected_findings == ActionableReportCompliance(getLogger(), "vpc", "VPC flow logs").analyse(audit)
 
 
 def test_vpc_compliance_enforcement_success_when_all_actions_applied() -> None:
@@ -33,7 +33,7 @@ def test_vpc_compliance_enforcement_success_when_all_actions_applied() -> None:
     expected_findings = _vpc_findings(
         Severity.LOW, acc, "VPC flow logs compliance enforcement success", {"applied: a, b"}
     )
-    assert expected_findings == VpcCompliance(getLogger()).analyse(audit)
+    assert expected_findings == ActionableReportCompliance(getLogger(), "vpc", "VPC flow logs").analyse(audit)
 
 
 def test_vpc_compliance_enforcement_failure_when_any_action_failed() -> None:
@@ -44,7 +44,7 @@ def test_vpc_compliance_enforcement_failure_when_any_action_failed() -> None:
     expected_findings = _vpc_findings(
         Severity.HIGH, acc, "VPC flow logs compliance enforcement failure", {"applied: a\nfailed: b (boom)"}
     )
-    assert expected_findings == VpcCompliance(getLogger()).analyse(audit)
+    assert expected_findings == ActionableReportCompliance(getLogger(), "vpc", "VPC flow logs").analyse(audit)
 
 
 def _vpc_audit(acc: Account, actions: Optional[Sequence[Dict[str, Any]]] = None) -> Audit:

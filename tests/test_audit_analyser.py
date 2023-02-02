@@ -9,9 +9,7 @@ from src.compliance.iam_compliance import IamCompliance
 from src.compliance.s3_compliance import S3Compliance
 from src.compliance.github_compliance import GithubCompliance
 from src.compliance.github_webhook_compliance import GithubWebhookCompliance
-from src.compliance.vpc_compliance import VpcCompliance
 from src.compliance.vpc_peering_compliance import VpcPeeringCompliance
-from src.compliance.password_policy_compliance import PasswordPolicyCompliance
 from src.config.config import Config
 from src.data.audit import Audit
 from src.data.exceptions import UnsupportedAuditException
@@ -28,6 +26,7 @@ from tests.test_types_generator import findings
 @patch.object(Config, "get_vpc_peering_audit_report_key", return_value="audit_vpc_peering.json")
 @patch.object(Config, "get_ec2_audit_report_key", return_value="audit_ec2.json")
 @patch.object(Config, "get_vpc_resolver_audit_report_key", return_value="audit_vpc_resolver_logs.json")
+@patch.object(Config, "get_public_query_audit_report_key", return_value="audit_route53_query_logs.json")
 @patch.object(
     Config,
     "get_ignorable_report_keys",
@@ -82,12 +81,9 @@ class TestAuditAnalyser(TestCase):
 
     def test_check_vpc_compliance(self, *_: Mock) -> None:
         logger = getLogger()
-        notifications = {findings(item="item-1"), findings(item="item-2")}
-        audit = Audit(type="audit_vpc_flow_logs.json", report=[{"report": "val-1"}, {"report": "val-2"}])
-
-        with patch.object(VpcCompliance, "analyse", return_value=notifications) as vpc_compliance:
-            self.assertEqual(notifications, AuditAnalyser().analyse(logger, audit, Config()))
-        vpc_compliance.assert_called_once_with(audit)
+        public_query_handler = AuditAnalyser.config_map(logger, Config())["audit_vpc_flow_logs.json"]
+        self.assertEqual(public_query_handler.item_type, "vpc")
+        self.assertIsInstance(public_query_handler, ActionableReportCompliance)
 
     def test_check_vpc_peering_compliance(self, *_: Mock) -> None:
         logger = getLogger()
@@ -100,12 +96,9 @@ class TestAuditAnalyser(TestCase):
 
     def test_check_password_policy_compliance(self, *_: Mock) -> None:
         logger = getLogger()
-        the_findings = {findings(item="item-1"), findings(item="item-2")}
-        audit = Audit(type="audit_password_policy.json", report=[{"report": "val-1"}, {"report": "val-2"}])
-
-        with patch.object(PasswordPolicyCompliance, "analyse", return_value=the_findings) as password_policy_compliance:
-            self.assertEqual(the_findings, AuditAnalyser().analyse(logger, audit, Config()))
-        password_policy_compliance.assert_called_once_with(audit)
+        public_query_handler = AuditAnalyser.config_map(logger, Config())["audit_password_policy.json"]
+        self.assertEqual(public_query_handler.item_type, "password_policy")
+        self.assertIsInstance(public_query_handler, ActionableReportCompliance)
 
     def test_ec2_policy_compliance(self, *_: Mock) -> None:
         logger = getLogger()
@@ -132,3 +125,9 @@ class TestAuditAnalyser(TestCase):
         with patch.object(ActionableReportCompliance, "analyse", return_value=notifications) as vpc_compliance:
             self.assertEqual(notifications, AuditAnalyser().analyse(logger, audit, Config()))
         vpc_compliance.assert_called_once_with(audit)
+
+    def test_check_public_query_compliance(self, *_: Mock) -> None:
+        logger = getLogger()
+        public_query_handler = AuditAnalyser.config_map(logger, Config())["audit_route53_query_logs.json"]
+        self.assertEqual(public_query_handler.item_type, "public_query_log")
+        self.assertIsInstance(public_query_handler, ActionableReportCompliance)

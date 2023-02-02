@@ -32,6 +32,7 @@ github_webhook_key = "github_webhook"
 github_webhook_host_ignore_list = "known-host.com,known-host2.com"
 vpc_key = "vpc_audit"
 vpc_peering_key = "vpc_peering_audit"
+public_query_key = "public_query_audit"
 ec2_key = "ec2_audit"
 password_policy_key = "password_policy_audit"
 slack_api_url = "https://the-slack-api-url.com"
@@ -177,6 +178,7 @@ class TestComplianceAlerter(TestCase):
                 "SLACK_TOKEN_KEY": slack_token_key,
                 "SSM_READ_ROLE": "the-ssm-read-role",
                 "VPC_AUDIT_REPORT_KEY": vpc_key,
+                "PUBLIC_QUERY_AUDIT_REPORT_KEY": public_query_key,
                 "VPC_PEERING_AUDIT_REPORT_KEY": vpc_peering_key,
                 "EC2_AUDIT_REPORT_KEY": ec2_key,
                 "LOG_LEVEL": "DEBUG",

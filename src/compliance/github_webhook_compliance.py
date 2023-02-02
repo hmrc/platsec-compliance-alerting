@@ -13,7 +13,7 @@ class GithubWebhookCompliance(Analyser):
 
     def __init__(self, logger: Logger, config: Config):
         self.config = config
-        super().__init__(logger=logger)
+        super().__init__(logger=logger, item_type="github_repository_webhook")
 
     def analyse(self, audit: Audit) -> Set[Findings]:
         for repositories in audit.report:
@@ -42,7 +42,7 @@ class GithubWebhookCompliance(Analyser):
     def _set_all_findings(self, webhook: str, findings: Set[str]) -> Findings:
         return Findings(
             description=f"`{webhook}`",
-            compliance_item_type="github_repository_webhook",
+            compliance_item_type=self.item_type,
             item=webhook,
             findings=findings,
         )

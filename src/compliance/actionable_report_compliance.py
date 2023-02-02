@@ -15,10 +15,9 @@ class ActionableReportCompliance(Analyser):
     action: ActionDescriber
 
     def __init__(self, logger: Logger, item_type: str, item: str):
-        self.item_type = item_type
         self.item = item
         self.action = BriefActionDescriber()
-        super().__init__(logger=logger)
+        super().__init__(logger=logger, item_type=item_type)
 
     def analyse(self, audit: Audit) -> Set[Findings]:
         return {
