@@ -124,6 +124,16 @@ class Config:
         except KeyError:
             raise MissingConfigException(f"environment variable {key}") from None
 
+    def get_enable_wiki_checking(self) -> bool:
+        return self._get_feature_switch("ENABLE_WIKI_CHECKING")
+
+    @staticmethod
+    def _get_feature_switch(key: str) -> bool:
+        try:
+            return environ[key].strip().upper() == "TRUE"
+        except KeyError:
+            return False
+
     def _fetch_config_files(self, prefix: str, mapper: Callable[[Dict[str, str]], T]) -> Set[T]:
         s3 = AwsClientFactory().get_s3_client(self.get_aws_account(), self.get_config_bucket_read_role())
         keys = s3.list_objects(self.get_config_bucket(), prefix)

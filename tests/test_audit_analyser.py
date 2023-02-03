@@ -27,6 +27,7 @@ from tests.test_types_generator import findings
 @patch.object(Config, "get_ec2_audit_report_key", return_value="audit_ec2.json")
 @patch.object(Config, "get_vpc_resolver_audit_report_key", return_value="audit_vpc_resolver_logs.json")
 @patch.object(Config, "get_public_query_audit_report_key", return_value="audit_route53_query_logs.json")
+@patch.object(Config, "get_enable_wiki_checking", return_value=True)
 @patch.object(
     Config,
     "get_ignorable_report_keys",
@@ -52,13 +53,10 @@ class TestAuditAnalyser(TestCase):
         compliance.assert_called_once_with(audit)
 
     def test_check_github_compliance(self, *_: Mock) -> None:
-        logger = getLogger()
-        notifications = {findings(item="item-1"), findings(item="item-2")}
-        audit = Audit(type="github_admin_report", report=[{"name": "some-repo"}, {"name": "some-repo-2"}])
-
-        with patch.object(GithubCompliance, "analyse", return_value=notifications) as github_compliance:
-            self.assertEqual(notifications, AuditAnalyser().analyse(logger, audit, Config()))
-        github_compliance.assert_called_once_with(audit)
+        public_query_handler = AuditAnalyser.config_map(getLogger(), Config())["github_admin_report"]
+        self.assertIsInstance(public_query_handler, GithubCompliance)
+        self.assertEqual(public_query_handler.item_type, "github_repository")
+        self.assertTrue(public_query_handler.enable_wiki_checking)  # type: ignore
 
     def test_check_github_webhook_compliance(self, *_: Mock) -> None:
         logger = getLogger()

@@ -7,8 +7,9 @@ from src.compliance.analyser import Analyser
 
 
 class GithubCompliance(Analyser):
-    def __init__(self, logger: Logger) -> None:
+    def __init__(self, logger: Logger, enable_wiki_checking: bool) -> None:
         super().__init__(logger=logger, item_type="github_repository")
+        self.enable_wiki_checking = enable_wiki_checking
 
     def analyse(self, audit: Audit) -> Set[Findings]:
         return {self._check_repository_rules(repository) for repository in audit.report if not repository["isFork"]}
@@ -39,4 +40,7 @@ class GithubCompliance(Analyser):
         return bool(repository["teamPermissions"] == "ADMIN")
 
     def _has_wiki_enabled(self, repository: Dict[str, Any]) -> bool:
-        return repository["hasWikiEnabled"] is True
+        if self.enable_wiki_checking:
+            return repository["hasWikiEnabled"] is True
+        else:
+            return False

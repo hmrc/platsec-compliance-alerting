@@ -54,6 +54,37 @@ def test_get_default_log_level(monkeypatch: Any) -> None:
     assert Config.get_log_level() == "WARNING"
 
 
+def feature_switch_defaults_false(monkeypatch: Any) -> None:
+    monkeypatch.delenv("ENABLE_WIKI_CHECKING", raising=False)
+
+    assert Config().get_enable_wiki_checking() is False
+
+
+def feature_switch_can_be_disabled(monkeypatch: Any) -> None:
+    monkeypatch.setenv("ENABLE_WIKI_CHECKING", "false")
+    assert Config().get_enable_wiki_checking() is False
+
+    monkeypatch.setenv("ENABLE_WIKI_CHECKING", "False")
+    assert Config().get_enable_wiki_checking() is False
+
+    monkeypatch.setenv("ENABLE_WIKI_CHECKING", " False ")
+    assert Config().get_enable_wiki_checking() is False
+
+    monkeypatch.setenv("ENABLE_WIKI_CHECKING", "FALSE")
+    assert Config().get_enable_wiki_checking() is False
+
+
+def feature_switch_can_be_enabled(monkeypatch: Any) -> None:
+    monkeypatch.setenv("ENABLE_WIKI_CHECKING", "true")
+    assert Config().get_enable_wiki_checking() is True
+
+    monkeypatch.setenv("ENABLE_WIKI_CHECKING", "True")
+    assert Config().get_enable_wiki_checking() is True
+
+    monkeypatch.setenv("ENABLE_WIKI_CHECKING", " TRUE")
+    assert Config().get_enable_wiki_checking() is True
+
+
 def test_get_configured_log_level(monkeypatch: Any) -> None:
     monkeypatch.setenv("LOG_LEVEL", "debug")
 
