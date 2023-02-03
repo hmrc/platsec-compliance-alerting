@@ -11,21 +11,21 @@ from src.compliance.github_compliance import GithubCompliance
 class TestGithubCompliance(TestCase):
     def test_repository_is_signed(self) -> None:
         self.assertTrue(
-            GithubCompliance(getLogger())._is_signed(
+            GithubCompliance(getLogger(), enable_wiki_checking=False)._is_signed(
                 {"branchProtectionRules": {"nodes": [{"requiresCommitSignatures": True}]}}
             )
         )
 
     def test_repository_is_not_signed(self) -> None:
         self.assertFalse(
-            GithubCompliance(getLogger())._is_signed(
+            GithubCompliance(getLogger(), enable_wiki_checking=False)._is_signed(
                 {"branchProtectionRules": {"nodes": [{"requiresCommitSignatures": False}]}}
             )
         )
 
     def test_repository_is_signed_with_multiple_nodes(self) -> None:
         self.assertTrue(
-            GithubCompliance(getLogger())._is_signed(
+            GithubCompliance(getLogger(), enable_wiki_checking=False)._is_signed(
                 {
                     "branchProtectionRules": {
                         "nodes": [
@@ -39,7 +39,7 @@ class TestGithubCompliance(TestCase):
 
     def test_repository_is_signed_with_multiple_nodes_false(self) -> None:
         self.assertFalse(
-            GithubCompliance(getLogger())._is_signed(
+            GithubCompliance(getLogger(), enable_wiki_checking=False)._is_signed(
                 {
                     "branchProtectionRules": {
                         "nodes": [
@@ -51,24 +51,40 @@ class TestGithubCompliance(TestCase):
             )
         )
 
+    def test_wiki_checks_feature_flag_disabled(self) -> None:
+        self.assertFalse(
+            GithubCompliance(getLogger(), enable_wiki_checking=False)._has_wiki_enabled({"hasWikiEnabled": True})
+        )
+        self.assertFalse(
+            GithubCompliance(getLogger(), enable_wiki_checking=False)._has_wiki_enabled({"hasWikiEnabled": False})
+        )
+
     def test_repository_has_wiki_enabled(self) -> None:
-        self.assertTrue(GithubCompliance(getLogger())._has_wiki_enabled({"hasWikiEnabled": True}))
+        self.assertTrue(
+            GithubCompliance(getLogger(), enable_wiki_checking=True)._has_wiki_enabled({"hasWikiEnabled": True})
+        )
 
     def test_repository_has_wiki_disabled(self) -> None:
-        self.assertFalse(GithubCompliance(getLogger())._has_wiki_enabled({"hasWikiEnabled": False}))
+        self.assertFalse(
+            GithubCompliance(getLogger(), enable_wiki_checking=True)._has_wiki_enabled({"hasWikiEnabled": False})
+        )
 
     def test_repository_is_admin_permission(self) -> None:
-        self.assertTrue(GithubCompliance(getLogger())._is_admin_permission({"teamPermissions": "ADMIN"}))
+        self.assertTrue(
+            GithubCompliance(getLogger(), enable_wiki_checking=True)._is_admin_permission({"teamPermissions": "ADMIN"})
+        )
 
     def test_repository_is_not_admin_permission(self) -> None:
-        self.assertFalse(GithubCompliance(getLogger())._is_admin_permission({"teamPermissions": "WRITE"}))
+        self.assertFalse(
+            GithubCompliance(getLogger(), enable_wiki_checking=True)._is_admin_permission({"teamPermissions": "WRITE"})
+        )
 
     def test_check(self) -> None:
         audit = Audit(
             type="github_admin_report.json",
             report=github_report,
         )
-        notifications = GithubCompliance(getLogger()).analyse(audit)
+        notifications = GithubCompliance(getLogger(), enable_wiki_checking=True).analyse(audit)
         expected_findings = {
             findings(
                 account=None,

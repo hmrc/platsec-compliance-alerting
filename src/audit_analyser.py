@@ -32,7 +32,7 @@ class AuditAnalyser:
     @staticmethod
     def config_map(logger: Logger, config: Config) -> Dict[str, Analyser]:
         return {
-            config.get_github_audit_report_key(): GithubCompliance(logger),
+            config.get_github_audit_report_key(): GithubCompliance(logger, config.get_enable_wiki_checking()),
             config.get_github_webhook_report_key(): GithubWebhookCompliance(logger, config),
             config.get_s3_audit_report_key(): S3Compliance(logger, config),
             config.get_iam_audit_report_key(): IamCompliance(logger),
