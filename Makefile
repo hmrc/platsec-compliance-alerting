@@ -58,8 +58,6 @@ python-test:
 		--no-cov-on-fail \
 		--cov-report "term-missing:skip-covered" \
 		--no-header \
-		--html=report.html \
-		--self-contained-html \
 		tests
 
 .PHONY: md-check
