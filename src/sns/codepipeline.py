@@ -20,6 +20,10 @@ class CodePipeline:
         )
         findings = CodePipeline.generate_error_messages(failed_actions=message["additionalAttributes"]["failedActions"])
         findings.add(link)
+        findings.add(
+            "This pipeline has failed and is blocking the path to production for new code, "
+            "assume a role in the account and click the link to find out why."
+        )
 
         return Findings(
             compliance_item_type="codepipeline",

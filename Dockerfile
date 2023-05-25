@@ -36,7 +36,7 @@ RUN apk add --no-cache \
     libffi-dev \
     make \
     openssl-dev \
-    && pip install pipenv==${PIP_PIPENV_VERSION}
+    && pip install --index-url https://artefacts.tax.service.gov.uk/artifactory/api/pypi/pips/simple/ pipenv==${PIP_PIPENV_VERSION}
 USER builder
 # Install Python dependencies so they are cached
 ARG workdir
