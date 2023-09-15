@@ -18,7 +18,7 @@ def test_event_to_findings() -> None:
 
     expected_notification_text = (
             "Access to arn:aws:iam::123456789012:role/RoleTestSSMAccess has been granted by approval.user "
-            "for 1 hour(s) to the following users at 2023-09-14T13:09:38Z:\ntest-user\n"
+            "for 1 hour(s) to the following users at 2023-09-14T13:09:38Z:\ntest-user01\ntest-user02\n"
             "Access expires at 2023-09-14T14:09:38Z."
         )
     assert finding.findings == frozenset({expected_notification_text})
