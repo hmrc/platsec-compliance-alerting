@@ -1,0 +1,20 @@
+{
+  "Records": [
+    {
+      "EventSource": "aws:sns",
+      "EventVersion": "1.0",
+      "EventSubscriptionArn": "arn:aws:sns:eu-west-2:123456789012:alerting_failure_topic:e622c6db-fcd6-43cc-a7d3-ef5b73e6dff7",
+      "Sns":{
+        "Type": "Notification",
+        "MessageId": "588f1e6a-ac82-55a6-8f99-44f29ce72019",
+        "TopicArn": "arn:aws:sns:eu-west-2:123456789012:test-topic",
+        "Message": "{\"account\":\"123456789012\",\"detailType\":\"GrantUserAccessLambda\",\"roleArn\":\"arn:aws:iam::123456789012:role/RoleTestSSMAccess\",\"grantor\":\"approval.user\",\"region\":\"eu-west-2\",\"usernames\":[\"test-user\"],\"hours\":\"1\",\"startTime\":\"2023-09-14T13:09:38Z\",\"endTime\":\"2023-09-14T14:09:38Z\"}",
+        "Timestamp": "2022-03-01T14:31:01.784Z",
+        "SignatureVersion": "1",
+        "Signature": "JVYfudYVUZePeqO/Uq5cG3SHFyjoblcQ0aqfqxLTEaoHOqNX4NmN0oe+trJTu/aqzZtraIlH9rMaDohMm25dbBw/e04yfduQFBO+vf1DzaNSi4mRiPPygG79azP3+rjlkly068olh5YVs7amXwsR38xBSqIiM8ofjhxG6LnO+ai7UeqPdcUt3pqVhkfa9PIRwyjSM6pgURl2LBI3iY8xKrKDHsAFU1t4y3jyBuMQOX+OCYJaHh57s9bom6dsGdY+hzuXq764Z+NGr7UhjReMk/JJTg+/PzrAZD8p0TXve8OGgm4F7ohZLfvNYBKobEaZqoXpZrZd7RTxplRreNSRkQ==",
+        "SigningCertURL": "https://sns.eu-west-2.amazonaws.com/bar",
+        "UnsubscribeURL": "https://sns.eu-west-2.amazonaws.com/foo"
+      }
+    }
+  ]
+}

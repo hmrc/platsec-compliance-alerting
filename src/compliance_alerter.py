@@ -13,6 +13,7 @@ from src.notification_mapper import NotificationMapper
 from src.slack_notifier import SlackMessage, SlackNotifier
 from src.sns.codebuild import CodeBuild
 from src.sns.codepipeline import CodePipeline
+from src.sns.grant_user_access_lambda import GrantUserAccessLambda
 from src.sns.guardduty import GuardDuty
 
 
@@ -59,7 +60,9 @@ class ComplianceAlerter:
                 findings.add(CodeBuild().create_finding(message))
             elif type == GuardDuty.Type:
                 findings.add(GuardDuty(self.config).create_finding(message))
-            else:
+            elif type == GrantUserAccessLambda.Type:
+                findings.add(GrantUserAccessLambda().create_finding(message))
+        else:
                 logging.getLogger(__name__).warning(f"Received unknown event with detailType '{type}'. Ignoring...")
         return findings
 
