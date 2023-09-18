@@ -96,7 +96,7 @@ Alert filtering config files should be saved in the config bucket and prefixed w
 ### How is the CI/CD pipeline configured?
 
 - PR build job is configured on [Jenkins](https://build.tax.service.gov.uk/job/platform-security/job/platsec-compliance-alerting-pr-builder)
-- Codepipeline pipeline config for deployment can be found in [platsec-ci-terraform repo](https://github.com/hmrc/platsec-ci-terraform/blob/main/pipelines.tf#L21)
+- Codepipeline pipeline config for deployment can be found in [platsec-ci-terraform repo](https://github.com/hmrc/platsec-ci-terraform/blob/main/pipelines.tf#L21).
 
 ## Licence
 
