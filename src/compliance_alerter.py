@@ -5,6 +5,8 @@ import json
 
 from src.audit_analyser import AuditAnalyser
 from src.audit_fetcher import AuditFetcher
+from src.clients.aws_client_factory import AwsClientFactory
+from src.clients.aws_ssm_client import AwsSsmClient
 from src.config.config import Config
 from src.data.audit import Audit
 from src.data.findings import Findings
@@ -15,64 +17,71 @@ from src.sns.codebuild import CodeBuild
 from src.sns.codepipeline import CodePipeline
 from src.sns.guardduty import GuardDuty
 
-config = Config()
 
-
+    
 def main(event: Dict[str, Any]) -> None:
-    logger = configure_logging()
-
-    findings = handle_sns_event(event) if is_sns_event(event) else analyse(logger, fetch(event))
-    slack_messages = apply_mappings(apply_filters(findings))
-    send(logger, slack_messages)
-
-
-def configure_logging() -> Logger:
-    logger = logging.getLogger()
-    logger.setLevel(Config.get_log_level())
-    logging.getLogger("botocore").setLevel(logging.ERROR)
-    logging.getLogger("boto3").setLevel(logging.ERROR)
-    logging.getLogger("requests").setLevel(logging.ERROR)
-    logging.getLogger("urllib3").setLevel(logging.ERROR)
-    logging.getLogger("s3transfer").setLevel(logging.ERROR)
-    return logger
+    compliance_alerter = ComplianceAlerter(
+        config=Config(
+            config_s3_client=AwsClientFactory().get_s3_client(Config.get_aws_account(), Config.get_config_bucket_read_role()),
+            report_s3_client=AwsClientFactory().get_s3_client(Config.get_aws_account(), Config.get_report_bucket_read_role()),
+            ssm_client=AwsClientFactory().get_ssm_client(Config.get_aws_account(), Config.get_ssm_read_role()),
+            org_client=AwsClientFactory().get_org_client(Config.get_org_account(), Config.get_org_read_role()),
+        )
+    )
+    compliance_alerter.send(compliance_alerter.generate_slack_messages(event))
 
 
-def is_sns_event(event: Dict[str, Any]) -> bool:
-    return "EventSource" in event.get("Records", [{}])[0] and event["Records"][0].get("EventSource") == "aws:sns"
+class ComplianceAlerter:
+    def __init__(self, config: Config) -> None:
+        self.config = config
+        self.logger = Config.configure_logging()
+        
+    def generate_slack_messages(self, event: Dict[str, Any]) -> List[SlackMessage]:
+        findings = self.handle_sns_event(event) if ComplianceAlerter.is_sns_event(event) else self.analyse(self.logger, self.fetch(event))
+        slack_messages = self.apply_mappings(self.apply_filters(findings))
+        return slack_messages
+
+    @staticmethod
+    def is_sns_event(event: Dict[str, Any]) -> bool:
+        return "EventSource" in event.get("Records", [{}])[0] and event["Records"][0].get("EventSource") == "aws:sns"
 
 
-def handle_sns_event(events: Dict[str, Any]) -> Set[Findings]:
-    findings: Set[Findings] = set()
-    for record in events["Records"]:
-        message = json.loads(record["Sns"]["Message"])
-        type = message.get("detailType") or message.get("detail-type")
-        if type == CodePipeline.Type:
-            findings.add(CodePipeline().create_finding(message))
-        elif type == CodeBuild.Type:
-            findings.add(CodeBuild().create_finding(message))
-        elif type == GuardDuty.Type:
-            findings.add(GuardDuty(config).create_finding(message))
-        else:
-            logging.getLogger(__name__).warning(f"Received unknown event with detailType '{type}'. Ignoring...")
-    return findings
+    def handle_sns_event(self, events: Dict[str, Any]) -> Set[Findings]:
+        findings: Set[Findings] = set()
+        for record in events["Records"]:
+            message = json.loads(record["Sns"]["Message"])
+            type = message.get("detailType") or message.get("detail-type")
+            if type == CodePipeline.Type:
+                findings.add(CodePipeline().create_finding(message))
+            elif type == CodeBuild.Type:
+                findings.add(CodeBuild().create_finding(message))
+            elif type == GuardDuty.Type:
+                findings.add(GuardDuty(self.config).create_finding(message))
+            else:
+                logging.getLogger(__name__).warning(f"Received unknown event with detailType '{type}'. Ignoring...")
+        return findings
 
 
-def fetch(event: Dict[str, Any]) -> Audit:
-    return AuditFetcher().fetch_audit(config.get_report_s3_client(), event)
+    def fetch(self, event: Dict[str, Any]) -> Audit:
+        return AuditFetcher().fetch_audit(self.config.get_report_s3_client(), event)
 
 
-def analyse(logger: Logger, audit: Audit) -> Set[Findings]:
-    return AuditAnalyser().analyse(logger, audit, config)
+    def analyse(self, audit: Audit) -> Set[Findings]:
+        return AuditAnalyser().analyse(self.logger, audit, self.config)
 
 
-def apply_filters(notifications: Set[Findings]) -> Set[Findings]:
-    return FindingsFilter().do_filter(notifications, config.get_notification_filters())
+    def apply_filters(self, notifications: Set[Findings]) -> Set[Findings]:
+        return FindingsFilter().do_filter(notifications, self.config.get_notification_filters())
 
 
-def apply_mappings(notifications: Set[Findings]) -> List[SlackMessage]:
-    return NotificationMapper().do_map(notifications, config.get_notification_mappings(), config.get_org_client())
+    def apply_mappings(self, notifications: Set[Findings]) -> List[SlackMessage]:
+        return NotificationMapper().do_map(notifications, self.config.get_notification_mappings(), self.config.org_client)
 
 
-def send(logger: Logger, slack_messages: List[SlackMessage]) -> None:
-    logger.debug("Sending the following messages: %s", slack_messages)
-    SlackNotifier(config.get_slack_notifier_config()).send_messages(slack_messages)
+    def send(self, slack_messages: List[SlackMessage]) -> None:
+        self.logger.debug("Sending the following messages: %s", slack_messages)
+        print(self.config.get_slack_notifier_config())
+        SlackNotifier(self.config.get_slack_notifier_config()).send_messages(slack_messages)
+
+    def debug_get_slack_username(self) -> str:
+        return self.config.ssm_client.get_parameter(self.config.get_slack_username_key())
