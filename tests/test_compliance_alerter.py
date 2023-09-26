@@ -121,55 +121,58 @@ def _setup_org_sub_account(org_client, account_name: str = "test-account-name"):
     return org_client
 
 @pytest.fixture(autouse=True)
-def _setup_config_bucket():
+def _config_s3_client():
     with mock_s3():
-        s3_client = boto3.client("s3")
-        s3_client.create_bucket(Bucket=CONFIG_BUCKET)
-        s3_client.put_object(
-            Bucket=CONFIG_BUCKET, Key="filters/a", Body=json.dumps([{"item": "mischievous-bucket", "reason": "because"}])
-        )
-        s3_client.put_object(
-            Bucket=CONFIG_BUCKET, Key="filters/b", Body=json.dumps([{"item": "bad-repo-no-admin", "reason": "because"}])
-        )
-        s3_client.put_object(Bucket=CONFIG_BUCKET, Key="mappings/all", Body=json.dumps([{"channel": "the-alerting-channel"}]))
-        s3_client.put_object(
-            Bucket=CONFIG_BUCKET, Key="mappings/a", Body=json.dumps([{"channel": "alerts", "items": ["bad-bucket"]}])
-        )
-        s3_client.put_object(
-            Bucket=CONFIG_BUCKET, Key="mappings/b", Body=json.dumps([{"channel": "alerts", "items": ["bad-repo-no-signing"]}])
-        )
-        s3_client.put_object(
-            Bucket=CONFIG_BUCKET, Key="mappings/c", Body=json.dumps([{"channel": "alerts", "items": ["VPC flow logs"]}])
-        )
-        s3_client.put_object(
-            Bucket=CONFIG_BUCKET,
-            Key="mappings/d",
-            Body=json.dumps([{"channel": "alerts", "items": ["https://unknown-host.com"]}]),
-        )
-        s3_client.put_object(
-            Bucket=CONFIG_BUCKET, Key="mappings/e", Body=json.dumps([{"channel": "alerts", "items": ["password policy"]}])
-        )
-        s3_client.put_object(
-            Bucket=CONFIG_BUCKET,
-            Key="mappings/codepipeline",
-            Body=json.dumps([{"channel": "codepipeline-alerts", "compliance_item_types": ["codepipeline"]}]),
-        )
-        s3_client.put_object(
-            Bucket=CONFIG_BUCKET,
-            Key="mappings/codebuild",
-            Body=json.dumps([{"channel": "codebuild-alerts", "compliance_item_types": ["codebuild"]}]),
-        )
-        s3_client.put_object(
-            Bucket=CONFIG_BUCKET,
-            Key="mappings/guardduty",
-            Body=json.dumps([{"channel": "guardduty-alerts", "compliance_item_types": ["guardduty"]}]),
-        )
-        s3_client.put_object(
-            Bucket=CONFIG_BUCKET,
-            Key="mappings/vpc_peering",
-            Body=json.dumps([{"channel": "vpc-peering-alerts", "compliance_item_types": ["vpc_peering"]}]),
-        )
-        yield s3_client
+        yield boto3.client("s3")
+
+
+def setup_config_bucket(s3_client):
+    s3_client.create_bucket(Bucket=CONFIG_BUCKET)
+    s3_client.put_object(
+        Bucket=CONFIG_BUCKET, Key="filters/a", Body=json.dumps([{"item": "mischievous-bucket", "reason": "because"}])
+    )
+    s3_client.put_object(
+        Bucket=CONFIG_BUCKET, Key="filters/b", Body=json.dumps([{"item": "bad-repo-no-admin", "reason": "because"}])
+    )
+    s3_client.put_object(Bucket=CONFIG_BUCKET, Key="mappings/all", Body=json.dumps([{"channel": "the-alerting-channel"}]))
+    s3_client.put_object(
+        Bucket=CONFIG_BUCKET, Key="mappings/a", Body=json.dumps([{"channel": "alerts", "items": ["bad-bucket"]}])
+    )
+    s3_client.put_object(
+        Bucket=CONFIG_BUCKET, Key="mappings/b", Body=json.dumps([{"channel": "alerts", "items": ["bad-repo-no-signing"]}])
+    )
+    s3_client.put_object(
+        Bucket=CONFIG_BUCKET, Key="mappings/c", Body=json.dumps([{"channel": "alerts", "items": ["VPC flow logs"]}])
+    )
+    s3_client.put_object(
+        Bucket=CONFIG_BUCKET,
+        Key="mappings/d",
+        Body=json.dumps([{"channel": "alerts", "items": ["https://unknown-host.com"]}]),
+    )
+    s3_client.put_object(
+        Bucket=CONFIG_BUCKET, Key="mappings/e", Body=json.dumps([{"channel": "alerts", "items": ["password policy"]}])
+    )
+    s3_client.put_object(
+        Bucket=CONFIG_BUCKET,
+        Key="mappings/codepipeline",
+        Body=json.dumps([{"channel": "codepipeline-alerts", "compliance_item_types": ["codepipeline"]}]),
+    )
+    s3_client.put_object(
+        Bucket=CONFIG_BUCKET,
+        Key="mappings/codebuild",
+        Body=json.dumps([{"channel": "codebuild-alerts", "compliance_item_types": ["codebuild"]}]),
+    )
+    s3_client.put_object(
+        Bucket=CONFIG_BUCKET,
+        Key="mappings/guardduty",
+        Body=json.dumps([{"channel": "guardduty-alerts", "compliance_item_types": ["guardduty"]}]),
+    )
+    s3_client.put_object(
+        Bucket=CONFIG_BUCKET,
+        Key="mappings/vpc_peering",
+        Body=json.dumps([{"channel": "vpc-peering-alerts", "compliance_item_types": ["vpc_peering"]}]),
+    )
+    return s3_client
 
 
 @pytest.fixture(autouse=True)
@@ -205,12 +208,13 @@ def set_account_id_in_report(account_id: str, report_list: List[Dict[str, Any]])
 
 
 @pytest.fixture(autouse=True)
-def helper_test_config(_setup_ssm_parameters, _org_client, _setup_config_bucket, _report_s3_client) -> HelperTestConfig:
+def helper_test_config(_setup_ssm_parameters, _org_client, _config_s3_client, _report_s3_client) -> HelperTestConfig:
     mock_org_client = _setup_org_sub_account(_org_client)
     sub_account_id = mock_org_client.list_accounts()["Accounts"][-1]["Id"]
+    mock_config_s3_client = setup_config_bucket(_config_s3_client)
     mock_report_s3_client = setup_report_bucket(_report_s3_client, sub_account_id)
     htc = HelperTestConfig(
-        config_s3_client=AwsS3Client(_setup_config_bucket),
+        config_s3_client=AwsS3Client(mock_config_s3_client),
         report_s3_client=AwsS3Client(mock_report_s3_client),
         ssm_client=AwsSsmClient(_setup_ssm_parameters),
         org_client=AwsOrgClient(mock_org_client),
