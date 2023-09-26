@@ -12,7 +12,12 @@ from tests.sns import load_json_resource
 def test_event_to_findings(*_: Mock) -> None:
     message = json.loads(load_json_resource("guardduty_event.json")["Records"][0]["Sns"]["Message"])
 
-    finding = GuardDuty(Config()).create_finding(message)
+    finding = GuardDuty(Config(
+        config_s3_client=Mock(),
+        report_s3_client=Mock(),
+        ssm_client=Mock(),
+        org_client=Mock()
+    )).create_finding(message)
 
     assert finding.account
     assert finding.account.identifier == "987654321098"

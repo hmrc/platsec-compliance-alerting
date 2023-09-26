@@ -145,7 +145,6 @@ class Config:
         return self.report_s3_client
 
     def get_org_client(self) -> AwsOrgClient:
-        # return AwsClientFactory().get_org_client(self.get_org_account(), self.get_org_read_role())
         return self.org_client
 
     def get_notification_filters(self) -> Set[NotificationFilterConfig]:

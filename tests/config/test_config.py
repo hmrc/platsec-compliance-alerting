@@ -114,21 +114,18 @@ def test_get_ignorable_report_keys(monkeypatch: Any) -> None:
     assert Config(**MOCK_CLIENTS).get_ignorable_report_keys() == ["key_1.json", "key_2.json"]
 
 
-@patch("src.clients.aws_client_factory.AwsClientFactory.get_ssm_client")
-def test_get_slack_notifier_config(get_ssm_client: Any, monkeypatch: Any) -> None:
-    monkeypatch.setenv("AWS_ACCOUNT", "22")
+def test_get_slack_notifier_config(monkeypatch: Any) -> None:
     monkeypatch.setenv("SLACK_API_URL", "the-url")
     monkeypatch.setenv("SLACK_USERNAME_KEY", "username-key")
     monkeypatch.setenv("SLACK_TOKEN_KEY", "token-key")
-    monkeypatch.setenv("SSM_READ_ROLE", "ssm-role")
-    get_ssm_client.return_value.get_parameter.side_effect = lambda x: {
+    ssm_client = Mock().return_value
+    ssm_client.get_parameter.side_effect = lambda x: {
         "username-key": "the-user",
         "token-key": "the-token",
     }[x]
+    MOCK_CLIENTS["ssm_client"] = ssm_client
 
-    assert SlackNotifierConfig("the-user", "the-token", "the-url") == Config().get_slack_notifier_config()
-
-    get_ssm_client.assert_called_with("22", "ssm-role")
+    assert SlackNotifierConfig("the-user", "the-token", "the-url") == Config(**MOCK_CLIENTS).get_slack_notifier_config()
 
 
 @patch("src.config.config.Config._fetch_config_files")
@@ -140,55 +137,42 @@ def test_get_notification_filters(fetch_config_files: Any) -> None:
 
 @patch("src.config.config.Config._fetch_config_files")
 def test_get_notification_mappings(fetch_config_files: Any) -> None:
-    Config().get_notification_mappings()
+    Config(**MOCK_CLIENTS).get_notification_mappings()
 
     fetch_config_files.assert_called_once_with("mappings/", NotificationMappingConfig.from_dict)
 
 
-@patch("src.clients.aws_client_factory.AwsClientFactory.get_s3_client")
-def test_fetch_config_files(get_s3_client: Any, monkeypatch: Any, caplog: Any) -> None:
-    aws_account = "99"
+def test_fetch_config_files(monkeypatch: Any, caplog: Any) -> None:
     bucket = "buck"
-    read_role = "role"
-    monkeypatch.setenv("AWS_ACCOUNT", aws_account)
     monkeypatch.setenv("CONFIG_BUCKET", bucket)
-    monkeypatch.setenv("CONFIG_BUCKET_READ_ROLE", read_role)
-    get_s3_client.return_value.list_objects.return_value = ["1", "2"]
-    get_s3_client.return_value.read_object.side_effect = [[{"item": "1"}, {"item": "2"}], AwsClientException("boom")]
+    s3_client = Mock().return_value
+    s3_client.list_objects.return_value = ["1", "2"]
+    s3_client.read_object.side_effect = [[{"item": "1"}, {"item": "2"}], AwsClientException("boom")]
+    MOCK_CLIENTS["config_s3_client"] = s3_client
 
     with caplog.at_level(logging.INFO):
         filters = Config(**MOCK_CLIENTS)._fetch_config_files("a-prefix", lambda d: namedtuple("Obj", "item")(**d))
 
     Obj = namedtuple("Obj", "item")
     assert {Obj(item="1"), Obj(item="2")} == filters
-    get_s3_client.assert_called_with(aws_account, read_role)
-    assert call().list_objects(bucket, "a-prefix") in get_s3_client.mock_calls
-    assert call().read_object(bucket, "1") in get_s3_client.mock_calls
-    assert call().read_object(bucket, "2") in get_s3_client.mock_calls
+    print(s3_client.mock_calls)
+    assert call.list_objects(bucket, "a-prefix") in s3_client.mock_calls
+    assert call.read_object(bucket, "1") in s3_client.mock_calls
+    assert call.read_object(bucket, "2") in s3_client.mock_calls
     assert len(caplog.records) == 1
     assert caplog.records[0].levelname == "ERROR"
     assert "unable to load config file '2': boom" in caplog.text
 
 
-@patch("src.clients.aws_client_factory.AwsClientFactory.get_s3_client")
-def test_get_report_s3_client(get_s3_client: Any, monkeypatch: Any) -> None:
-    monkeypatch.setenv("AWS_ACCOUNT", "88")
-    monkeypatch.setenv("REPORT_BUCKET_READ_ROLE", "read-report")
+def test_get_report_s3_client() -> None:
     s3_client = AwsS3Client(Mock())
-    get_s3_client.return_value = s3_client
+    MOCK_CLIENTS["report_s3_client"] = s3_client
 
     assert Config(**MOCK_CLIENTS).get_report_s3_client() is s3_client
 
-    get_s3_client.assert_called_with("88", "read-report")
 
-
-@patch("src.clients.aws_client_factory.AwsClientFactory.get_org_client")
-def test_get_org_client(get_org_client: Any, monkeypatch: Any) -> None:
-    monkeypatch.setenv("ORG_ACCOUNT", "99")
-    monkeypatch.setenv("ORG_READ_ROLE", "read-org")
+def test_get_org_client() -> None:
     org_client = AwsOrgClient(Mock())
-    get_org_client.return_value = org_client
+    MOCK_CLIENTS["org_client"] = org_client
 
     assert Config(**MOCK_CLIENTS).get_org_client() is org_client
-
-    get_org_client.assert_called_with("99", "read-org")

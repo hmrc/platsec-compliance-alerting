@@ -2,7 +2,7 @@ from logging import getLogger
 from os import environ
 
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from tests.fixtures.s3_compliance import s3_report
 from tests.test_types_generator import account, findings
@@ -87,7 +87,14 @@ logging_skipped_bad_bucket_finding = findings(
     },
 )
 
-s3_compliance = S3Compliance(getLogger(), Config())
+MOCK_CLIENTS = {
+    "config_s3_client": Mock(),
+    "report_s3_client": Mock(),
+    "ssm_client": Mock(),
+    "org_client": Mock(),
+}
+
+s3_compliance = S3Compliance(getLogger(), Config(**MOCK_CLIENTS))
 
 
 @patch.dict(environ, {"AUDIT_REPORT_DASHBOARD_URL": "the-dashboard"}, clear=True)
