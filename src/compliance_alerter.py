@@ -83,6 +83,3 @@ class ComplianceAlerter:
         print(self.config.get_slack_notifier_config())
         print(slack_messages)
         SlackNotifier(self.config.get_slack_notifier_config()).send_messages(slack_messages)
-
-    def debug_get_slack_username(self) -> str:
-        return self.config.ssm_client.get_parameter(self.config.get_slack_username_key())

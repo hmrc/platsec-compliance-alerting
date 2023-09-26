@@ -47,7 +47,27 @@ SLACK_API_URL = "https://the-slack-api-url.com"
 SLACK_USERNAME_KEY = "the-slack-username-key"
 SLACK_TOKEN_KEY = "the-slack-token-key"
 
-# TESTS START-------
+
+@patch("src.compliance_alerter.AwsClientFactory.get_s3_client")
+@patch("src.compliance_alerter.AwsClientFactory.get_ssm_client")
+@patch("src.compliance_alerter.AwsClientFactory.get_org_client")
+@patch("src.compliance_alerter.ComplianceAlerter")
+def test_main(mock_compliance_alerter, mock_s3_client, mock_ssm_client, mock_org_client):
+    message = SlackMessage(
+        channels=[CHANNEL],
+        header="test-account 111222333444 eu-west-2 @some-team-name",
+        title="aTitle",
+        text="Words of Advice",
+        color=Severity.HIGH
+    )
+    mock_compliance_alerter.return_value.send.return_value = Mock()
+    _mock = mock_compliance_alerter.return_value
+    _mock.generate_slack_messages.return_value = message
+    _mock.send.return_value = Mock()
+    compliance_alerter.main(build_event(S3_KEY))
+
+    _mock.send.assert_called_once_with(message)
+
 
 def test_send(helper_test_config):
     ca = compliance_alerter.ComplianceAlerter(
