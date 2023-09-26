@@ -15,28 +15,35 @@ from src.data.exceptions import AwsClientException, MissingConfigException, Inva
 from src.slack_notifier import SlackNotifierConfig
 
 
+MOCK_CLIENTS = {
+    "config_s3_client": Mock(),
+    "report_s3_client": Mock(),
+    "ssm_client": Mock(),
+    "org_client": Mock(),
+}
+
 @pytest.mark.parametrize(
     "env_var_key,config_function",
     [
-        ("AWS_ACCOUNT", Config().get_aws_account),
-        ("CONFIG_BUCKET", Config().get_config_bucket),
-        ("CONFIG_BUCKET_READ_ROLE", Config().get_config_bucket_read_role),
-        ("REPORT_BUCKET_READ_ROLE", Config().get_report_bucket_read_role),
-        ("S3_AUDIT_REPORT_KEY", Config().get_s3_audit_report_key),
-        ("IAM_AUDIT_REPORT_KEY", Config().get_iam_audit_report_key),
-        ("GITHUB_AUDIT_REPORT_KEY", Config().get_github_audit_report_key),
-        ("GITHUB_WEBHOOK_REPORT_KEY", Config().get_github_webhook_report_key),
-        ("GITHUB_WEBHOOK_HOST_IGNORE_LIST", Config().get_github_webhook_host_ignore_key),
-        ("GUARDDUTY_RUNBOOK_URL", Config().get_guardduty_runbook_url),
-        ("VPC_AUDIT_REPORT_KEY", Config().get_vpc_audit_report_key),
-        ("VPC_PEERING_AUDIT_REPORT_KEY", Config().get_vpc_peering_audit_report_key),
-        ("IGNORABLE_REPORT_KEYS", Config().get_ignorable_report_keys),
-        ("PUBLIC_QUERY_AUDIT_REPORT_KEY", Config().get_public_query_audit_report_key),
-        ("PASSWORD_POLICY_AUDIT_REPORT_KEY", Config().get_password_policy_audit_report_key),
-        ("SLACK_API_URL", Config().get_slack_api_url),
-        ("SLACK_USERNAME_KEY", Config().get_slack_username_key),
-        ("SLACK_TOKEN_KEY", Config().get_slack_token_key),
-        ("SSM_READ_ROLE", Config().get_ssm_read_role),
+        ("AWS_ACCOUNT", Config(**MOCK_CLIENTS).get_aws_account),
+        ("CONFIG_BUCKET", Config(**MOCK_CLIENTS).get_config_bucket),
+        ("CONFIG_BUCKET_READ_ROLE", Config(**MOCK_CLIENTS).get_config_bucket_read_role),
+        ("REPORT_BUCKET_READ_ROLE", Config(**MOCK_CLIENTS).get_report_bucket_read_role),
+        ("S3_AUDIT_REPORT_KEY", Config(**MOCK_CLIENTS).get_s3_audit_report_key),
+        ("IAM_AUDIT_REPORT_KEY", Config(**MOCK_CLIENTS).get_iam_audit_report_key),
+        ("GITHUB_AUDIT_REPORT_KEY", Config(**MOCK_CLIENTS).get_github_audit_report_key),
+        ("GITHUB_WEBHOOK_REPORT_KEY", Config(**MOCK_CLIENTS).get_github_webhook_report_key),
+        ("GITHUB_WEBHOOK_HOST_IGNORE_LIST", Config(**MOCK_CLIENTS).get_github_webhook_host_ignore_key),
+        ("GUARDDUTY_RUNBOOK_URL", Config(**MOCK_CLIENTS).get_guardduty_runbook_url),
+        ("VPC_AUDIT_REPORT_KEY", Config(**MOCK_CLIENTS).get_vpc_audit_report_key),
+        ("VPC_PEERING_AUDIT_REPORT_KEY", Config(**MOCK_CLIENTS).get_vpc_peering_audit_report_key),
+        ("IGNORABLE_REPORT_KEYS", Config(**MOCK_CLIENTS).get_ignorable_report_keys),
+        ("PUBLIC_QUERY_AUDIT_REPORT_KEY", Config(**MOCK_CLIENTS).get_public_query_audit_report_key),
+        ("PASSWORD_POLICY_AUDIT_REPORT_KEY", Config(**MOCK_CLIENTS).get_password_policy_audit_report_key),
+        ("SLACK_API_URL", Config(**MOCK_CLIENTS).get_slack_api_url),
+        ("SLACK_USERNAME_KEY", Config(**MOCK_CLIENTS).get_slack_username_key),
+        ("SLACK_TOKEN_KEY", Config(**MOCK_CLIENTS).get_slack_token_key),
+        ("SSM_READ_ROLE", Config(**MOCK_CLIENTS).get_ssm_read_role),
     ],
 )
 def test_missing_env_vars(env_var_key: str, config_function: Any, monkeypatch: Any) -> None:
@@ -104,7 +111,7 @@ def test_get_unsupported_log_level(monkeypatch: Any) -> None:
 def test_get_ignorable_report_keys(monkeypatch: Any) -> None:
     monkeypatch.setenv("IGNORABLE_REPORT_KEYS", "key_1.json,key_2.json")
 
-    assert Config().get_ignorable_report_keys() == ["key_1.json", "key_2.json"]
+    assert Config(**MOCK_CLIENTS).get_ignorable_report_keys() == ["key_1.json", "key_2.json"]
 
 
 @patch("src.clients.aws_client_factory.AwsClientFactory.get_ssm_client")
@@ -126,7 +133,7 @@ def test_get_slack_notifier_config(get_ssm_client: Any, monkeypatch: Any) -> Non
 
 @patch("src.config.config.Config._fetch_config_files")
 def test_get_notification_filters(fetch_config_files: Any) -> None:
-    Config().get_notification_filters()
+    Config(**MOCK_CLIENTS).get_notification_filters()
 
     fetch_config_files.assert_called_once_with("filters/", NotificationFilterConfig.from_dict)
 
@@ -150,7 +157,7 @@ def test_fetch_config_files(get_s3_client: Any, monkeypatch: Any, caplog: Any) -
     get_s3_client.return_value.read_object.side_effect = [[{"item": "1"}, {"item": "2"}], AwsClientException("boom")]
 
     with caplog.at_level(logging.INFO):
-        filters = Config()._fetch_config_files("a-prefix", lambda d: namedtuple("Obj", "item")(**d))
+        filters = Config(**MOCK_CLIENTS)._fetch_config_files("a-prefix", lambda d: namedtuple("Obj", "item")(**d))
 
     Obj = namedtuple("Obj", "item")
     assert {Obj(item="1"), Obj(item="2")} == filters
@@ -170,7 +177,7 @@ def test_get_report_s3_client(get_s3_client: Any, monkeypatch: Any) -> None:
     s3_client = AwsS3Client(Mock())
     get_s3_client.return_value = s3_client
 
-    assert Config().get_report_s3_client() is s3_client
+    assert Config(**MOCK_CLIENTS).get_report_s3_client() is s3_client
 
     get_s3_client.assert_called_with("88", "read-report")
 
@@ -182,6 +189,6 @@ def test_get_org_client(get_org_client: Any, monkeypatch: Any) -> None:
     org_client = AwsOrgClient(Mock())
     get_org_client.return_value = org_client
 
-    assert Config().get_org_client() is org_client
+    assert Config(**MOCK_CLIENTS).get_org_client() is org_client
 
     get_org_client.assert_called_with("99", "read-org")

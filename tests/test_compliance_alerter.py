@@ -103,20 +103,22 @@ def _setup_ssm_parameters():
 
 
 @pytest.fixture(autouse=True)
-def _setup_org_sub_account(account_name: str = "test-account-name"):
+def _org_client():
     with mock_organizations():
-        org_client = boto3.client("organizations")
-        org_client.create_organization(FeatureSet="ALL")
-        account_id = org_client.create_account(AccountName=account_name, Email="example@example.com")["CreateAccountStatus"][
-            "AccountId"
-        ]
-        org_client.tag_resource(
-            ResourceId=account_id,
-            Tags=[
-                {"Key": "team_slack_handle", "Value": "@some-team-name"},
-            ],
-        )
-        yield org_client
+        yield boto3.client("organizations")
+
+def _setup_org_sub_account(org_client, account_name: str = "test-account-name"):
+    org_client.create_organization(FeatureSet="ALL")
+    account_id = org_client.create_account(AccountName=account_name, Email="example@example.com")["CreateAccountStatus"][
+        "AccountId"
+    ]
+    org_client.tag_resource(
+        ResourceId=account_id,
+        Tags=[
+            {"Key": "team_slack_handle", "Value": "@some-team-name"},
+        ],
+    )
+    return org_client
 
 @pytest.fixture(autouse=True)
 def _setup_config_bucket():
@@ -195,28 +197,27 @@ def setup_report_bucket(s3_client, account_id):
     s3_client.put_object(Bucket=REPORT_BUCKET, Key=GITHUB_WEBHOOK_KEY, Body=json.dumps(github_webhook_report))
     return s3_client
 
+
 def set_account_id_in_report(account_id: str, report_list: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     for report in report_list:
         report["account"]["identifier"] = account_id
     return report_list
 
+
 @pytest.fixture(autouse=True)
-def helper_test_config(_setup_ssm_parameters, _setup_org_sub_account, _setup_config_bucket, _report_s3_client) -> HelperTestConfig:
-    first_sub_account_id = _setup_org_sub_account.list_accounts()["Accounts"][1]["Id"]
-    mock_report_s3_client = setup_report_bucket(_report_s3_client, first_sub_account_id)
-    print("HTC - report_s3_client", _report_s3_client)
-    print("HTC - mock_report_s3_client", mock_report_s3_client)
-    print("HTC - config_s3_client", _setup_config_bucket)
+def helper_test_config(_setup_ssm_parameters, _org_client, _setup_config_bucket, _report_s3_client) -> HelperTestConfig:
+    mock_org_client = _setup_org_sub_account(_org_client)
+    sub_account_id = mock_org_client.list_accounts()["Accounts"][-1]["Id"]
+    mock_report_s3_client = setup_report_bucket(_report_s3_client, sub_account_id)
     htc = HelperTestConfig(
         config_s3_client=AwsS3Client(_setup_config_bucket),
         report_s3_client=AwsS3Client(mock_report_s3_client),
         ssm_client=AwsSsmClient(_setup_ssm_parameters),
-        org_client=AwsOrgClient(_setup_org_sub_account),
-        account_id=first_sub_account_id
+        org_client=AwsOrgClient(mock_org_client),
+        account_id=sub_account_id
     )
-    print("HTC")
-    print(htc.report_s3_client.list_objects(REPORT_BUCKET, ""))
-    
+    # print("HTC")
+    # print(htc.report_s3_client.list_objects(REPORT_BUCKET, ""))
     yield htc
 
 
@@ -228,11 +229,10 @@ def _mock_slack_notifier():
     )
     yield
     httpretty.disable()
+    httpretty.reset()
 
 
 def test_send(helper_test_config):
-    print(helper_test_config.ssm_client.get_parameter(SLACK_USERNAME_KEY))
-    print(helper_test_config.config_s3_client.list_objects("the_config_bucket", "filter/"))
     ca = compliance_alerter.ComplianceAlerter(
         config = Config(
             config_s3_client=helper_test_config.config_s3_client,
@@ -262,14 +262,6 @@ def test_send(helper_test_config):
     assert message in  message_request
 
 
-def set_event_account_id(account_id: str, test_event: Dict[str, Any]) -> Dict[str, Any]:
-    # moto does not let us set the expected account id
-    # so we change the event to match the mocked value
-    message = json.loads(test_event["Records"][0]["Sns"]["Message"])
-    message["account"] = account_id
-    test_event["Records"][0]["Sns"]["Message"] = json.dumps(message)
-    return dict(test_event)
-
 # TESTS START-------
 
 # 01
@@ -288,13 +280,84 @@ def test_compliance_alerter_main_s3_audit(helper_test_config) -> None:
     _assert_slack_message_sent("bad-bucket")
     _assert_slack_message_sent("@some-team-name")
 
-# 08
-def test_codebuild_sns_event(helper_test_config) -> None:
+def test_compliance_alerter_main_github_audit(helper_test_config) -> None:
+    ca = compliance_alerter.ComplianceAlerter(
+        config = Config(
+            config_s3_client=helper_test_config.config_s3_client,
+            report_s3_client=helper_test_config.report_s3_client,
+            ssm_client=helper_test_config.ssm_client,
+            org_client=helper_test_config.org_client,
+        )
+    )
+    messages = ca.generate_slack_messages(build_event(GITHUB_KEY))
+    ca.send(messages)
+    _assert_slack_message_sent_to_channel("the-alerting-channel")
+    _assert_slack_message_sent("bad-repo-no-signing")
+
+def test_compliance_alerter_main_github_webhook(helper_test_config) -> None:
+    ca = compliance_alerter.ComplianceAlerter(
+        config = Config(
+            config_s3_client=helper_test_config.config_s3_client,
+            report_s3_client=helper_test_config.report_s3_client,
+            ssm_client=helper_test_config.ssm_client,
+            org_client=helper_test_config.org_client,
+        )
+    )
+    messages = ca.generate_slack_messages(build_event(GITHUB_WEBHOOK_KEY))
+    ca.send(messages)
+    _assert_slack_message_sent_to_channel("the-alerting-channel")
+    _assert_slack_message_sent("https://unknown-host.com")
+
+def test_compliance_alerter_main_vpc_audit(helper_test_config) -> None:
+    ca = compliance_alerter.ComplianceAlerter(
+        config = Config(
+            config_s3_client=helper_test_config.config_s3_client,
+            report_s3_client=helper_test_config.report_s3_client,
+            ssm_client=helper_test_config.ssm_client,
+            org_client=helper_test_config.org_client,
+        )
+    )
+    messages = ca.generate_slack_messages(build_event(VPC_KEY))
+    ca.send(messages)
+    _assert_slack_message_sent_to_channel("the-alerting-channel")
+    _assert_slack_message_sent("VPC flow logs compliance enforcement success")
+    _assert_slack_message_sent("@some-team-name")
+
+def test_compliance_alerter_main_vpc_peering_audit(helper_test_config) -> None:
+    ca = compliance_alerter.ComplianceAlerter(
+        config = Config(
+            config_s3_client=helper_test_config.config_s3_client,
+            report_s3_client=helper_test_config.report_s3_client,
+            ssm_client=helper_test_config.ssm_client,
+            org_client=helper_test_config.org_client,
+        )
+    )
+    messages = ca.generate_slack_messages(build_event(VPC_PEERING_KEY))
+    ca.send(messages)
+    _assert_slack_message_sent_to_channel("vpc-peering-alerts")
+    _assert_slack_message_sent("vpc peering connection with unknown account")
+    _assert_slack_message_sent("@some-team-name")
+
+def test_compliance_alerter_main_password_policy_audit(helper_test_config) -> None:
+    ca = compliance_alerter.ComplianceAlerter(
+        config = Config(
+            config_s3_client=helper_test_config.config_s3_client,
+            report_s3_client=helper_test_config.report_s3_client,
+            ssm_client=helper_test_config.ssm_client,
+            org_client=helper_test_config.org_client,
+        )
+    )
+    messages = ca.generate_slack_messages(build_event(PASSWORD_POLICY_KEY))
+    ca.send(messages)
+    _assert_slack_message_sent_to_channel("the-alerting-channel")
+    _assert_slack_message_sent("password policy compliance enforcement success")
+    _assert_slack_message_sent("@some-team-name")
+
+def test_codepipeline_sns_event(helper_test_config) -> None:
     test_event = set_event_account_id(
         account_id=helper_test_config.account_id,
-        test_event=TestComplianceAlerter.load_json_resource("codebuild_event.json"),
+        test_event=load_json_resource("codepipeline_event.json"),
     )
-
     ca = compliance_alerter.ComplianceAlerter(
         config = Config(
             config_s3_client=helper_test_config.config_s3_client,
@@ -305,20 +368,103 @@ def test_codebuild_sns_event(helper_test_config) -> None:
     )
     messages = ca.generate_slack_messages(test_event)
     ca.send(messages)
+    _assert_slack_message_sent_to_channel("codepipeline-alerts")
+    _assert_slack_message_sent("@some-team-name")
 
+def test_codebuild_sns_event(helper_test_config) -> None:
+    test_event = set_event_account_id(
+        account_id=helper_test_config.account_id,
+        test_event=load_json_resource("codebuild_event.json"),
+    )
+    ca = compliance_alerter.ComplianceAlerter(
+        config = Config(
+            config_s3_client=helper_test_config.config_s3_client,
+            report_s3_client=helper_test_config.report_s3_client,
+            ssm_client=helper_test_config.ssm_client,
+            org_client=helper_test_config.org_client,
+        )
+    )
+    messages = ca.generate_slack_messages(test_event)
+    ca.send(messages)
     _assert_slack_message_sent_to_channel("codebuild-alerts")
     _assert_slack_message_sent("@some-team-name")
 
-# END----------
+def test_guardduty_sns_event(helper_test_config, _org_client) -> None:
+    mock_org_client = _setup_org_sub_account(org_client=_org_client, account_name="sub-account-name")
+    sub_account_id = mock_org_client.list_accounts()["Accounts"][-1]["Id"]
+    test_event = set_event_account_id(
+        account_id=sub_account_id,
+        test_event=load_json_resource("guardduty_event.json"),
+    )
+    ca = compliance_alerter.ComplianceAlerter(
+        config = Config(
+            config_s3_client=helper_test_config.config_s3_client,
+            report_s3_client=helper_test_config.report_s3_client,
+            ssm_client=helper_test_config.ssm_client,
+            org_client=AwsOrgClient(mock_org_client),
+        )
+    )
+
+    # we want to alert with the name of the sub account not the main guardduty account
+    message = json.loads(test_event["Records"][0]["Sns"]["Message"])
+    message["detail"]["accountId"] = sub_account_id
+    test_event["Records"][0]["Sns"]["Message"] = json.dumps(message)
+
+    messages = ca.generate_slack_messages(test_event)
+    ca.send(messages)
+
+    _assert_slack_message_sent_to_channel("guardduty-alerts")
+    _assert_slack_message_sent_to_channel("the-alerting-channel")
+    _assert_slack_message_sent("sub-account-name")
+    _assert_slack_message_sent("@some-team-name")
+
+
+def test_unknown_sns_event(helper_test_config) -> None:
+    ca = compliance_alerter.ComplianceAlerter(
+        config = Config(
+            config_s3_client=helper_test_config.config_s3_client,
+            report_s3_client=helper_test_config.report_s3_client,
+            ssm_client=helper_test_config.ssm_client,
+            org_client=helper_test_config.org_client,
+        )
+    )
+    messages = ca.generate_slack_messages(load_json_resource("unknown_sns_event.json"))
+    ca.send(messages)
+    _assert_no_slack_message_sent()
+
+def test_unsupported_event(helper_test_config) -> None:
+    ca = compliance_alerter.ComplianceAlerter(
+        config = Config(
+            config_s3_client=helper_test_config.config_s3_client,
+            report_s3_client=helper_test_config.report_s3_client,
+            ssm_client=helper_test_config.ssm_client,
+            org_client=helper_test_config.org_client,
+        )
+    )
+    with pytest.raises(UnsupportedEventException, match="a_value"):
+        messages = ca.generate_slack_messages({"a_key": "a_value"})
+        ca.send(messages)
+    _assert_no_slack_message_sent()
+
+
+#END----------
 
 # Helper functions
+
+def set_event_account_id(account_id: str, test_event: Dict[str, Any]) -> Dict[str, Any]:
+    # moto does not let us set the expected account id
+    # so we change the event to match the mocked value
+    message = json.loads(test_event["Records"][0]["Sns"]["Message"])
+    message["account"] = account_id
+    test_event["Records"][0]["Sns"]["Message"] = json.dumps(message)
+    return dict(test_event)
 
 def build_event(report_key: str) -> Dict[str, Any]:
     return {"Records": [{"eventVersion": "2.1", "s3": {"bucket": {"name": REPORT_BUCKET}, "object": {"key": report_key}}}]}
 
 def _assert_slack_message_sent(message: str) -> None:
     message_request = httpretty.last_request().body.decode("utf-8")
-    print(message_request)
+    print("_assert_slack_message_sent ===> ", message_request)
     assert message in  message_request
 
 def _assert_slack_message_sent_to_channel(channel: str) -> None:
@@ -332,155 +478,46 @@ def _assert_no_slack_message_sent() -> None:
     last_request = httpretty.last_request()
     assert type(last_request) == httpretty.core.HTTPrettyRequestEmpty, "A request was made to slack"
 
+def load_json_resource(filename: str) -> Any:
+    with open(os.path.join("tests", "resources", filename), "r") as json_file:
+        resource = json.load(json_file)
+    return resource
 
 
 
 
 
+# @mock_s3
+# @mock_ssm
+# @mock_sts
+# @mock_organizations
+# @httpretty.activate
+# class TestComplianceAlerter(TestCase):
+#     def setUp(self) -> None:
+#         self._account_id = self._setup_org_sub_account()
+#         self._setup_environment()
+#         self._setup_report_bucket()
+#         self._setup_config_bucket()
+#         self._setup_ssm_parameters()
+#         self._mock_slack_notifier()
+#         print("1) ***httpretty.is_enabled", httpretty.is_enabled())
 
-@mock_s3
-@mock_ssm
-@mock_sts
-@mock_organizations
-@httpretty.activate
-class TestComplianceAlerter(TestCase):
-    def setUp(self) -> None:
-        self._account_id = self._setup_org_sub_account()
-        self._setup_environment()
-        self._setup_report_bucket()
-        self._setup_config_bucket()
-        self._setup_ssm_parameters()
-        self._mock_slack_notifier()
-        print("1) ***httpretty.is_enabled", httpretty.is_enabled())
+#     def tearDown(self) -> None:
+#         self._delete_bucket(REPORT_BUCKET)
+#         self._delete_bucket(CONFIG_BUCKET)
+#         self._delete_ssm_parameters()
 
-    def tearDown(self) -> None:
-        self._delete_bucket(REPORT_BUCKET)
-        self._delete_bucket(CONFIG_BUCKET)
-        self._delete_ssm_parameters()
 
-    def test_compliance_alerter_main_github_audit(self) -> None:
-        compliance_alerter.main(self.build_event(GITHUB_KEY))
-        self._assert_slack_message_sent_to_channel("the-alerting-channel")
-        self._assert_slack_message_sent("bad-repo-no-signing")
 
-    def test_compliance_alerter_main_github_webhook(self) -> None:
-        compliance_alerter.main(self.build_event(GITHUB_WEBHOOK_KEY))
-        self._assert_slack_message_sent_to_channel("the-alerting-channel")
-        self._assert_slack_message_sent("https://unknown-host.com")
 
-    def test_compliance_alerter_main_vpc_audit(self) -> None:
-        compliance_alerter.main(self.build_event(VPC_KEY))
-        self._assert_slack_message_sent_to_channel("the-alerting-channel")
-        self._assert_slack_message_sent("VPC flow logs compliance enforcement success")
-        self._assert_slack_message_sent("@some-team-name")
+#     @staticmethod
+#     def _delete_ssm_parameters() -> None:
+#         ssm = boto3.client("ssm")
+#         ssm.delete_parameter(Name=SLACK_USERNAME_KEY)
+#         ssm.delete_parameter(Name=SLACK_TOKEN_KEY)
 
-    def test_compliance_alerter_main_vpc_peering_audit(self) -> None:
-        compliance_alerter.main(self.build_event(VPC_PEERING_KEY))
-        self._assert_slack_message_sent_to_channel("vpc-peering-alerts")
-        self._assert_slack_message_sent("vpc peering connection with unknown account")
-        self._assert_slack_message_sent("@some-team-name")
-
-    def test_compliance_alerter_main_password_policy_audit(self) -> None:
-        compliance_alerter.main(self.build_event(PASSWORD_POLICY_KEY))
-        self._assert_slack_message_sent_to_channel("the-alerting-channel")
-        self._assert_slack_message_sent("password policy compliance enforcement success")
-        self._assert_slack_message_sent("@some-team-name")
-
-    def test_codepipeline_sns_event(self) -> None:
-        test_event = self.set_event_account_id(
-            account_id=self._account_id,
-            test_event=TestComplianceAlerter.load_json_resource("codepipeline_event.json"),
-        )
-        compliance_alerter.main(test_event)
-        self._assert_slack_message_sent_to_channel("codepipeline-alerts")
-        self._assert_slack_message_sent("@some-team-name")
-
-    def test_guardduty_sns_event(self) -> None:
-        test_event = self.set_event_account_id(
-            account_id=self._account_id,
-            test_event=TestComplianceAlerter.load_json_resource("guardduty_event.json"),
-        )
-
-        # we want to alert with the name of the sub account not the main guardduty account
-        sub_account_id = self._setup_org_sub_account(account_name="sub-account-name")
-        message = json.loads(test_event["Records"][0]["Sns"]["Message"])
-        message["detail"]["accountId"] = sub_account_id
-        test_event["Records"][0]["Sns"]["Message"] = json.dumps(message)
-
-        compliance_alerter.main(test_event)
-
-        self._assert_slack_message_sent_to_channel("guardduty-alerts")
-        self._assert_slack_message_sent_to_channel("the-alerting-channel")
-        self._assert_slack_message_sent("sub-account-name")
-        self._assert_slack_message_sent("@some-team-name")
-
-    def set_event_account_id(self, account_id: str, test_event: Dict[str, Any]) -> Dict[str, Any]:
-        # moto does not let us set the expected account id
-        # so we change the event to match the mocked value
-        message = json.loads(test_event["Records"][0]["Sns"]["Message"])
-        message["account"] = account_id
-        test_event["Records"][0]["Sns"]["Message"] = json.dumps(message)
-        return dict(test_event)
-
-    def test_unknown_sns_event(self) -> None:
-        compliance_alerter.main(TestComplianceAlerter.load_json_resource("unknown_sns_event.json"))
-        self._assert_no_slack_message_sent()
-
-    def test_unsupported_event(self) -> None:
-        with self.assertRaisesRegex(UnsupportedEventException, "a_value"):
-            compliance_alerter.main({"a_key": "a_value"})
-        self._assert_no_slack_message_sent()
-
-    @staticmethod
-    def _setup_org_sub_account(account_name: str = "test-account-name") -> str:
-        org = boto3.client("organizations")
-        org.create_organization(FeatureSet="ALL")
-        account_id = org.create_account(AccountName=account_name, Email="example@example.com")["CreateAccountStatus"][
-            "AccountId"
-        ]
-        org.tag_resource(
-            ResourceId=account_id,
-            Tags=[
-                {"Key": "team_slack_handle", "Value": "@some-team-name"},
-            ],
-        )
-        return str(account_id)
-
-    @staticmethod
-    def _delete_ssm_parameters() -> None:
-        ssm = boto3.client("ssm")
-        ssm.delete_parameter(Name=SLACK_USERNAME_KEY)
-        ssm.delete_parameter(Name=SLACK_TOKEN_KEY)
-
-    @staticmethod
-    def _delete_bucket(bucket_name: str) -> None:
-        config_bucket = boto3.resource("s3").Bucket(bucket_name)
-        config_bucket.objects.all().delete()
-        config_bucket.delete()
-
-    @staticmethod
-    def _mock_slack_notifier() -> None:
-        httpretty.register_uri(
-            httpretty.POST, SLACK_API_URL, body=json.dumps({"successfullySentTo": [channel]}), status=200
-        )
-
-    def _assert_slack_message_sent(self, message: str) -> None:
-        message_request = httpretty.last_request().body.decode("utf-8")
-        self.assertIn(message, message_request)
-
-    def _assert_slack_message_sent_to_channel(self, channel: str) -> None:
-        last_request = httpretty.last_request()
-        assert type(last_request) != httpretty.core.HTTPrettyRequestEmpty, "No requests were made to slack"
-        message_request = last_request.body.decode("utf-8")
-        message_json = json.loads(message_request)
-        self.assertIn(channel, message_json["channelLookup"]["slackChannels"])
-
-    def _assert_no_slack_message_sent(self) -> None:
-        last_request = httpretty.last_request()
-        assert type(last_request) == httpretty.core.HTTPrettyRequestEmpty, "A request was made to slack"
-
-    @staticmethod
-    def load_json_resource(filename: str) -> Any:
-        with open(os.path.join("tests", "resources", filename), "r") as json_file:
-            resource = json.load(json_file)
-        return resource
+#     @staticmethod
+#     def _delete_bucket(bucket_name: str) -> None:
+#         config_bucket = boto3.resource("s3").Bucket(bucket_name)
+#         config_bucket.objects.all().delete()
+#         config_bucket.delete()
