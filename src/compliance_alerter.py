@@ -37,7 +37,7 @@ class ComplianceAlerter:
         self.logger = Config.configure_logging()
         
     def generate_slack_messages(self, event: Dict[str, Any]) -> List[SlackMessage]:
-        findings = self.handle_sns_event(event) if ComplianceAlerter.is_sns_event(event) else self.analyse(self.logger, self.fetch(event))
+        findings = self.handle_sns_event(event) if ComplianceAlerter.is_sns_event(event) else self.analyse(self.fetch(event))
         slack_messages = self.apply_mappings(self.apply_filters(findings))
         return slack_messages
 
@@ -81,6 +81,7 @@ class ComplianceAlerter:
     def send(self, slack_messages: List[SlackMessage]) -> None:
         self.logger.debug("Sending the following messages: %s", slack_messages)
         print(self.config.get_slack_notifier_config())
+        print(slack_messages)
         SlackNotifier(self.config.get_slack_notifier_config()).send_messages(slack_messages)
 
     def debug_get_slack_username(self) -> str:

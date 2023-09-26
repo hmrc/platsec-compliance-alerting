@@ -30,22 +30,22 @@ from tests.fixtures.vpc_compliance import vpc_report
 from tests.fixtures.vpc_peering_compliance import vpc_peering_audit
 from tests.fixtures.password_policy_compliance import password_policy_report
 
-channel = "the-alerting-channel"
-config = "the_config_bucket"
-report = "the_report_bucket"
-s3_key = "s3_audit"
-iam_key = "iam_audit"
-github_key = "github_audit"
-github_webhook_key = "github_webhook"
-github_webhook_host_ignore_list = "known-host.com,known-host2.com"
-vpc_key = "vpc_audit"
-vpc_peering_key = "vpc_peering_audit"
-public_query_key = "public_query_audit"
-ec2_key = "ec2_audit"
-password_policy_key = "password_policy_audit"
-slack_api_url = "https://the-slack-api-url.com"
-slack_username_key = "the-slack-username-key"
-slack_token_key = "the-slack-token-key"
+CHANNEL = "the-alerting-channel"
+CONFIG_BUCKET = "the_config_bucket"
+REPORT_BUCKET = "the_report_bucket"
+S3_KEY = "s3_audit"
+IAM_KEY = "iam_audit"
+GITHUB_KEY = "github_audit"
+GITHUB_WEBHOOK_KEY = "github_webhook"
+GITHUB_WEBHOOK_HOST_IGNORE_LIST = "known-host.com,known-host2.com"
+VPC_KEY = "vpc_audit"
+VPC_PEERING_KEY = "vpc_peering_audit"
+PUBLIC_QUERY_KEY = "public_query_audit"
+EC2_KEY = "ec2_audit"
+PASSWORD_POLICY_KEY = "password_policy_audit"
+SLACK_API_URL = "https://the-slack-api-url.com"
+SLACK_USERNAME_KEY = "the-slack-username-key"
+SLACK_TOKEN_KEY = "the-slack-token-key"
 
 @dataclass
 class HelperTestConfig():
@@ -64,25 +64,25 @@ def _setup_environment(monkeypatch):
         "AWS_SECRET_ACCESS_KEY": "the-secret-access-key",
         "AWS_DEFAULT_REGION": "us-east-1",
         "AWS_ACCOUNT": "111222333444",
-        "CENTRAL_CHANNEL": channel,
-        "CONFIG_BUCKET": config,
+        "CENTRAL_CHANNEL": CHANNEL,
+        "CONFIG_BUCKET": CONFIG_BUCKET,
         "CONFIG_BUCKET_READ_ROLE": "the-config-bucket-read-role",
         "REPORT_BUCKET_READ_ROLE": "the-report-bucket-read-role",
-        "S3_AUDIT_REPORT_KEY": s3_key,
-        "IAM_AUDIT_REPORT_KEY": iam_key,
-        "GITHUB_AUDIT_REPORT_KEY": github_key,
-        "GITHUB_WEBHOOK_REPORT_KEY": github_webhook_key,
-        "GITHUB_WEBHOOK_HOST_IGNORE_LIST": github_webhook_host_ignore_list,
+        "S3_AUDIT_REPORT_KEY": S3_KEY,
+        "IAM_AUDIT_REPORT_KEY": IAM_KEY,
+        "GITHUB_AUDIT_REPORT_KEY": GITHUB_KEY,
+        "GITHUB_WEBHOOK_REPORT_KEY": GITHUB_WEBHOOK_KEY,
+        "GITHUB_WEBHOOK_HOST_IGNORE_LIST": GITHUB_WEBHOOK_HOST_IGNORE_LIST,
         "GUARDDUTY_RUNBOOK_URL": "the-gd-runbook",
-        "PASSWORD_POLICY_AUDIT_REPORT_KEY": password_policy_key,
-        "SLACK_API_URL": slack_api_url,
-        "SLACK_USERNAME_KEY": slack_username_key,
-        "SLACK_TOKEN_KEY": slack_token_key,
+        "PASSWORD_POLICY_AUDIT_REPORT_KEY": PASSWORD_POLICY_KEY,
+        "SLACK_API_URL": SLACK_API_URL,
+        "SLACK_USERNAME_KEY": SLACK_USERNAME_KEY,
+        "SLACK_TOKEN_KEY": SLACK_TOKEN_KEY,
         "SSM_READ_ROLE": "the-ssm-read-role",
-        "VPC_AUDIT_REPORT_KEY": vpc_key,
-        "PUBLIC_QUERY_AUDIT_REPORT_KEY": public_query_key,
-        "VPC_PEERING_AUDIT_REPORT_KEY": vpc_peering_key,
-        "EC2_AUDIT_REPORT_KEY": ec2_key,
+        "VPC_AUDIT_REPORT_KEY": VPC_KEY,
+        "PUBLIC_QUERY_AUDIT_REPORT_KEY": PUBLIC_QUERY_KEY,
+        "VPC_PEERING_AUDIT_REPORT_KEY": VPC_PEERING_KEY,
+        "EC2_AUDIT_REPORT_KEY": EC2_KEY,
         "LOG_LEVEL": "DEBUG",
         "ORG_ACCOUNT": "ORG-ACCOUNT-ID-12374234",
         "ORG_READ_ROLE": "the-org-read-role",
@@ -97,13 +97,13 @@ def _setup_environment(monkeypatch):
 def _setup_ssm_parameters():
     with mock_ssm():
         ssm_client =  boto3.client('ssm')
-        ssm_client.put_parameter(Name=slack_username_key, Value="the-slack-username", Type="SecureString")
-        ssm_client.put_parameter(Name=slack_token_key, Value="the-slack-username", Type="SecureString")
+        ssm_client.put_parameter(Name=SLACK_USERNAME_KEY, Value="the-slack-username", Type="SecureString")
+        ssm_client.put_parameter(Name=SLACK_TOKEN_KEY, Value="the-slack-username", Type="SecureString")
         yield ssm_client
 
 
 @pytest.fixture(autouse=True)
-def _setup_org_sub_account(account_name: str = "test-account-name") -> str:
+def _setup_org_sub_account(account_name: str = "test-account-name"):
     with mock_organizations():
         org_client = boto3.client("organizations")
         org_client.create_organization(FeatureSet="ALL")
@@ -117,89 +117,96 @@ def _setup_org_sub_account(account_name: str = "test-account-name") -> str:
             ],
         )
         yield org_client
-        # return str(account_id)
 
 @pytest.fixture(autouse=True)
 def _setup_config_bucket():
     with mock_s3():
         s3_client = boto3.client("s3")
-        s3_client.create_bucket(Bucket=config)
+        s3_client.create_bucket(Bucket=CONFIG_BUCKET)
         s3_client.put_object(
-            Bucket=config, Key="filters/a", Body=json.dumps([{"item": "mischievous-bucket", "reason": "because"}])
+            Bucket=CONFIG_BUCKET, Key="filters/a", Body=json.dumps([{"item": "mischievous-bucket", "reason": "because"}])
         )
         s3_client.put_object(
-            Bucket=config, Key="filters/b", Body=json.dumps([{"item": "bad-repo-no-admin", "reason": "because"}])
+            Bucket=CONFIG_BUCKET, Key="filters/b", Body=json.dumps([{"item": "bad-repo-no-admin", "reason": "because"}])
         )
-        s3_client.put_object(Bucket=config, Key="mappings/all", Body=json.dumps([{"channel": "the-alerting-channel"}]))
+        s3_client.put_object(Bucket=CONFIG_BUCKET, Key="mappings/all", Body=json.dumps([{"channel": "the-alerting-channel"}]))
         s3_client.put_object(
-            Bucket=config, Key="mappings/a", Body=json.dumps([{"channel": "alerts", "items": ["bad-bucket"]}])
-        )
-        s3_client.put_object(
-            Bucket=config, Key="mappings/b", Body=json.dumps([{"channel": "alerts", "items": ["bad-repo-no-signing"]}])
+            Bucket=CONFIG_BUCKET, Key="mappings/a", Body=json.dumps([{"channel": "alerts", "items": ["bad-bucket"]}])
         )
         s3_client.put_object(
-            Bucket=config, Key="mappings/c", Body=json.dumps([{"channel": "alerts", "items": ["VPC flow logs"]}])
+            Bucket=CONFIG_BUCKET, Key="mappings/b", Body=json.dumps([{"channel": "alerts", "items": ["bad-repo-no-signing"]}])
         )
         s3_client.put_object(
-            Bucket=config,
+            Bucket=CONFIG_BUCKET, Key="mappings/c", Body=json.dumps([{"channel": "alerts", "items": ["VPC flow logs"]}])
+        )
+        s3_client.put_object(
+            Bucket=CONFIG_BUCKET,
             Key="mappings/d",
             Body=json.dumps([{"channel": "alerts", "items": ["https://unknown-host.com"]}]),
         )
         s3_client.put_object(
-            Bucket=config, Key="mappings/e", Body=json.dumps([{"channel": "alerts", "items": ["password policy"]}])
+            Bucket=CONFIG_BUCKET, Key="mappings/e", Body=json.dumps([{"channel": "alerts", "items": ["password policy"]}])
         )
         s3_client.put_object(
-            Bucket=config,
+            Bucket=CONFIG_BUCKET,
             Key="mappings/codepipeline",
             Body=json.dumps([{"channel": "codepipeline-alerts", "compliance_item_types": ["codepipeline"]}]),
         )
         s3_client.put_object(
-            Bucket=config,
+            Bucket=CONFIG_BUCKET,
             Key="mappings/codebuild",
             Body=json.dumps([{"channel": "codebuild-alerts", "compliance_item_types": ["codebuild"]}]),
         )
         s3_client.put_object(
-            Bucket=config,
+            Bucket=CONFIG_BUCKET,
             Key="mappings/guardduty",
             Body=json.dumps([{"channel": "guardduty-alerts", "compliance_item_types": ["guardduty"]}]),
         )
         s3_client.put_object(
-            Bucket=config,
+            Bucket=CONFIG_BUCKET,
             Key="mappings/vpc_peering",
             Body=json.dumps([{"channel": "vpc-peering-alerts", "compliance_item_types": ["vpc_peering"]}]),
         )
         yield s3_client
 
-# @pytest.fixture(autouse=True)
-def setup_report_bucket(account_id):
-    with mock_s3():
-        s3_client = boto3.client("s3")
-        s3_client.create_bucket(Bucket=report)
-        s3_client.put_object(Bucket=report, Key=s3_key, Body=json.dumps(set_account_id_in_report(account_id, s3_report)))
-        s3_client.put_object(
-            Bucket=report,
-            Key=password_policy_key,
-            Body=json.dumps(self.set_account_id_in_report(password_policy_report)),
-        )
-        s3_client.put_object(Bucket=report, Key=vpc_key, Body=json.dumps(set_account_id_in_report(account_id, vpc_report)))
-        s3_client.put_object(
-            Bucket=report,
-            Key=vpc_peering_key,
-            Body=json.dumps(set_account_id_in_report(account_id, deepcopy(vpc_peering_audit))),
-        )
-        s3_client.put_object(Bucket=report, Key=github_key, Body=json.dumps(github_report))
-        s3_client.put_object(Bucket=report, Key=github_webhook_key, Body=json.dumps(github_webhook_report))
-        yield s3_client
 
-def set_account_id_in_report(self, account_id: str, report_list: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+@pytest.fixture(autouse=True)
+def _report_s3_client():
+    with mock_s3():
+        yield boto3.client("s3")
+
+
+def setup_report_bucket(s3_client, account_id):
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(Bucket=REPORT_BUCKET)
+    s3_client.put_object(Bucket=REPORT_BUCKET, Key=S3_KEY, Body=json.dumps(set_account_id_in_report(account_id, s3_report)))
+    s3_client.put_object(
+        Bucket=REPORT_BUCKET,
+        Key=PASSWORD_POLICY_KEY,
+        Body=json.dumps(set_account_id_in_report(account_id, password_policy_report)),
+    )
+    s3_client.put_object(Bucket=REPORT_BUCKET, Key=VPC_KEY, Body=json.dumps(set_account_id_in_report(account_id, vpc_report)))
+    s3_client.put_object(
+        Bucket=REPORT_BUCKET,
+        Key=VPC_PEERING_KEY,
+        Body=json.dumps(set_account_id_in_report(account_id, deepcopy(vpc_peering_audit))),
+    )
+    s3_client.put_object(Bucket=REPORT_BUCKET, Key=GITHUB_KEY, Body=json.dumps(github_report))
+    s3_client.put_object(Bucket=REPORT_BUCKET, Key=GITHUB_WEBHOOK_KEY, Body=json.dumps(github_webhook_report))
+    return s3_client
+
+def set_account_id_in_report(account_id: str, report_list: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     for report in report_list:
         report["account"]["identifier"] = account_id
     return report_list
 
 @pytest.fixture(autouse=True)
-def helper_test_config(_setup_ssm_parameters, _setup_org_sub_account, _setup_config_bucket) -> HelperTestConfig:
-    mock_report_s3_client = setup_report_bucket(_setup_org_sub_account)
-    first_sub_account_id = _setup_org_sub_account.list_accounts()["Accounts"][0]["Id"]
+def helper_test_config(_setup_ssm_parameters, _setup_org_sub_account, _setup_config_bucket, _report_s3_client) -> HelperTestConfig:
+    first_sub_account_id = _setup_org_sub_account.list_accounts()["Accounts"][1]["Id"]
+    mock_report_s3_client = setup_report_bucket(_report_s3_client, first_sub_account_id)
+    print("HTC - report_s3_client", _report_s3_client)
+    print("HTC - mock_report_s3_client", mock_report_s3_client)
+    print("HTC - config_s3_client", _setup_config_bucket)
     htc = HelperTestConfig(
         config_s3_client=AwsS3Client(_setup_config_bucket),
         report_s3_client=AwsS3Client(mock_report_s3_client),
@@ -208,7 +215,7 @@ def helper_test_config(_setup_ssm_parameters, _setup_org_sub_account, _setup_con
         account_id=first_sub_account_id
     )
     print("HTC")
-    print(htc.config_s3_client.list_objects("the_config_bucket", "filter/"))
+    print(htc.report_s3_client.list_objects(REPORT_BUCKET, ""))
     
     yield htc
 
@@ -217,14 +224,14 @@ def helper_test_config(_setup_ssm_parameters, _setup_org_sub_account, _setup_con
 def _mock_slack_notifier():
     httpretty.enable()
     httpretty.register_uri(
-        httpretty.POST, slack_api_url, body=json.dumps({"successfullySentTo": [channel]}), status=200
+        httpretty.POST, SLACK_API_URL, body=json.dumps({"successfullySentTo": [CHANNEL]}), status=200
     )
     yield
     httpretty.disable()
 
 
 def test_send(helper_test_config):
-    print(helper_test_config.ssm_client.get_parameter(slack_username_key))
+    print(helper_test_config.ssm_client.get_parameter(SLACK_USERNAME_KEY))
     print(helper_test_config.config_s3_client.list_objects("the_config_bucket", "filter/"))
     ca = compliance_alerter.ComplianceAlerter(
         config = Config(
@@ -241,7 +248,7 @@ def test_send(helper_test_config):
     ca.send(
         slack_messages=[
             SlackMessage(
-                channels=[channel],
+                channels=[CHANNEL],
                 header="test-account 111222333444 eu-west-2 @some-team-name",
                 title="aTitle",
                 text="Words of Advice",
@@ -263,14 +270,30 @@ def set_event_account_id(account_id: str, test_event: Dict[str, Any]) -> Dict[st
     test_event["Records"][0]["Sns"]["Message"] = json.dumps(message)
     return dict(test_event)
 
-def test_new_codebuild_sns_event(helper_test_config) -> None:
+# TESTS START-------
+
+# 01
+def test_compliance_alerter_main_s3_audit(helper_test_config) -> None:
+    ca = compliance_alerter.ComplianceAlerter(
+        config = Config(
+            config_s3_client=helper_test_config.config_s3_client,
+            report_s3_client=helper_test_config.report_s3_client,
+            ssm_client=helper_test_config.ssm_client,
+            org_client=helper_test_config.org_client,
+        )
+    )
+    messages = ca.generate_slack_messages(build_event(S3_KEY))
+    ca.send(messages)
+    _assert_slack_message_sent_to_channel("the-alerting-channel")
+    _assert_slack_message_sent("bad-bucket")
+    _assert_slack_message_sent("@some-team-name")
+
+# 08
+def test_codebuild_sns_event(helper_test_config) -> None:
     test_event = set_event_account_id(
         account_id=helper_test_config.account_id,
         test_event=TestComplianceAlerter.load_json_resource("codebuild_event.json"),
     )
-    print("ACCT_ID", helper_test_config.account_id)
-    print("Config S3 client", helper_test_config.config_s3_client)
-    helper_test_config.config_s3_client.list_objects("the_config_bucket", "filter/")
 
     ca = compliance_alerter.ComplianceAlerter(
         config = Config(
@@ -285,8 +308,13 @@ def test_new_codebuild_sns_event(helper_test_config) -> None:
 
     _assert_slack_message_sent_to_channel("codebuild-alerts")
     _assert_slack_message_sent("@some-team-name")
-    # message_request = httpretty.last_request().body.decode("utf-8")
-    # assert "@some-team-name" in  message_request
+
+# END----------
+
+# Helper functions
+
+def build_event(report_key: str) -> Dict[str, Any]:
+    return {"Records": [{"eventVersion": "2.1", "s3": {"bucket": {"name": REPORT_BUCKET}, "object": {"key": report_key}}}]}
 
 def _assert_slack_message_sent(message: str) -> None:
     message_request = httpretty.last_request().body.decode("utf-8")
@@ -326,40 +354,34 @@ class TestComplianceAlerter(TestCase):
         print("1) ***httpretty.is_enabled", httpretty.is_enabled())
 
     def tearDown(self) -> None:
-        self._delete_bucket(report)
-        self._delete_bucket(config)
+        self._delete_bucket(REPORT_BUCKET)
+        self._delete_bucket(CONFIG_BUCKET)
         self._delete_ssm_parameters()
 
-    def test_compliance_alerter_main_s3_audit(self) -> None:
-        compliance_alerter.main(self.build_event(s3_key))
-        self._assert_slack_message_sent_to_channel("the-alerting-channel")
-        self._assert_slack_message_sent("bad-bucket")
-        self._assert_slack_message_sent("@some-team-name")
-
     def test_compliance_alerter_main_github_audit(self) -> None:
-        compliance_alerter.main(self.build_event(github_key))
+        compliance_alerter.main(self.build_event(GITHUB_KEY))
         self._assert_slack_message_sent_to_channel("the-alerting-channel")
         self._assert_slack_message_sent("bad-repo-no-signing")
 
     def test_compliance_alerter_main_github_webhook(self) -> None:
-        compliance_alerter.main(self.build_event(github_webhook_key))
+        compliance_alerter.main(self.build_event(GITHUB_WEBHOOK_KEY))
         self._assert_slack_message_sent_to_channel("the-alerting-channel")
         self._assert_slack_message_sent("https://unknown-host.com")
 
     def test_compliance_alerter_main_vpc_audit(self) -> None:
-        compliance_alerter.main(self.build_event(vpc_key))
+        compliance_alerter.main(self.build_event(VPC_KEY))
         self._assert_slack_message_sent_to_channel("the-alerting-channel")
         self._assert_slack_message_sent("VPC flow logs compliance enforcement success")
         self._assert_slack_message_sent("@some-team-name")
 
     def test_compliance_alerter_main_vpc_peering_audit(self) -> None:
-        compliance_alerter.main(self.build_event(vpc_peering_key))
+        compliance_alerter.main(self.build_event(VPC_PEERING_KEY))
         self._assert_slack_message_sent_to_channel("vpc-peering-alerts")
         self._assert_slack_message_sent("vpc peering connection with unknown account")
         self._assert_slack_message_sent("@some-team-name")
 
     def test_compliance_alerter_main_password_policy_audit(self) -> None:
-        compliance_alerter.main(self.build_event(password_policy_key))
+        compliance_alerter.main(self.build_event(PASSWORD_POLICY_KEY))
         self._assert_slack_message_sent_to_channel("the-alerting-channel")
         self._assert_slack_message_sent("password policy compliance enforcement success")
         self._assert_slack_message_sent("@some-team-name")
@@ -372,16 +394,6 @@ class TestComplianceAlerter(TestCase):
         compliance_alerter.main(test_event)
         self._assert_slack_message_sent_to_channel("codepipeline-alerts")
         self._assert_slack_message_sent("@some-team-name")
-
-    def test_codebuild_sns_event(self) -> None:
-        test_event = self.set_event_account_id(
-            account_id=self._account_id,
-            test_event=TestComplianceAlerter.load_json_resource("codebuild_event.json"),
-        )
-        compliance_alerter.main(test_event)
-
-        # self._assert_slack_message_sent_to_channel("codebuild-alerts")
-        # self._assert_slack_message_sent("@some-team-name")
 
     def test_guardduty_sns_event(self) -> None:
         test_event = self.set_event_account_id(
@@ -420,10 +432,6 @@ class TestComplianceAlerter(TestCase):
         self._assert_no_slack_message_sent()
 
     @staticmethod
-    def build_event(report_key: str) -> Dict[str, Any]:
-        return {"Records": [{"eventVersion": "2.1", "s3": {"bucket": {"name": report}, "object": {"key": report_key}}}]}
-
-    @staticmethod
     def _setup_org_sub_account(account_name: str = "test-account-name") -> str:
         org = boto3.client("organizations")
         org.create_organization(FeatureSet="ALL")
@@ -441,8 +449,8 @@ class TestComplianceAlerter(TestCase):
     @staticmethod
     def _delete_ssm_parameters() -> None:
         ssm = boto3.client("ssm")
-        ssm.delete_parameter(Name=slack_username_key)
-        ssm.delete_parameter(Name=slack_token_key)
+        ssm.delete_parameter(Name=SLACK_USERNAME_KEY)
+        ssm.delete_parameter(Name=SLACK_TOKEN_KEY)
 
     @staticmethod
     def _delete_bucket(bucket_name: str) -> None:
@@ -453,7 +461,7 @@ class TestComplianceAlerter(TestCase):
     @staticmethod
     def _mock_slack_notifier() -> None:
         httpretty.register_uri(
-            httpretty.POST, slack_api_url, body=json.dumps({"successfullySentTo": [channel]}), status=200
+            httpretty.POST, SLACK_API_URL, body=json.dumps({"successfullySentTo": [channel]}), status=200
         )
 
     def _assert_slack_message_sent(self, message: str) -> None:

@@ -3,7 +3,7 @@ from unittest.mock import Mock
 
 from src.config.config import Config
 from tests.fixtures.github_webhook_compliance import github_webhook_report
-from tests.test_compliance_alerter import github_webhook_host_ignore_list
+from tests.test_compliance_alerter import GITHUB_WEBHOOK_HOST_IGNORE_LIST
 from tests.test_types_generator import findings
 
 from src.data.audit import Audit
@@ -12,7 +12,7 @@ from src.compliance.github_webhook_compliance import GithubWebhookCompliance
 
 def get_config() -> Mock:
     mock = Mock(spec=Config)
-    mock.get_github_webhook_host_ignore_list.return_value = github_webhook_host_ignore_list
+    mock.get_github_webhook_host_ignore_list.return_value = GITHUB_WEBHOOK_HOST_IGNORE_LIST
     return mock
 
 
