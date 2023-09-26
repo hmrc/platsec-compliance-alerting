@@ -94,12 +94,14 @@ def _setup_environment(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
-def _setup_ssm_parameters():
+def _ssm_client():
     with mock_ssm():
-        ssm_client =  boto3.client('ssm')
-        ssm_client.put_parameter(Name=SLACK_USERNAME_KEY, Value="the-slack-username", Type="SecureString")
-        ssm_client.put_parameter(Name=SLACK_TOKEN_KEY, Value="the-slack-username", Type="SecureString")
-        yield ssm_client
+        yield boto3.client('ssm')
+
+def _setup_ssm_parameters(ssm_client):
+    ssm_client.put_parameter(Name=SLACK_USERNAME_KEY, Value="the-slack-username", Type="SecureString")
+    ssm_client.put_parameter(Name=SLACK_TOKEN_KEY, Value="the-slack-username", Type="SecureString")
+    return ssm_client
 
 
 @pytest.fixture(autouse=True)
@@ -208,15 +210,16 @@ def set_account_id_in_report(account_id: str, report_list: List[Dict[str, Any]])
 
 
 @pytest.fixture(autouse=True)
-def helper_test_config(_setup_ssm_parameters, _org_client, _config_s3_client, _report_s3_client) -> HelperTestConfig:
+def helper_test_config(_ssm_client, _org_client, _config_s3_client, _report_s3_client) -> HelperTestConfig:
     mock_org_client = _setup_org_sub_account(_org_client)
     sub_account_id = mock_org_client.list_accounts()["Accounts"][-1]["Id"]
     mock_config_s3_client = setup_config_bucket(_config_s3_client)
     mock_report_s3_client = setup_report_bucket(_report_s3_client, sub_account_id)
+    mock_ssm_client = _setup_ssm_parameters(_ssm_client)
     htc = HelperTestConfig(
         config_s3_client=AwsS3Client(mock_config_s3_client),
         report_s3_client=AwsS3Client(mock_report_s3_client),
-        ssm_client=AwsSsmClient(_setup_ssm_parameters),
+        ssm_client=AwsSsmClient(mock_ssm_client),
         org_client=AwsOrgClient(mock_org_client),
         account_id=sub_account_id
     )
