@@ -44,6 +44,8 @@ MOCK_CLIENTS = {
         ("SLACK_USERNAME_KEY", Config(**MOCK_CLIENTS).get_slack_username_key),
         ("SLACK_TOKEN_KEY", Config(**MOCK_CLIENTS).get_slack_token_key),
         ("SSM_READ_ROLE", Config(**MOCK_CLIENTS).get_ssm_read_role),
+        ("ORG_ACCOUNT", Config(**MOCK_CLIENTS).get_org_account),
+        ("ORG_READ_ROLE", Config(**MOCK_CLIENTS).get_org_read_role),
     ],
 )
 def test_missing_env_vars(env_var_key: str, config_function: Any, monkeypatch: Any) -> None:
