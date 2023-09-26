@@ -133,7 +133,6 @@ class Config:
         return self._get_env("ORG_READ_ROLE")
 
     def get_slack_notifier_config(self) -> SlackNotifierConfig:
-        # ssm = AwsClientFactory().get_ssm_client(self.get_aws_account(), self.get_ssm_read_role())
         return SlackNotifierConfig(
             username=self.ssm_client.get_parameter(self.get_slack_username_key()),
             token=self.ssm_client.get_parameter(self.get_slack_token_key()),
@@ -141,7 +140,6 @@ class Config:
         )
 
     def get_report_s3_client(self) -> AwsS3Client:
-        # return AwsClientFactory().get_s3_client(self.get_aws_account(), self.get_report_bucket_read_role())
         return self.report_s3_client
 
     def get_org_client(self) -> AwsOrgClient:
@@ -172,7 +170,6 @@ class Config:
             return False
 
     def _fetch_config_files(self, prefix: str, mapper: Callable[[Dict[str, str]], T]) -> Set[T]:
-        # s3 = AwsClientFactory().get_s3_client(self.get_aws_account(), self.get_config_bucket_read_role())
         keys = self.config_s3_client.list_objects(self.get_config_bucket(), prefix)
         return set(chain.from_iterable(map(lambda key: self._load(key, mapper), keys)))
 
