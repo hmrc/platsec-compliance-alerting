@@ -58,7 +58,7 @@ def test_main(mock_compliance_alerter, mock_s3_client, mock_ssm_client, mock_org
         header="test-account 111222333444 eu-west-2 @some-team-name",
         title="aTitle",
         text="Words of Advice",
-        color=Severity.HIGH
+        color=Severity.HIGH,
     )
     mock_compliance_alerter.return_value.send.return_value = Mock()
     _mock = mock_compliance_alerter.return_value
@@ -71,7 +71,7 @@ def test_main(mock_compliance_alerter, mock_s3_client, mock_ssm_client, mock_org
 
 def test_send(helper_test_config):
     ca = compliance_alerter.ComplianceAlerter(
-        config = Config(
+        config=Config(
             config_s3_client=helper_test_config.config_s3_client,
             report_s3_client=helper_test_config.report_s3_client,
             ssm_client=helper_test_config.ssm_client,
@@ -85,7 +85,7 @@ def test_send(helper_test_config):
                 header="test-account 111222333444 eu-west-2 @some-team-name",
                 title="aTitle",
                 text="Words of Advice",
-                color=Severity.HIGH
+                color=Severity.HIGH,
             )
         ]
     )
@@ -94,7 +94,7 @@ def test_send(helper_test_config):
 
 def test_compliance_alerter_main_s3_audit(helper_test_config) -> None:
     ca = compliance_alerter.ComplianceAlerter(
-        config = Config(
+        config=Config(
             config_s3_client=helper_test_config.config_s3_client,
             report_s3_client=helper_test_config.report_s3_client,
             ssm_client=helper_test_config.ssm_client,
@@ -107,9 +107,10 @@ def test_compliance_alerter_main_s3_audit(helper_test_config) -> None:
     _assert_slack_message_sent("bad-bucket")
     _assert_slack_message_sent("@some-team-name")
 
+
 def test_compliance_alerter_main_github_audit(helper_test_config) -> None:
     ca = compliance_alerter.ComplianceAlerter(
-        config = Config(
+        config=Config(
             config_s3_client=helper_test_config.config_s3_client,
             report_s3_client=helper_test_config.report_s3_client,
             ssm_client=helper_test_config.ssm_client,
@@ -121,9 +122,10 @@ def test_compliance_alerter_main_github_audit(helper_test_config) -> None:
     _assert_slack_message_sent_to_channel("the-alerting-channel")
     _assert_slack_message_sent("bad-repo-no-signing")
 
+
 def test_compliance_alerter_main_github_webhook(helper_test_config) -> None:
     ca = compliance_alerter.ComplianceAlerter(
-        config = Config(
+        config=Config(
             config_s3_client=helper_test_config.config_s3_client,
             report_s3_client=helper_test_config.report_s3_client,
             ssm_client=helper_test_config.ssm_client,
@@ -135,9 +137,10 @@ def test_compliance_alerter_main_github_webhook(helper_test_config) -> None:
     _assert_slack_message_sent_to_channel("the-alerting-channel")
     _assert_slack_message_sent("https://unknown-host.com")
 
+
 def test_compliance_alerter_main_vpc_audit(helper_test_config) -> None:
     ca = compliance_alerter.ComplianceAlerter(
-        config = Config(
+        config=Config(
             config_s3_client=helper_test_config.config_s3_client,
             report_s3_client=helper_test_config.report_s3_client,
             ssm_client=helper_test_config.ssm_client,
@@ -150,9 +153,10 @@ def test_compliance_alerter_main_vpc_audit(helper_test_config) -> None:
     _assert_slack_message_sent("VPC flow logs compliance enforcement success")
     _assert_slack_message_sent("@some-team-name")
 
+
 def test_compliance_alerter_main_vpc_peering_audit(helper_test_config) -> None:
     ca = compliance_alerter.ComplianceAlerter(
-        config = Config(
+        config=Config(
             config_s3_client=helper_test_config.config_s3_client,
             report_s3_client=helper_test_config.report_s3_client,
             ssm_client=helper_test_config.ssm_client,
@@ -165,9 +169,10 @@ def test_compliance_alerter_main_vpc_peering_audit(helper_test_config) -> None:
     _assert_slack_message_sent("vpc peering connection with unknown account")
     _assert_slack_message_sent("@some-team-name")
 
+
 def test_compliance_alerter_main_password_policy_audit(helper_test_config) -> None:
     ca = compliance_alerter.ComplianceAlerter(
-        config = Config(
+        config=Config(
             config_s3_client=helper_test_config.config_s3_client,
             report_s3_client=helper_test_config.report_s3_client,
             ssm_client=helper_test_config.ssm_client,
@@ -180,13 +185,14 @@ def test_compliance_alerter_main_password_policy_audit(helper_test_config) -> No
     _assert_slack_message_sent("password policy compliance enforcement success")
     _assert_slack_message_sent("@some-team-name")
 
+
 def test_codepipeline_sns_event(helper_test_config) -> None:
     test_event = set_event_account_id(
         account_id=helper_test_config.account_id,
         test_event=load_json_resource("codepipeline_event.json"),
     )
     ca = compliance_alerter.ComplianceAlerter(
-        config = Config(
+        config=Config(
             config_s3_client=helper_test_config.config_s3_client,
             report_s3_client=helper_test_config.report_s3_client,
             ssm_client=helper_test_config.ssm_client,
@@ -198,13 +204,14 @@ def test_codepipeline_sns_event(helper_test_config) -> None:
     _assert_slack_message_sent_to_channel("codepipeline-alerts")
     _assert_slack_message_sent("@some-team-name")
 
+
 def test_codebuild_sns_event(helper_test_config) -> None:
     test_event = set_event_account_id(
         account_id=helper_test_config.account_id,
         test_event=load_json_resource("codebuild_event.json"),
     )
     ca = compliance_alerter.ComplianceAlerter(
-        config = Config(
+        config=Config(
             config_s3_client=helper_test_config.config_s3_client,
             report_s3_client=helper_test_config.report_s3_client,
             ssm_client=helper_test_config.ssm_client,
@@ -216,6 +223,7 @@ def test_codebuild_sns_event(helper_test_config) -> None:
     _assert_slack_message_sent_to_channel("codebuild-alerts")
     _assert_slack_message_sent("@some-team-name")
 
+
 def test_guardduty_sns_event(helper_test_config, _org_client) -> None:
     mock_org_client = _setup_org_sub_account(org_client=_org_client, account_name="sub-account-name")
     sub_account_id = mock_org_client.list_accounts()["Accounts"][-1]["Id"]
@@ -224,7 +232,7 @@ def test_guardduty_sns_event(helper_test_config, _org_client) -> None:
         test_event=load_json_resource("guardduty_event.json"),
     )
     ca = compliance_alerter.ComplianceAlerter(
-        config = Config(
+        config=Config(
             config_s3_client=helper_test_config.config_s3_client,
             report_s3_client=helper_test_config.report_s3_client,
             ssm_client=helper_test_config.ssm_client,
@@ -248,7 +256,7 @@ def test_guardduty_sns_event(helper_test_config, _org_client) -> None:
 
 def test_unknown_sns_event(helper_test_config) -> None:
     ca = compliance_alerter.ComplianceAlerter(
-        config = Config(
+        config=Config(
             config_s3_client=helper_test_config.config_s3_client,
             report_s3_client=helper_test_config.report_s3_client,
             ssm_client=helper_test_config.ssm_client,
@@ -259,9 +267,10 @@ def test_unknown_sns_event(helper_test_config) -> None:
     ca.send(messages)
     _assert_no_slack_message_sent()
 
+
 def test_unsupported_event(helper_test_config) -> None:
     ca = compliance_alerter.ComplianceAlerter(
-        config = Config(
+        config=Config(
             config_s3_client=helper_test_config.config_s3_client,
             report_s3_client=helper_test_config.report_s3_client,
             ssm_client=helper_test_config.ssm_client,
@@ -274,11 +283,9 @@ def test_unsupported_event(helper_test_config) -> None:
     _assert_no_slack_message_sent()
 
 
-#END----------
-
 # Helper functions
 @dataclass
-class HelperTestConfig():
+class HelperTestConfig:
     config_s3_client: AwsS3Client
     report_s3_client: AwsS3Client
     ssm_client: AwsSsmClient
@@ -318,7 +325,7 @@ def _setup_environment(monkeypatch):
         "ORG_READ_ROLE": "the-org-read-role",
         "VPC_RESOLVER_AUDIT_REPORT_KEY": "vpc resolver audit report key",
     }
-    
+
     for key, value in env_vars.items():
         monkeypatch.setenv(key, value)
 
@@ -326,7 +333,8 @@ def _setup_environment(monkeypatch):
 @pytest.fixture(autouse=True)
 def _ssm_client():
     with mock_ssm():
-        yield boto3.client('ssm')
+        yield boto3.client("ssm")
+
 
 def _setup_ssm_parameters(ssm_client):
     ssm_client.put_parameter(Name=SLACK_USERNAME_KEY, Value="the-slack-username", Type="SecureString")
@@ -339,11 +347,12 @@ def _org_client():
     with mock_organizations():
         yield boto3.client("organizations")
 
+
 def _setup_org_sub_account(org_client, account_name: str = "test-account-name"):
     org_client.create_organization(FeatureSet="ALL")
-    account_id = org_client.create_account(AccountName=account_name, Email="example@example.com")["CreateAccountStatus"][
-        "AccountId"
-    ]
+    account_id = org_client.create_account(AccountName=account_name, Email="example@example.com")[
+        "CreateAccountStatus"
+    ]["AccountId"]
     org_client.tag_resource(
         ResourceId=account_id,
         Tags=[
@@ -351,6 +360,7 @@ def _setup_org_sub_account(org_client, account_name: str = "test-account-name"):
         ],
     )
     return org_client
+
 
 @pytest.fixture(autouse=True)
 def _config_s3_client():
@@ -366,12 +376,16 @@ def setup_config_bucket(s3_client):
     s3_client.put_object(
         Bucket=CONFIG_BUCKET, Key="filters/b", Body=json.dumps([{"item": "bad-repo-no-admin", "reason": "because"}])
     )
-    s3_client.put_object(Bucket=CONFIG_BUCKET, Key="mappings/all", Body=json.dumps([{"channel": "the-alerting-channel"}]))
+    s3_client.put_object(
+        Bucket=CONFIG_BUCKET, Key="mappings/all", Body=json.dumps([{"channel": "the-alerting-channel"}])
+    )
     s3_client.put_object(
         Bucket=CONFIG_BUCKET, Key="mappings/a", Body=json.dumps([{"channel": "alerts", "items": ["bad-bucket"]}])
     )
     s3_client.put_object(
-        Bucket=CONFIG_BUCKET, Key="mappings/b", Body=json.dumps([{"channel": "alerts", "items": ["bad-repo-no-signing"]}])
+        Bucket=CONFIG_BUCKET,
+        Key="mappings/b",
+        Body=json.dumps([{"channel": "alerts", "items": ["bad-repo-no-signing"]}]),
     )
     s3_client.put_object(
         Bucket=CONFIG_BUCKET, Key="mappings/c", Body=json.dumps([{"channel": "alerts", "items": ["VPC flow logs"]}])
@@ -416,13 +430,17 @@ def _report_s3_client():
 def setup_report_bucket(s3_client, account_id):
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket=REPORT_BUCKET)
-    s3_client.put_object(Bucket=REPORT_BUCKET, Key=S3_KEY, Body=json.dumps(set_account_id_in_report(account_id, s3_report)))
+    s3_client.put_object(
+        Bucket=REPORT_BUCKET, Key=S3_KEY, Body=json.dumps(set_account_id_in_report(account_id, s3_report))
+    )
     s3_client.put_object(
         Bucket=REPORT_BUCKET,
         Key=PASSWORD_POLICY_KEY,
         Body=json.dumps(set_account_id_in_report(account_id, password_policy_report)),
     )
-    s3_client.put_object(Bucket=REPORT_BUCKET, Key=VPC_KEY, Body=json.dumps(set_account_id_in_report(account_id, vpc_report)))
+    s3_client.put_object(
+        Bucket=REPORT_BUCKET, Key=VPC_KEY, Body=json.dumps(set_account_id_in_report(account_id, vpc_report))
+    )
     s3_client.put_object(
         Bucket=REPORT_BUCKET,
         Key=VPC_PEERING_KEY,
@@ -451,7 +469,7 @@ def helper_test_config(_ssm_client, _org_client, _config_s3_client, _report_s3_c
         report_s3_client=AwsS3Client(mock_report_s3_client),
         ssm_client=AwsSsmClient(mock_ssm_client),
         org_client=AwsOrgClient(mock_org_client),
-        account_id=sub_account_id
+        account_id=sub_account_id,
     )
     # print("HTC")
     # print(htc.report_s3_client.list_objects(REPORT_BUCKET, ""))
@@ -477,13 +495,18 @@ def set_event_account_id(account_id: str, test_event: Dict[str, Any]) -> Dict[st
     test_event["Records"][0]["Sns"]["Message"] = json.dumps(message)
     return dict(test_event)
 
+
 def build_event(report_key: str) -> Dict[str, Any]:
-    return {"Records": [{"eventVersion": "2.1", "s3": {"bucket": {"name": REPORT_BUCKET}, "object": {"key": report_key}}}]}
+    return {
+        "Records": [{"eventVersion": "2.1", "s3": {"bucket": {"name": REPORT_BUCKET}, "object": {"key": report_key}}}]
+    }
+
 
 def _assert_slack_message_sent(message: str) -> None:
     message_request = httpretty.last_request().body.decode("utf-8")
     print("_assert_slack_message_sent ===> ", message_request)
-    assert message in  message_request
+    assert message in message_request
+
 
 def _assert_slack_message_sent_to_channel(channel: str) -> None:
     last_request = httpretty.last_request()
@@ -492,17 +515,16 @@ def _assert_slack_message_sent_to_channel(channel: str) -> None:
     message_json = json.loads(message_request)
     assert channel in message_json["channelLookup"]["slackChannels"]
 
+
 def _assert_no_slack_message_sent() -> None:
     last_request = httpretty.last_request()
     assert type(last_request) == httpretty.core.HTTPrettyRequestEmpty, "A request was made to slack"
+
 
 def load_json_resource(filename: str) -> Any:
     with open(os.path.join("tests", "resources", filename), "r") as json_file:
         resource = json.load(json_file)
     return resource
-
-
-
 
 
 # @mock_s3
@@ -524,8 +546,6 @@ def load_json_resource(filename: str) -> Any:
 #         self._delete_bucket(REPORT_BUCKET)
 #         self._delete_bucket(CONFIG_BUCKET)
 #         self._delete_ssm_parameters()
-
-
 
 
 #     @staticmethod

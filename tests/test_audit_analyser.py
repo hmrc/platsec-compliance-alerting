@@ -24,6 +24,7 @@ MOCK_CLIENTS = {
     "org_client": Mock(),
 }
 
+
 @patch.object(Config, "get_s3_audit_report_key", return_value="s3")
 @patch.object(Config, "get_github_audit_report_key", return_value="github_admin_report")
 @patch.object(Config, "get_github_webhook_report_key", return_value="github_webhook_report")

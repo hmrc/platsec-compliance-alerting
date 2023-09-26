@@ -16,8 +16,13 @@ from src.slack_notifier import SlackNotifierConfig
 
 
 class Config:
-
-    def __init__(self, config_s3_client: AwsS3Client, report_s3_client: AwsS3Client, ssm_client: AwsSsmClient, org_client: AwsOrgClient):
+    def __init__(
+        self,
+        config_s3_client: AwsS3Client,
+        report_s3_client: AwsS3Client,
+        ssm_client: AwsSsmClient,
+        org_client: AwsOrgClient,
+    ):
         self.config_s3_client = config_s3_client
         self.report_s3_client = report_s3_client
         self.ssm_client = ssm_client

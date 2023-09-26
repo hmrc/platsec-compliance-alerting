@@ -18,12 +18,15 @@ from src.sns.codepipeline import CodePipeline
 from src.sns.guardduty import GuardDuty
 
 
-    
 def main(event: Dict[str, Any]) -> None:
     compliance_alerter = ComplianceAlerter(
         config=Config(
-            config_s3_client=AwsClientFactory().get_s3_client(Config.get_aws_account(), Config.get_config_bucket_read_role()),
-            report_s3_client=AwsClientFactory().get_s3_client(Config.get_aws_account(), Config.get_report_bucket_read_role()),
+            config_s3_client=AwsClientFactory().get_s3_client(
+                Config.get_aws_account(), Config.get_config_bucket_read_role()
+            ),
+            report_s3_client=AwsClientFactory().get_s3_client(
+                Config.get_aws_account(), Config.get_report_bucket_read_role()
+            ),
             ssm_client=AwsClientFactory().get_ssm_client(Config.get_aws_account(), Config.get_ssm_read_role()),
             org_client=AwsClientFactory().get_org_client(Config.get_org_account(), Config.get_org_read_role()),
         )
@@ -35,16 +38,17 @@ class ComplianceAlerter:
     def __init__(self, config: Config) -> None:
         self.config = config
         self.logger = Config.configure_logging()
-        
+
     def generate_slack_messages(self, event: Dict[str, Any]) -> List[SlackMessage]:
-        findings = self.handle_sns_event(event) if ComplianceAlerter.is_sns_event(event) else self.analyse(self.fetch(event))
+        findings = (
+            self.handle_sns_event(event) if ComplianceAlerter.is_sns_event(event) else self.analyse(self.fetch(event))
+        )
         slack_messages = self.apply_mappings(self.apply_filters(findings))
         return slack_messages
 
     @staticmethod
     def is_sns_event(event: Dict[str, Any]) -> bool:
         return "EventSource" in event.get("Records", [{}])[0] and event["Records"][0].get("EventSource") == "aws:sns"
-
 
     def handle_sns_event(self, events: Dict[str, Any]) -> Set[Findings]:
         findings: Set[Findings] = set()
@@ -61,22 +65,19 @@ class ComplianceAlerter:
                 logging.getLogger(__name__).warning(f"Received unknown event with detailType '{type}'. Ignoring...")
         return findings
 
-
     def fetch(self, event: Dict[str, Any]) -> Audit:
         return AuditFetcher().fetch_audit(self.config.get_report_s3_client(), event)
-
 
     def analyse(self, audit: Audit) -> Set[Findings]:
         return AuditAnalyser().analyse(self.logger, audit, self.config)
 
-
     def apply_filters(self, notifications: Set[Findings]) -> Set[Findings]:
         return FindingsFilter().do_filter(notifications, self.config.get_notification_filters())
 
-
     def apply_mappings(self, notifications: Set[Findings]) -> List[SlackMessage]:
-        return NotificationMapper().do_map(notifications, self.config.get_notification_mappings(), self.config.org_client)
-
+        return NotificationMapper().do_map(
+            notifications, self.config.get_notification_mappings(), self.config.org_client
+        )
 
     def send(self, slack_messages: List[SlackMessage]) -> None:
         self.logger.debug("Sending the following messages: %s", slack_messages)

@@ -22,6 +22,7 @@ MOCK_CLIENTS = {
     "org_client": Mock(),
 }
 
+
 @pytest.mark.parametrize(
     "env_var_key,config_function",
     [
