@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from unittest import TestCase
 from unittest.mock import Mock, patch
 
 import os
@@ -12,7 +11,7 @@ import pytest
 
 import json
 
-from moto import mock_s3, mock_ssm, mock_sts, mock_organizations
+from moto import mock_s3, mock_ssm, mock_organizations
 
 from src import compliance_alerter
 from src.clients.aws_org_client import AwsOrgClient
@@ -510,7 +509,7 @@ def _assert_slack_message_sent(message: str) -> None:
 
 def _assert_slack_message_sent_to_channel(channel: str) -> None:
     last_request = httpretty.last_request()
-    assert type(last_request) != httpretty.core.HTTPrettyRequestEmpty, "No requests were made to slack"
+    assert type(last_request) is not httpretty.core.HTTPrettyRequestEmpty, "No requests were made to slack"
     message_request = last_request.body.decode("utf-8")
     message_json = json.loads(message_request)
     assert channel in message_json["channelLookup"]["slackChannels"]
@@ -518,7 +517,7 @@ def _assert_slack_message_sent_to_channel(channel: str) -> None:
 
 def _assert_no_slack_message_sent() -> None:
     last_request = httpretty.last_request()
-    assert type(last_request) == httpretty.core.HTTPrettyRequestEmpty, "A request was made to slack"
+    assert type(last_request) is httpretty.core.HTTPrettyRequestEmpty, "A request was made to slack"
 
 
 def load_json_resource(filename: str) -> Any:

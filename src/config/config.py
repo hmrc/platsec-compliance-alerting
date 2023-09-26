@@ -6,7 +6,6 @@ from typing import Callable, Dict, Set, List
 
 from src import T, error
 from src.clients.aws_s3_client import AwsS3Client
-from src.clients.aws_client_factory import AwsClientFactory
 from src.clients.aws_org_client import AwsOrgClient
 from src.clients.aws_ssm_client import AwsSsmClient
 from src.config.notification_filter_config import NotificationFilterConfig

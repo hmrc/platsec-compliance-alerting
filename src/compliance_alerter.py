@@ -1,12 +1,10 @@
 import logging
-from logging import Logger
 from typing import Any, Dict, List, Set
 import json
 
 from src.audit_analyser import AuditAnalyser
 from src.audit_fetcher import AuditFetcher
 from src.clients.aws_client_factory import AwsClientFactory
-from src.clients.aws_ssm_client import AwsSsmClient
 from src.config.config import Config
 from src.data.audit import Audit
 from src.data.findings import Findings
