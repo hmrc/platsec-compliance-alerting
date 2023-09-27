@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch
 
 import os
 from copy import deepcopy
-from typing import Any, Dict, Generator, Iterator, List
+from typing import Any, Dict, Iterator, List
 
 import boto3
 import httpretty
