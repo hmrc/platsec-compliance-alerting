@@ -461,7 +461,9 @@ def setup_config_bucket(s3_client: BaseClient) -> BaseClient:
     s3_client.put_object(
         Bucket=CONFIG_BUCKET,
         Key="mappings/grant_user_access_lambda",
-        Body=json.dumps([{"channel": "grant-user-access-lambda-alerts", "compliance_item_types": ["grant_user_access_lambda"]}]),
+        Body=json.dumps(
+            [{"channel": "grant-user-access-lambda-alerts", "compliance_item_types": ["grant_user_access_lambda"]}]
+        ),
     )
     return s3_client
 

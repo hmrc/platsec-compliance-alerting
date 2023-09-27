@@ -63,7 +63,7 @@ class ComplianceAlerter:
             elif type == GrantUserAccessLambda.Type:
                 findings.add(GrantUserAccessLambda().create_finding(message))
         else:
-                logging.getLogger(__name__).warning(f"Received unknown event with detailType '{type}'. Ignoring...")
+            logging.getLogger(__name__).warning(f"Received unknown event with detailType '{type}'. Ignoring...")
         return findings
 
     def fetch(self, event: Dict[str, Any]) -> Audit:
