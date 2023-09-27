@@ -1,4 +1,3 @@
-import urllib
 from typing import Dict, Any
 
 from src.data.account import Account

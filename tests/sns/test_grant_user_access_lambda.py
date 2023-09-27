@@ -1,6 +1,5 @@
 import json
 
-from src.sns.codebuild import CodeBuild
 from src.sns.grant_user_access_lambda import GrantUserAccessLambda
 
 from tests.sns import load_json_resource
