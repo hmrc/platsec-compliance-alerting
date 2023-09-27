@@ -17,6 +17,14 @@ from src.data.exceptions import UnsupportedAuditException
 from tests.test_types_generator import findings
 
 
+MOCK_CLIENTS = {
+    "config_s3_client": Mock(),
+    "report_s3_client": Mock(),
+    "ssm_client": Mock(),
+    "org_client": Mock(),
+}
+
+
 @patch.object(Config, "get_s3_audit_report_key", return_value="s3")
 @patch.object(Config, "get_github_audit_report_key", return_value="github_admin_report")
 @patch.object(Config, "get_github_webhook_report_key", return_value="github_webhook_report")
@@ -40,7 +48,7 @@ class TestAuditAnalyser(TestCase):
         audit = Audit(type="s3", report=[{"report": "val-1"}, {"report": "val-2"}])
 
         with patch.object(S3Compliance, "analyse", return_value=notifications) as s3_compliance:
-            self.assertEqual(notifications, AuditAnalyser().analyse(logger, audit, Config()))
+            self.assertEqual(notifications, AuditAnalyser().analyse(logger, audit, Config(**MOCK_CLIENTS)))
         s3_compliance.assert_called_once_with(audit)
 
     def test_check_iam_compliance(self, *_: Mock) -> None:
@@ -49,11 +57,11 @@ class TestAuditAnalyser(TestCase):
         audit = Audit(type="audit_iam.json", report=[{"report": "val-1"}, {"report": "val-2"}])
 
         with patch.object(IamCompliance, "analyse", return_value=notifications) as compliance:
-            self.assertEqual(notifications, AuditAnalyser().analyse(logger, audit, Config()))
+            self.assertEqual(notifications, AuditAnalyser().analyse(logger, audit, Config(**MOCK_CLIENTS)))
         compliance.assert_called_once_with(audit)
 
     def test_check_github_compliance(self, *_: Mock) -> None:
-        public_query_handler = AuditAnalyser.config_map(getLogger(), Config())["github_admin_report"]
+        public_query_handler = AuditAnalyser.config_map(getLogger(), Config(**MOCK_CLIENTS))["github_admin_report"]
         self.assertIsInstance(public_query_handler, GithubCompliance)
         self.assertEqual(public_query_handler.item_type, "github_repository")
         self.assertTrue(public_query_handler.enable_wiki_checking)  # type: ignore
@@ -74,12 +82,12 @@ class TestAuditAnalyser(TestCase):
         )
 
         with patch.object(GithubWebhookCompliance, "analyse", return_value=notifications) as github_webhook_compliance:
-            self.assertEqual(notifications, AuditAnalyser().analyse(logger, audit, Config()))
+            self.assertEqual(notifications, AuditAnalyser().analyse(logger, audit, Config(**MOCK_CLIENTS)))
         github_webhook_compliance.assert_called_once_with(audit)
 
     def test_check_vpc_compliance(self, *_: Mock) -> None:
         logger = getLogger()
-        public_query_handler = AuditAnalyser.config_map(logger, Config())["audit_vpc_flow_logs.json"]
+        public_query_handler = AuditAnalyser.config_map(logger, Config(**MOCK_CLIENTS))["audit_vpc_flow_logs.json"]
         self.assertEqual(public_query_handler.item_type, "vpc")
         self.assertIsInstance(public_query_handler, ActionableReportCompliance)
 
@@ -89,12 +97,12 @@ class TestAuditAnalyser(TestCase):
         audit = Audit(type="audit_vpc_peering.json", report=[{"report": "val-1"}, {"report": "val-2"}])
 
         with patch.object(VpcPeeringCompliance, "analyse", return_value=notifications) as vpc_peering_compliance:
-            self.assertEqual(notifications, AuditAnalyser().analyse(logger, audit, Config()))
+            self.assertEqual(notifications, AuditAnalyser().analyse(logger, audit, Config(**MOCK_CLIENTS)))
         vpc_peering_compliance.assert_called_once_with(audit)
 
     def test_check_password_policy_compliance(self, *_: Mock) -> None:
         logger = getLogger()
-        public_query_handler = AuditAnalyser.config_map(logger, Config())["audit_password_policy.json"]
+        public_query_handler = AuditAnalyser.config_map(logger, Config(**MOCK_CLIENTS))["audit_password_policy.json"]
         self.assertEqual(public_query_handler.item_type, "password_policy")
         self.assertIsInstance(public_query_handler, ActionableReportCompliance)
 
@@ -104,16 +112,16 @@ class TestAuditAnalyser(TestCase):
         audit = Audit(type="audit_ec2.json", report=[{"report": "val-1"}, {"report": "val-2"}])
 
         with patch.object(Ec2Compliance, "analyse", return_value=the_findings) as password_policy_compliance:
-            self.assertEqual(the_findings, AuditAnalyser().analyse(logger, audit, Config()))
+            self.assertEqual(the_findings, AuditAnalyser().analyse(logger, audit, Config(**MOCK_CLIENTS)))
         password_policy_compliance.assert_called_once_with(audit)
 
     def test_check_unsupported_audit(self, *_: Mock) -> None:
         with self.assertRaisesRegex(UnsupportedAuditException, "wat"):
-            AuditAnalyser().analyse(getLogger(), Audit(type="wat", report=[]), Config())
+            AuditAnalyser().analyse(getLogger(), Audit(type="wat", report=[]), Config(**MOCK_CLIENTS))
 
     def test_check_unsupported_audit_can_ignore_keys(self, *_: Mock) -> None:
         audit = Audit(type="a_unsupported_but_ignored_key.json", report=[{"report": "val-1"}, {"report": "val-2"}])
-        self.assertEqual(set(), AuditAnalyser().analyse(getLogger(), audit, Config()))
+        self.assertEqual(set(), AuditAnalyser().analyse(getLogger(), audit, Config(**MOCK_CLIENTS)))
 
     def test_check_vpc_resolver_compliance(self, *_: Mock) -> None:
         logger = getLogger()
@@ -121,11 +129,11 @@ class TestAuditAnalyser(TestCase):
         audit = Audit(type="audit_vpc_resolver_logs.json", report=[{"report": "val-1"}, {"report": "val-2"}])
 
         with patch.object(ActionableReportCompliance, "analyse", return_value=notifications) as vpc_compliance:
-            self.assertEqual(notifications, AuditAnalyser().analyse(logger, audit, Config()))
+            self.assertEqual(notifications, AuditAnalyser().analyse(logger, audit, Config(**MOCK_CLIENTS)))
         vpc_compliance.assert_called_once_with(audit)
 
     def test_check_public_query_compliance(self, *_: Mock) -> None:
         logger = getLogger()
-        public_query_handler = AuditAnalyser.config_map(logger, Config())["audit_route53_query_logs.json"]
+        public_query_handler = AuditAnalyser.config_map(logger, Config(**MOCK_CLIENTS))["audit_route53_query_logs.json"]
         self.assertEqual(public_query_handler.item_type, "public_query_log")
         self.assertIsInstance(public_query_handler, ActionableReportCompliance)
