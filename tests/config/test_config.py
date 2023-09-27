@@ -1,7 +1,7 @@
 import logging
 import re
 from collections import namedtuple
-from typing import Any
+from typing import Any, Dict
 from unittest.mock import Mock, patch, call
 
 import pytest
@@ -15,7 +15,7 @@ from src.data.exceptions import AwsClientException, MissingConfigException, Inva
 from src.slack_notifier import SlackNotifierConfig
 
 
-MOCK_CLIENTS = {
+MOCK_CLIENTS: Dict[str, Any] = {
     "config_s3_client": Mock(),
     "report_s3_client": Mock(),
     "ssm_client": Mock(),
@@ -67,32 +67,32 @@ def test_get_default_log_level(monkeypatch: Any) -> None:
 def feature_switch_defaults_false(monkeypatch: Any) -> None:
     monkeypatch.delenv("ENABLE_WIKI_CHECKING", raising=False)
 
-    assert Config().get_enable_wiki_checking() is False
+    assert Config(**MOCK_CLIENTS).get_enable_wiki_checking() is False
 
 
 def feature_switch_can_be_disabled(monkeypatch: Any) -> None:
     monkeypatch.setenv("ENABLE_WIKI_CHECKING", "false")
-    assert Config().get_enable_wiki_checking() is False
+    assert Config(**MOCK_CLIENTS).get_enable_wiki_checking() is False
 
     monkeypatch.setenv("ENABLE_WIKI_CHECKING", "False")
-    assert Config().get_enable_wiki_checking() is False
+    assert Config(**MOCK_CLIENTS).get_enable_wiki_checking() is False
 
     monkeypatch.setenv("ENABLE_WIKI_CHECKING", " False ")
-    assert Config().get_enable_wiki_checking() is False
+    assert Config(**MOCK_CLIENTS).get_enable_wiki_checking() is False
 
     monkeypatch.setenv("ENABLE_WIKI_CHECKING", "FALSE")
-    assert Config().get_enable_wiki_checking() is False
+    assert Config(**MOCK_CLIENTS).get_enable_wiki_checking() is False
 
 
 def feature_switch_can_be_enabled(monkeypatch: Any) -> None:
     monkeypatch.setenv("ENABLE_WIKI_CHECKING", "true")
-    assert Config().get_enable_wiki_checking() is True
+    assert Config(**MOCK_CLIENTS).get_enable_wiki_checking() is True
 
     monkeypatch.setenv("ENABLE_WIKI_CHECKING", "True")
-    assert Config().get_enable_wiki_checking() is True
+    assert Config(**MOCK_CLIENTS).get_enable_wiki_checking() is True
 
     monkeypatch.setenv("ENABLE_WIKI_CHECKING", " TRUE")
-    assert Config().get_enable_wiki_checking() is True
+    assert Config(**MOCK_CLIENTS).get_enable_wiki_checking() is True
 
 
 def test_get_configured_log_level(monkeypatch: Any) -> None:
