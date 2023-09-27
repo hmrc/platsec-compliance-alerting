@@ -226,6 +226,25 @@ def test_codebuild_sns_event(helper_test_config: Any) -> None:
     _assert_slack_message_sent("@some-team-name")
 
 
+def test_grant_user_access_lambda_sns_event(helper_test_config: Any) -> None:
+    test_event = set_event_account_id(
+        account_id=helper_test_config.account_id,
+        test_event=load_json_resource("grant_user_access_lambda_event.json"),
+    )
+    ca = compliance_alerter.ComplianceAlerter(
+        config=Config(
+            config_s3_client=helper_test_config.config_s3_client,
+            report_s3_client=helper_test_config.report_s3_client,
+            ssm_client=helper_test_config.ssm_client,
+            org_client=helper_test_config.org_client,
+        )
+    )
+    messages = ca.generate_slack_messages(test_event)
+    ca.send(messages)
+    _assert_slack_message_sent_to_channel("grant-user-access-lambda-alerts")
+    _assert_slack_message_sent("@some-team-name")
+
+
 def test_guardduty_sns_event(helper_test_config: Any, _org_client: BaseClient) -> None:
     mock_org_client = _setup_org_sub_account(org_client=_org_client, account_name="sub-account-name")
     sub_account_id = mock_org_client.list_accounts()["Accounts"][-1]["Id"]
@@ -438,6 +457,11 @@ def setup_config_bucket(s3_client: BaseClient) -> BaseClient:
         Bucket=CONFIG_BUCKET,
         Key="mappings/vpc_peering",
         Body=json.dumps([{"channel": "vpc-peering-alerts", "compliance_item_types": ["vpc_peering"]}]),
+    )
+    s3_client.put_object(
+        Bucket=CONFIG_BUCKET,
+        Key="mappings/grant_user_access_lambda",
+        Body=json.dumps([{"channel": "grant-user-access-lambda-alerts", "compliance_item_types": ["grant_user_access_lambda"]}]),
     )
     return s3_client
 
