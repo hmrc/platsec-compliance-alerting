@@ -12,7 +12,7 @@ def test_event_to_findings() -> None:
     assert finding.account
     assert finding.account.identifier == "123456789012"
     assert finding.compliance_item_type == "grant_user_access_lambda"
-    assert finding.item == "arn:aws:iam::123456789012:role/RoleTestSSMAccess access granted"
+    assert finding.item == "`arn:aws:iam::123456789012:role/RoleTestSSMAccess` access granted"
     assert len(finding.findings) == 1
 
     expected_notification_text = (
