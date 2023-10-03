@@ -11,16 +11,15 @@ class GrantUserAccessLambda:
     def create_finding(message: Dict[str, Any]) -> Findings:
         account = Account(identifier=message["account"])
         region = message["region"]
-        grantor = message["grantor"]
         role_arn = message["roleArn"]
-        usernames = "\n".join(message["usernames"])
+        usernames = "\n  *  ".join(message["usernames"])
         hours = message["hours"]
         start_time = message["startTime"]
         end_time = message["endTime"]
         title = f"{role_arn} access granted"
         notification_text = (
-            f"Access to {role_arn} has been granted by {grantor} for {hours} hour(s) to "
-            f"the following users at {start_time}:\n{usernames}\n"
+            f"Access to `{role_arn}` has been granted for {hours} hour(s) to "
+            f"the following users at {start_time}:\n  *  {usernames}\n"
             f"Access expires at {end_time}."
         )
 
