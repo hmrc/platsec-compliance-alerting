@@ -9,7 +9,10 @@ class GrantUserAccessLambda:
 
     @staticmethod
     def create_finding(message: Dict[str, Any]) -> Findings:
-        account = Account(identifier=message["account"])
+        role_arn = message["roleArn"]
+        target_account_id = role_arn.split(":")[4]
+        account = Account(identifier=target_account_id)
+
         region = message["region"]
         role_arn = message["roleArn"]
         usernames = "\n  *  ".join(message["usernames"])
