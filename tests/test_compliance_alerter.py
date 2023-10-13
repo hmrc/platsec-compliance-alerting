@@ -226,11 +226,19 @@ def test_codebuild_sns_event(helper_test_config: Any) -> None:
     _assert_slack_message_sent("@some-team-name")
 
 
-def test_grant_user_access_lambda_sns_event(helper_test_config: Any) -> None:
+def test_grant_user_access_lambda_sns_event(helper_test_config: Any, _org_client: BaseClient) -> None:
     test_event = set_event_account_id(
         account_id=helper_test_config.account_id,
         test_event=load_json_resource("grant_user_access_lambda_event.json"),
     )
+
+    # we want to alert with the name of the sub account not the main auth account
+    mock_org_client = _setup_org_sub_account(org_client=_org_client, account_name="sub-account-name")
+    sub_account_id = mock_org_client.list_accounts()["Accounts"][-1]["Id"]
+    message = json.loads(test_event["Records"][0]["Sns"]["Message"])
+    message["roleArn"] = f"arn:aws:iam::{sub_account_id}:role/RoleTestSSMAccess"
+    test_event["Records"][0]["Sns"]["Message"] = json.dumps(message)
+
     ca = compliance_alerter.ComplianceAlerter(
         config=Config(
             config_s3_client=helper_test_config.config_s3_client,
