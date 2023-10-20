@@ -113,6 +113,10 @@ class Config:
         return self._get_env("IGNORABLE_REPORT_KEYS").split(",")
 
     @classmethod
+    def get_ssm_audit_report_key(self) -> str:
+        return self._get_env("SSM_AUDIT_REPORT_KEY")
+
+    @classmethod
     def get_slack_api_url(self) -> str:
         return self._get_env("SLACK_API_URL")
 

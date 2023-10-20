@@ -29,6 +29,7 @@ from tests.fixtures.s3_compliance_alerter import s3_report
 from tests.fixtures.vpc_compliance import vpc_report
 from tests.fixtures.vpc_peering_compliance import vpc_peering_audit
 from tests.fixtures.password_policy_compliance import password_policy_report
+from tests.fixtures.ssm_compliance import ssm_audit_report
 
 CHANNEL = "the-alerting-channel"
 CONFIG_BUCKET = "the_config_bucket"
@@ -42,6 +43,7 @@ VPC_KEY = "vpc_audit"
 VPC_PEERING_KEY = "vpc_peering_audit"
 PUBLIC_QUERY_KEY = "public_query_audit"
 EC2_KEY = "ec2_audit"
+SSM_AUDIT_REPORT_KEY = "ssm_audit"
 PASSWORD_POLICY_KEY = "password_policy_audit"
 SLACK_API_URL = "https://the-slack-api-url.com"
 SLACK_USERNAME_KEY = "the-slack-username-key"
@@ -368,6 +370,7 @@ def _setup_environment(monkeypatch: Any) -> None:
         "PUBLIC_QUERY_AUDIT_REPORT_KEY": PUBLIC_QUERY_KEY,
         "VPC_PEERING_AUDIT_REPORT_KEY": VPC_PEERING_KEY,
         "EC2_AUDIT_REPORT_KEY": EC2_KEY,
+        "SSM_AUDIT_REPORT_KEY": SSM_AUDIT_REPORT_KEY,
         "LOG_LEVEL": "DEBUG",
         "ORG_ACCOUNT": "ORG-ACCOUNT-ID-12374234",
         "ORG_READ_ROLE": "the-org-read-role",
@@ -503,6 +506,7 @@ def setup_report_bucket(s3_client: BaseClient, account_id: str) -> BaseClient:
     )
     s3_client.put_object(Bucket=REPORT_BUCKET, Key=GITHUB_KEY, Body=json.dumps(github_report))
     s3_client.put_object(Bucket=REPORT_BUCKET, Key=GITHUB_WEBHOOK_KEY, Body=json.dumps(github_webhook_report))
+    s3_client.put_object(Bucket=REPORT_BUCKET, Key=SSM_AUDIT_REPORT_KEY, Body=json.dumps(ssm_audit_report))
     return s3_client
 
 
