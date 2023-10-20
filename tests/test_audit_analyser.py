@@ -36,6 +36,7 @@ MOCK_CLIENTS = {
 @patch.object(Config, "get_vpc_resolver_audit_report_key", return_value="audit_vpc_resolver_logs.json")
 @patch.object(Config, "get_public_query_audit_report_key", return_value="audit_route53_query_logs.json")
 @patch.object(Config, "get_enable_wiki_checking", return_value=True)
+@patch.object(Config, "get_ssm_audit_report_key", return_value="audit_ssm_document.json")
 @patch.object(
     Config,
     "get_ignorable_report_keys",

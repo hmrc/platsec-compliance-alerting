@@ -9,6 +9,7 @@ from src.compliance.iam_compliance import IamCompliance
 from src.compliance.s3_compliance import S3Compliance
 from src.compliance.github_compliance import GithubCompliance
 from src.compliance.github_webhook_compliance import GithubWebhookCompliance
+from src.compliance.ssm_compliance import SSMCompliance
 from src.compliance.vpc_peering_compliance import VpcPeeringCompliance
 from src.config.config import Config
 from src.data.audit import Audit
@@ -48,4 +49,5 @@ class AuditAnalyser:
             config.get_public_query_audit_report_key(): ActionableReportCompliance(
                 logger, "public_query_log", "public query log"
             ),
+            config.get_ssm_audit_report_key(): SSMCompliance(logger),
         }
