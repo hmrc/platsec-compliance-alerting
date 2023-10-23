@@ -16,15 +16,18 @@ class SSMCompliance(Analyser):
         findings = set()
         for sub_report in audit.report:
             for document in sub_report["results"]["documents"]:
-                if not document["compliant"]:
-                    findings.add(
-                        Findings(
-                            compliance_item_type=self.item_type,
-                            account=Account.from_dict(sub_report["account"]),
-                            region_name=sub_report["region"],
-                            item=document["name"],
-                            findings={f"compliant: {document['compliant']}"},
-                            description=f"SSM Document {document['name']} does not match the expected config",
-                        )
+                findings_messages = set()
+                for key, value in document["compliancy"].items():
+                    if not value["compliant"]:
+                        findings_messages.add(value["message"])
+                findings.add(
+                    Findings(
+                        compliance_item_type=self.item_type,
+                        account=Account.from_dict(sub_report["account"]),
+                        region_name=sub_report["region"],
+                        item=document["name"],
+                        findings=findings_messages,
+                        description=f"SSM Document {document['name']} does not match the expected config",
                     )
+                )
         return findings
