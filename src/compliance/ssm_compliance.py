@@ -27,7 +27,10 @@ class SSMCompliance(Analyser):
                         region_name=sub_report["region"],
                         item=document["name"],
                         findings=findings_messages,
-                        description=f"SSM Document {document['name']} does not match the expected config",
+                        description=(
+                            f"SSM config {document['name']} is not compliant, which may limit "
+                            "MDTP's ability to log/audit connection sessions to EC2 nodes"
+                        ),
                     )
                 )
         return findings

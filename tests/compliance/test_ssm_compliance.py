@@ -10,14 +10,10 @@ from tests.test_types_generator import account, create_audit, findings
 
 
 acc_1 = account("111222333444", "account-1")
-acc_2 = account("787878787878", "account-2")
 
-finding_1 = findings(
-    account=acc_1,
-    compliance_item_type="ssm_document",
-    item="SSM-SessionManagerRunShell",
-    findings={"compliant: False"},
-    description="SSM Document SSM-SessionManagerRunShell does not match the expected config",
+FINDINGS_DESCRIPTION = (
+    "SSM config SSM-SessionManagerRunShell is not compliant, which may limit "
+    "MDTP's ability to log/audit connection sessions to EC2 nodes"
 )
 
 
@@ -29,7 +25,7 @@ def test_analyse_ssm_document_audit_compliant() -> None:
             compliance_item_type="ssm_document",
             item="SSM-SessionManagerRunShell",
             findings=set(),
-            description="SSM Document SSM-SessionManagerRunShell does not match the expected config",
+            description=FINDINGS_DESCRIPTION,
         )
     }
 
@@ -45,7 +41,7 @@ def test_analyse_ssm_document_audit_non_compliant_on_s3_config_items() -> None:
                 "S3 bucket name should be mdtp-ssm-session-manager-audit-logs",
                 "S3 encryption should be enabled",
             },
-            description="SSM Document SSM-SessionManagerRunShell does not match the expected config",
+            description=FINDINGS_DESCRIPTION,
         )
     }
 
@@ -63,6 +59,6 @@ def test_analyse_ssm_document_audit_non_compliant_on_session_duration_and_shell_
                 "maxSessionDuration should be less than or equal to 120 mins",
                 "shellProfile should match expected config",
             },
-            description="SSM Document SSM-SessionManagerRunShell does not match the expected config",
+            description=FINDINGS_DESCRIPTION,
         )
     }
