@@ -15,6 +15,7 @@ from src.sns.codebuild import CodeBuild
 from src.sns.codepipeline import CodePipeline
 from src.sns.grant_user_access_lambda import GrantUserAccessLambda
 from src.sns.guardduty import GuardDuty
+from src.sns.aws_health import AwsHealth
 
 
 def main(event: Dict[str, Any]) -> None:
@@ -62,6 +63,8 @@ class ComplianceAlerter:
                 findings.add(GuardDuty(self.config).create_finding(message))
             elif type == GrantUserAccessLambda.Type:
                 findings.add(GrantUserAccessLambda().create_finding(message))
+            elif type == AwsHealth.Type:
+                findings.add(AwsHealth().create_finding(message))
             else:
                 logging.getLogger(__name__).warning(f"Received unknown event with detailType '{type}'. Ignoring...")
         return findings

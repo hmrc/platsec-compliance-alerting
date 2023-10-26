@@ -1,0 +1,34 @@
+ {
+    "version": "0",
+    "id": "121345678-1234-1234-1234-123456789012",
+    "detail-type": "AWS Health Event",
+    "source": "aws.health",
+    "account": "123456789012",
+    "time": "2022-06-03T06:27:57Z",
+    "region": "us-west-2",
+    "resources": [
+      "i-abcd1111"
+    ],
+    "detail": {
+      "eventArn": "arn:aws:health:us-west-2::event/AWS_EC2_INSTANCE_STORE_DRIVE_PERFORMANCE_DEGRADED_90353408594353980",
+      "service": "EC2",
+      "eventTypeCode": "AWS_EC2_INSTANCE_STORE_DRIVE_PERFORMANCE_DEGRADED",
+      "eventTypeCategory": "issue",
+      "eventScopeCode": "ACCOUNT_SPECIFIC",
+      "communicationId": "01b0993207d81a09dcd552ebd1e633e36cf1f09a-1",
+      "startTime": "Fri, 3 Jun 2022 05:01:10 GMT",
+      "endTime": "Fri, 3 Jun 2022 05:30:57 GMT",
+      "statusCode": "open",
+      "eventRegion": "us-west-2",
+      "eventDescription": [{
+          "language": "en_US",
+          "latestDescription": "A description of the event will be provided here"
+      }],
+      "affectedEntities": [{
+        "entityValue": "i-abcd1111"
+      }],
+      "page": "1",
+      "totalPages": "1",
+      "affectedAccount": "123456789012"
+    }
+  }
