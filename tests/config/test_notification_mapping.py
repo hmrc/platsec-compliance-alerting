@@ -26,6 +26,13 @@ class TestNotificationMapping(TestCase):
         self.assertEqual(filter_config.channel, "a-channel")
         self.assertEqual(filter_config.compliance_item_types, {"a_thing"})
 
+    def test_init_with_pagerduty_service(self) -> None:
+        filter_config = NotificationMappingConfig.from_dict(
+            {"channel": "a-channel", "pagerduty_service": "my-pagerduty-service"}
+        )
+        self.assertEqual(filter_config.channel, "a-channel")
+        self.assertEqual(filter_config.pagerduty_service, "my-pagerduty-service")
+
     def test_init_with_unexpected_fields(self) -> None:
         with self.assertRaisesRegex(NotificationMappingException, "huh"):
             NotificationMappingConfig.from_dict({"huh": "huh?"})
