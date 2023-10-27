@@ -16,7 +16,7 @@ def test_event_to_findings() -> None:
 
     assert finding.findings == frozenset(
         {
-            "There is a new AWS Heath event,"
+            "There is a new AWS Health event,"
             " you can view <https://health.aws.amazon.com/health/home#/account/dashboard/open-issues/|"
             "this in the console here>",
             "A description of the event will be provided here",

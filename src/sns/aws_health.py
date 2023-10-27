@@ -22,7 +22,7 @@ class AwsHealth:
                 latestDescription = description["latestDescription"]
 
         link_text = (
-            "There is a new AWS Heath event, "
+            "There is a new AWS Health event, "
             "you can view <https://health.aws.amazon.com/health/home#/account/dashboard/open-issues/|"
             "this in the console here>"
         )
