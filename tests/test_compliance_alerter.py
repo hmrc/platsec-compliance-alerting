@@ -228,6 +228,28 @@ def test_codebuild_sns_event(helper_test_config: Any) -> None:
     _assert_slack_message_sent("@some-team-name")
 
 
+def test_health_sns_event(helper_test_config: Any) -> None:
+    test_event = set_affected_account_id(
+        account_id=helper_test_config.account_id,
+        test_event=set_event_account_id(
+            account_id=helper_test_config.account_id, test_event=load_json_resource("health_event.json")
+        ),
+    )
+
+    ca = compliance_alerter.ComplianceAlerter(
+        config=Config(
+            config_s3_client=helper_test_config.config_s3_client,
+            report_s3_client=helper_test_config.report_s3_client,
+            ssm_client=helper_test_config.ssm_client,
+            org_client=helper_test_config.org_client,
+        )
+    )
+    messages = ca.generate_slack_messages(test_event)
+    ca.send(messages)
+    _assert_slack_message_sent_to_channel("the-health-channel")
+    _assert_slack_message_sent("@some-team-name")
+
+
 def test_grant_user_access_lambda_sns_event(helper_test_config: Any, _org_client: BaseClient) -> None:
     test_event = set_event_account_id(
         account_id=helper_test_config.account_id,
@@ -476,6 +498,11 @@ def setup_config_bucket(s3_client: BaseClient) -> BaseClient:
             [{"channel": "grant-user-access-lambda-alerts", "compliance_item_types": ["grant_user_access_lambda"]}]
         ),
     )
+    s3_client.put_object(
+        Bucket=CONFIG_BUCKET,
+        Key="mappings/aws_health",
+        Body=json.dumps([{"channel": "the-health-channel", "compliance_item_types": ["aws_health"]}]),
+    )
     return s3_client
 
 
@@ -534,6 +561,13 @@ def set_event_account_id(account_id: str, test_event: Dict[str, Any]) -> Dict[st
     message["account"] = account_id
     test_event["Records"][0]["Sns"]["Message"] = json.dumps(message)
     return dict(test_event)
+
+
+def set_affected_account_id(account_id: str, test_event: Dict[str, Any]) -> Dict[str, Any]:
+    msg = json.loads(test_event["Records"][0]["Sns"]["Message"])
+    msg["detail"]["affectedAccount"] = account_id
+    test_event["Records"][0]["Sns"]["Message"] = json.dumps(msg)
+    return test_event
 
 
 def build_event(report_key: str) -> Dict[str, Any]:
