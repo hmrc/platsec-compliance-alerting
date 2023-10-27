@@ -15,11 +15,13 @@ class NotificationMappingConfig:
     def __init__(
         self,
         channel: str,
+        pagerduty_service: Optional[str] = None,
         accounts: Optional[List[str]] = None,
         items: Optional[List[str]] = None,
         compliance_item_types: Optional[List[str]] = None,
     ):
         self.channel = channel
+        self.pagerduty_service = pagerduty_service
         self.accounts = frozenset(accounts or {})
         self.items = frozenset(items or {})
         self.compliance_item_types = frozenset(compliance_item_types or {})
