@@ -13,7 +13,13 @@ class AwsHealth:
             compliance_item_type="aws_health",
             account=Account(identifier=message["detail"]["affectedAccount"]),
             item=message["detail"]["eventTypeCode"],
+            region_name=message["region"],
             findings=self.build_description(message),
+            description=(
+                "There is a new AWS Health event, "
+                "you can view <https://health.aws.amazon.com/health/home#/account/dashboard/open-issues/|"
+                "this in the console here>"
+            ),
         )
 
     def create_pagerduty_event_payload(self, message: Dict[str, Any]) -> PagerDutyPayload:
@@ -42,13 +48,4 @@ class AwsHealth:
             if description["language"] == "en_US":
                 latestDescription = description["latestDescription"]
 
-        link_text = (
-            "There is a new AWS Health event, "
-            "you can view <https://health.aws.amazon.com/health/home#/account/dashboard/open-issues/|"
-            "this in the console here>"
-        )
-
-        return {
-            link_text,
-            latestDescription,
-        }
+        return {latestDescription}
