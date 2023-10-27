@@ -85,6 +85,4 @@ class ComplianceAlerter:
 
     def send(self, slack_messages: List[SlackMessage]) -> None:
         self.logger.debug("Sending the following messages: %s", slack_messages)
-        print(self.config.get_slack_notifier_config())
-        print(slack_messages)
         SlackNotifier(self.config.get_slack_notifier_config()).send_messages(slack_messages)
