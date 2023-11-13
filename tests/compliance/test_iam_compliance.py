@@ -7,7 +7,7 @@ from tests.test_types_generator import create_account, create_audit
 
 from src.compliance.iam_compliance import IamCompliance
 from src.data.account import Account
-from src.data.findings import Findings
+from src.data.finding import Finding
 
 EXPECTED_OLD_KEY_VIOLATION = "key is older than 30 days"
 UTC = ZoneInfo("UTC")
@@ -33,7 +33,7 @@ def test_no_violations() -> None:
     notifications = IamCompliance(getLogger()).analyse(audit)
 
     assert sorted(notifications, key=lambda x: x.item) == [
-        Findings(
+        Finding(
             account=account,
             region_name="test-region-name",
             compliance_item_type="iam_access_key",
@@ -41,7 +41,7 @@ def test_no_violations() -> None:
             findings=set(),
             description="this key is `29 days old` and belongs to `test_user1`",
         ),
-        Findings(
+        Finding(
             account=account,
             region_name="test-region-name",
             compliance_item_type="iam_access_key",
@@ -88,7 +88,7 @@ def test_keys_older_than_30_days() -> None:
     notifications = IamCompliance(getLogger()).analyse(audit)
 
     assert sorted(notifications, key=lambda x: x.item) == [
-        Findings(
+        Finding(
             account=account1,
             region_name="test-region-name",
             compliance_item_type="iam_access_key",
@@ -96,7 +96,7 @@ def test_keys_older_than_30_days() -> None:
             findings={EXPECTED_OLD_KEY_VIOLATION},
             description="this key is `31 days old` and belongs to `test_user1_old`",
         ),
-        Findings(
+        Finding(
             account=account1,
             region_name="test-region-name",
             compliance_item_type="iam_access_key",
@@ -104,7 +104,7 @@ def test_keys_older_than_30_days() -> None:
             findings={EXPECTED_OLD_KEY_VIOLATION},
             description="this key is `100 days old`, belongs to `test_user2_old` and was last used today",
         ),
-        Findings(
+        Finding(
             account=account2,
             region_name="test-region-name",
             compliance_item_type="iam_access_key",
@@ -112,7 +112,7 @@ def test_keys_older_than_30_days() -> None:
             findings=set(),
             description="this key is `1 day old` and belongs to `test_user3_good`",
         ),
-        Findings(
+        Finding(
             account=account2,
             region_name="test-region-name",
             compliance_item_type="iam_access_key",

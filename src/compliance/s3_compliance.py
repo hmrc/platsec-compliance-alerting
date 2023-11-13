@@ -4,9 +4,9 @@ from typing import Any, Dict, Set
 from src.config.config import Config
 from src.data.audit import Audit
 from src.data.account import Account
-from src.data.findings import Findings
 from src.compliance.analyser import Analyser
 from src.compliance.summarised_s3_compliance import SummarisedS3Compliance
+from src.data.finding import Finding
 
 
 class S3Compliance(Analyser):
@@ -14,7 +14,7 @@ class S3Compliance(Analyser):
         self.config = config
         super().__init__(logger=logger, item_type="s3_bucket")
 
-    def analyse(self, audit: Audit) -> Set[Findings]:
+    def analyse(self, audit: Audit) -> Set[Finding]:
         findings = {
             self._check_bucket_compliancy(report["account"], report["region"], bucket)
             for report in audit.report
@@ -23,7 +23,7 @@ class S3Compliance(Analyser):
         findings.update(SummarisedS3Compliance(self.config).summarise(findings))
         return findings
 
-    def _check_bucket_compliancy(self, account: Dict[str, str], region_name: str, bucket: Dict[str, Any]) -> Findings:
+    def _check_bucket_compliancy(self, account: Dict[str, str], region_name: str, bucket: Dict[str, Any]) -> Finding:
         findings = set()
         for key in bucket["compliancy"]:
             if not bucket["compliancy"][key]["compliant"]:
@@ -35,7 +35,7 @@ class S3Compliance(Analyser):
                     continue
                 findings.add(bucket["compliancy"][key]["message"])
 
-        return Findings(
+        return Finding(
             account=Account.from_dict(account),
             region_name=region_name,
             compliance_item_type=self.item_type,

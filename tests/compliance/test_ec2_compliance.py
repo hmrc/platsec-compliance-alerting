@@ -4,7 +4,7 @@ from unittest.mock import Mock
 
 from src.compliance.ec2_compliance import Ec2Compliance
 from src.data.account import Account
-from src.data.findings import Findings
+from src.data.finding import Finding
 from tests.test_types_generator import create_audit
 
 
@@ -78,7 +78,7 @@ def test_ec2_analyse_old_ami_output() -> None:
     )
     result = Ec2Compliance(logger=Mock()).analyse(audit)
     assert len(result) == 1
-    findings: Findings = result.pop()
+    findings: Finding = result.pop()
     assert findings.compliance_item_type == "ami_creation_age"
     assert findings.account == bad_account
     assert findings.item == "test-component"
@@ -103,7 +103,7 @@ def test_ec2_analyse_falls_back_to_instance_age_when_missing_ami_age() -> None:
 
     result = Ec2Compliance(logger=Mock()).analyse(audit)
     assert len(result) == 1
-    findings: Findings = result.pop()
+    findings: Finding = result.pop()
     assert findings.compliance_item_type == "ami_creation_age"
     assert findings.account == bad_account
     assert findings.item == "test-component"

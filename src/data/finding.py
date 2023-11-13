@@ -24,3 +24,15 @@ class Finding(Payload):
         self.severity = severity, 
         self.findings = frozenset(findings) if findings else frozenset()
         super().__init__(description=description, account=account, region_name=region_name)
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, Finding):
+            return (
+                self.compliance_item_type == other.compliance_item_type 
+                and self.item == other.item
+                and self.findings == other.findings
+                and self.severity == other.severity
+                and self.description == other.description
+                and self.account == other.account
+                and self.region_name == other.region_name
+            )

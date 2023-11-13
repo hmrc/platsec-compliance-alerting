@@ -6,7 +6,6 @@ from typing import Any, Dict, List, Optional, Set
 import requests
 from src.config.config import Config
 from src.data.exceptions import PagerDutyNotifierException
-from src.data.notification import Notification
 from src.data.pagerduty_event import PagerDutyEvent
 from src.data.pagerduty_payload import PagerDutyPayload
 

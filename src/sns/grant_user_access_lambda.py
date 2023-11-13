@@ -1,14 +1,14 @@
 from typing import Dict, Any
 
 from src.data.account import Account
-from src.data.findings import Findings
+from src.data.finding import Finding
 
 
 class GrantUserAccessLambda:
     Type: str = "GrantUserAccessLambda"
 
     @staticmethod
-    def create_finding(message: Dict[str, Any]) -> Findings:
+    def create_finding(message: Dict[str, Any]) -> Finding:
         role_arn = message["roleArn"]
         target_account_id = role_arn.split(":")[4]
         account = Account(identifier=target_account_id)
@@ -26,7 +26,7 @@ class GrantUserAccessLambda:
             f"Access expires at {end_time}."
         )
 
-        return Findings(
+        return Finding(
             compliance_item_type="grant_user_access_lambda",
             account=account,
             region_name=region,

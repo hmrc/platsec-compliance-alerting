@@ -6,7 +6,7 @@ from tests.fixtures.ssm_compliance import (
     ssm_audit_report_non_compliant_s3_config_items,
     ssm_audit_report_non_compliant_max_session_duration_shell_profile,
 )
-from tests.test_types_generator import account, create_audit, findings
+from tests.test_types_generator import account, create_audit, finding
 
 
 acc_1 = account("111222333444", "account-1")
@@ -20,7 +20,7 @@ FINDINGS_DESCRIPTION = (
 def test_analyse_ssm_document_audit_compliant() -> None:
     audit = create_audit(type="audit_ssm_document.json", report=ssm_audit_report)
     assert SSMCompliance(getLogger()).analyse(audit) == {
-        findings(
+        finding(
             account=acc_1,
             compliance_item_type="ssm_document",
             item="SSM-SessionManagerRunShell",
@@ -33,7 +33,7 @@ def test_analyse_ssm_document_audit_compliant() -> None:
 def test_analyse_ssm_document_audit_non_compliant_on_s3_config_items() -> None:
     audit = create_audit(type="audit_ssm_document.json", report=ssm_audit_report_non_compliant_s3_config_items)
     assert SSMCompliance(getLogger()).analyse(audit) == {
-        findings(
+        finding(
             account=acc_1,
             compliance_item_type="ssm_document",
             item="SSM-SessionManagerRunShell",
@@ -51,7 +51,7 @@ def test_analyse_ssm_document_audit_non_compliant_on_session_duration_and_shell_
         type="audit_ssm_document.json", report=ssm_audit_report_non_compliant_max_session_duration_shell_profile
     )
     assert SSMCompliance(getLogger()).analyse(audit) == {
-        findings(
+        finding(
             account=acc_1,
             compliance_item_type="ssm_document",
             item="SSM-SessionManagerRunShell",

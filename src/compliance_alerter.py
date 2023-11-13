@@ -8,7 +8,6 @@ from src.clients.aws_client_factory import AwsClientFactory
 from src.config.config import Config
 from src.data.audit import Audit
 from src.data.finding import Finding
-from src.data.findings import Findings
 from src.data.payload import Payload
 from src.data.slack_message import SlackMessage
 from src.findings_filter import FindingsFilter
@@ -47,48 +46,48 @@ class ComplianceAlerter:
         self.config = config
         self.logger = Config.configure_logging()
 
-    def generate_slack_messages(self, event: Dict[str, Any]) -> List[SlackMessage]:
-        findings = (
-            self.handle_sns_event(event) if ComplianceAlerter.is_sns_event(event) else self.analyse(self.fetch(event))
-        )
-        slack_messages = self.apply_mappings(self.apply_filters(findings))
-        return slack_messages
+    # def generate_slack_messages(self, event: Dict[str, Any]) -> List[SlackMessage]:
+    #     findings = (
+    #         self.handle_sns_event(event) if ComplianceAlerter.is_sns_event(event) else self.analyse(self.fetch(event))
+    #     )
+    #     slack_messages = self.apply_mappings(self.apply_filters(findings))
+    #     return slack_messages
 
     @staticmethod
     def is_sns_event(event: Dict[str, Any]) -> bool:
         return "EventSource" in event.get("Records", [{}])[0] and event["Records"][0].get("EventSource") == "aws:sns"
 
-    # should this be renamed to build_sns_event_findings()
-    def handle_sns_event(self, events: Dict[str, Any]) -> Set[Findings]:
-        findings: Set[Findings] = set()
-        for record in events["Records"]:
-            message = json.loads(record["Sns"]["Message"])
-            type = message.get("detailType") or message.get("detail-type")
-            if type == CodePipeline.Type:
-                findings.add(CodePipeline().create_finding(message))
-            elif type == CodeBuild.Type:
-                findings.add(CodeBuild().create_finding(message))
-            elif type == GuardDuty.Type:
-                findings.add(GuardDuty(self.config).create_finding(message))
-            elif type == GrantUserAccessLambda.Type:
-                findings.add(GrantUserAccessLambda().create_finding(message))
-            elif type == AwsHealth.Type:
-                findings.add(AwsHealth().create_finding(message))
-            else:
-                logging.getLogger(__name__).warning(f"Received unknown event with detailType '{type}'. Ignoring...")
-        return findings
+    # # should this be renamed to build_sns_event_findings()
+    # def handle_sns_event(self, events: Dict[str, Any]) -> Set[Finding]:
+    #     findings: Set[Finding] = set()
+    #     for record in events["Records"]:
+    #         message = json.loads(record["Sns"]["Message"])
+    #         type = message.get("detailType") or message.get("detail-type")
+    #         if type == CodePipeline.Type:
+    #             findings.add(CodePipeline().create_finding(message))
+    #         elif type == CodeBuild.Type:
+    #             findings.add(CodeBuild().create_finding(message))
+    #         elif type == GuardDuty.Type:
+    #             findings.add(GuardDuty(self.config).create_finding(message))
+    #         elif type == GrantUserAccessLambda.Type:
+    #             findings.add(GrantUserAccessLambda().create_finding(message))
+    #         elif type == AwsHealth.Type:
+    #             findings.add(AwsHealth().create_finding(message))
+    #         else:
+    #             logging.getLogger(__name__).warning(f"Received unknown event with detailType '{type}'. Ignoring...")
+    #     return findings
 
     def fetch(self, event: Dict[str, Any]) -> Audit:
         return AuditFetcher().fetch_audit(self.config.get_report_s3_client(), event)
 
     # should this be renamed to build_audit_findings()
-    def analyse(self, audit: Audit) -> Set[Findings]:
+    def analyse(self, audit: Audit) -> Set[Finding]:
         return AuditAnalyser().analyse(self.logger, audit, self.config)
 
-    def apply_filters(self, notifications: Set[Findings]) -> Set[Findings]:
+    def apply_filters(self, notifications: Set[Finding]) -> Set[Finding]:
         return FindingsFilter().do_filter(notifications, self.config.get_notification_filters())
 
-    def apply_mappings(self, notifications: Set[Findings]) -> List[SlackMessage]:
+    def apply_mappings(self, notifications: Set[Finding]) -> List[SlackMessage]:
         return NotificationMapper().do_map(
             notifications, self.config.get_notification_mappings(), self.config.org_client
         )

@@ -5,7 +5,7 @@ from logging import Logger
 from src.compliance.analyser import Analyser
 from src.data.account import Account
 from src.data.audit import Audit
-from src.data.findings import Findings
+from src.data.finding import Finding
 
 MAX_AMI_AGE_DAYS: int = 90
 
@@ -14,7 +14,7 @@ class Ec2Compliance(Analyser):
     def __init__(self, logger: Logger) -> None:
         super().__init__(logger=logger, item_type="ami_creation_age")
 
-    def analyse(self, audit: Audit) -> Set[Findings]:
+    def analyse(self, audit: Audit) -> Set[Finding]:
         findings = set()
         for account in audit.report:
             for instance in account["results"]["ec2_instances"]:
@@ -73,8 +73,8 @@ class Ec2Compliance(Analyser):
     @staticmethod
     def create_ami_age_finding(
         account: Dict[str, Any], instance: Dict[str, Any], findings: set[str], description: str
-    ) -> Findings:
-        return Findings(
+    ) -> Finding:
+        return Finding(
             compliance_item_type="ami_creation_age",
             account=Account.from_dict(account["account"]),
             region_name=account["region"],

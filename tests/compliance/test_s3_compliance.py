@@ -5,13 +5,13 @@ from unittest import TestCase
 from unittest.mock import Mock, patch
 
 from tests.fixtures.s3_compliance import s3_report
-from tests.test_types_generator import account, findings
+from tests.test_types_generator import account, finding
 
 from src.config.config import Config
 from src.data.audit import Audit
 from src.compliance.s3_compliance import S3Compliance
 
-mischievous_bucket_finding = findings(
+mischievous_bucket_finding = finding(
     account=account("111222333444", "another-account"),
     compliance_item_type="s3_bucket",
     item="mischievous-bucket",
@@ -24,7 +24,7 @@ mischievous_bucket_finding = findings(
         "bucket kms key should have rotation enabled",
     },
 )
-bad_bucket_finding = findings(
+bad_bucket_finding = finding(
     account=account("555666777444", "an-account"),
     compliance_item_type="s3_bucket",
     item="bad-bucket",
@@ -34,19 +34,19 @@ bad_bucket_finding = findings(
         "bucket should have logging enabled",
     },
 )
-good_bucket_finding = findings(
+good_bucket_finding = finding(
     account=account("555666777444", "an-account"),
     compliance_item_type="s3_bucket",
     item="good-bucket",
     findings=set(),
 )
-good_bucket_high_sensitivity_finding = findings(
+good_bucket_high_sensitivity_finding = finding(
     account=account("999999999999", "another-account-2"),
     compliance_item_type="s3_bucket",
     item="good-bucket-high-sensitivity",
     findings=set(),
 )
-bad_bucket_low_sensitivity_finding = findings(
+bad_bucket_low_sensitivity_finding = finding(
     account=account("555666777444", "an-account"),
     compliance_item_type="s3_bucket",
     item="bad-bucket-low-sensitivity",
@@ -57,27 +57,27 @@ bad_bucket_low_sensitivity_finding = findings(
         "bucket should have tags for expiry and sensitivity",
     },
 )
-an_account_finding = findings(
+an_account_finding = finding(
     account=account("555666777444", "an-account"),
     compliance_item_type="s3_compliance_summary",
     description="Account an-account has S3 buckets that do not comply with the policy",
     item="an-account",
     findings={"Here is a detailed S3 audit report: the-dashboard"},
 )
-another_account_finding = findings(
+another_account_finding = finding(
     account=account("111222333444", "another-account"),
     compliance_item_type="s3_compliance_summary",
     description="Account another-account has S3 buckets that do not comply with the policy",
     item="another-account",
     findings={"Here is a detailed S3 audit report: the-dashboard"},
 )
-logging_skipped_good_bucket_finding = findings(
+logging_skipped_good_bucket_finding = finding(
     account=account("998877665544", "yet-another-account"),
     compliance_item_type="s3_bucket",
     item="logging-skipped-good-bucket",
     findings=set(),
 )
-logging_skipped_bad_bucket_finding = findings(
+logging_skipped_bad_bucket_finding = finding(
     account=account("998877665544", "yet-another-account"),
     compliance_item_type="s3_bucket",
     item="logging-skipped-bad-bucket",

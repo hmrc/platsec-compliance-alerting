@@ -13,13 +13,13 @@ from src.compliance.ssm_compliance import SSMCompliance
 from src.compliance.vpc_peering_compliance import VpcPeeringCompliance
 from src.config.config import Config
 from src.data.audit import Audit
-from src.data.findings import Findings
+from src.data.finding import Finding
 from src.data.exceptions import UnsupportedAuditException
 
 
 class AuditAnalyser:
     @staticmethod
-    def analyse(logger: Logger, audit: Audit, config: Config) -> Set[Findings]:
+    def analyse(logger: Logger, audit: Audit, config: Config) -> Set[Finding]:
         for audit_key, audit_analyser in AuditAnalyser.config_map(logger, config).items():
             if audit.type.startswith(audit_key):
                 return audit_analyser.analyse(audit)

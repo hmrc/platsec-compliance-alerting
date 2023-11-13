@@ -5,17 +5,17 @@ from src.clients.aws_org_client import AwsOrgClient
 from src.config.notification_mapping_config import NotificationMappingConfig
 from src.data.account import Account
 from src.data.severity import Severity
+from src.data.slack_message import SlackMessage
 from src.notification_mapper import NotificationMapper
-from src.slack_notifier import SlackMessage
 
-from tests.test_types_generator import account, findings
+from tests.test_types_generator import account, finding
 
 
-findings_a = findings(
+findings_a = finding(
     severity=Severity.HIGH, item="item-a", findings={"a-1", "a-2"}, account=account(identifier="111", name="bbb")
 )
-findings_b = findings(item="item-b", findings={"finding b"}, account=account(identifier="222", name="aaa"))
-findings_c = findings(
+findings_b = finding(item="item-b", findings={"finding b"}, account=account(identifier="222", name="aaa"))
+findings_c = finding(
     severity=Severity.LOW, item="item-c", findings={"finding c"}, account=account(identifier="333", name="ccc")
 )
 
@@ -84,10 +84,10 @@ class TestNotificationMapper(TestCase):
         mapping_1 = NotificationMappingConfig("channel-1", compliance_item_types=["s3_bucket"])
         mapping_2 = NotificationMappingConfig("channel-2", compliance_item_types=["iam_access_key"])
 
-        bucket_findings = findings(
+        bucket_findings = finding(
             item="test-1", compliance_item_type="s3_bucket", account=account(name="aaa", identifier="111")
         )
-        access_key_findings = findings(
+        access_key_findings = finding(
             item="test-2", compliance_item_type="iam_access_key", account=account(name="bbb", identifier="222")
         )
 
@@ -102,8 +102,8 @@ class TestNotificationMapper(TestCase):
 
     def test_channel_with_no_filters_gets_all_notifications(self) -> None:
         mapping = NotificationMappingConfig("all-channel")
-        bucket_findings = findings(compliance_item_type="s3_bucket", account=account(name="a"))
-        access_key_findings = findings(compliance_item_type="iam_access_key", account=account(name="b"))
+        bucket_findings = finding(compliance_item_type="s3_bucket", account=account(name="a"))
+        access_key_findings = finding(compliance_item_type="iam_access_key", account=account(name="b"))
 
         mock_client = Mock(spec=AwsOrgClient)
         mock_client.get_account.side_effect = lambda account_id: Account(
@@ -121,9 +121,9 @@ class TestNotificationMapper(TestCase):
         mapping_2 = NotificationMappingConfig(
             "channel-2", accounts=[acct_a.identifier], compliance_item_types=["s3_bucket"]
         )
-        bucket_findings = findings(compliance_item_type="s3_bucket", account=acct_a, item="bucket")
-        access_key_findings = findings(compliance_item_type="iam_access_key", account=acct_a, item="key")
-        unmapped_findings = findings(compliance_item_type="s3_bucket", account=account(name="b", identifier="2"))
+        bucket_findings = finding(compliance_item_type="s3_bucket", account=acct_a, item="bucket")
+        access_key_findings = finding(compliance_item_type="iam_access_key", account=acct_a, item="key")
+        unmapped_findings = finding(compliance_item_type="s3_bucket", account=account(name="b", identifier="2"))
 
         mock_client = Mock(spec=AwsOrgClient)
         mock_client.get_account.side_effect = lambda account_id: Account(
@@ -144,7 +144,7 @@ class TestNotificationMapper(TestCase):
 
     def test_findings_mapper_with_description(self) -> None:
         description = "additional context about the item"
-        f = findings(description=description, findings={"finding-a", "finding-b"})
+        f = finding(description=description, findings={"finding-a", "finding-b"})
 
         slack_messages = NotificationMapper().do_map({f}, set(), Mock(spec=AwsOrgClient))
 

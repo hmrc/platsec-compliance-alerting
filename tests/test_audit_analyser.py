@@ -14,7 +14,7 @@ from src.config.config import Config
 from src.data.audit import Audit
 from src.data.exceptions import UnsupportedAuditException
 
-from tests.test_types_generator import findings
+from tests.test_types_generator import finding
 
 
 MOCK_CLIENTS = {
@@ -45,7 +45,7 @@ MOCK_CLIENTS = {
 class TestAuditAnalyser(TestCase):
     def test_check_s3_compliance(self, *_: Mock) -> None:
         logger = getLogger()
-        notifications = {findings(item="item-1"), findings(item="item-2")}
+        notifications = {finding(item="item-1"), finding(item="item-2")}
         audit = Audit(type="s3", report=[{"report": "val-1"}, {"report": "val-2"}])
 
         with patch.object(S3Compliance, "analyse", return_value=notifications) as s3_compliance:
@@ -54,7 +54,7 @@ class TestAuditAnalyser(TestCase):
 
     def test_check_iam_compliance(self, *_: Mock) -> None:
         logger = getLogger()
-        notifications = {findings(item="item-1"), findings(item="item-2")}
+        notifications = {finding(item="item-1"), finding(item="item-2")}
         audit = Audit(type="audit_iam.json", report=[{"report": "val-1"}, {"report": "val-2"}])
 
         with patch.object(IamCompliance, "analyse", return_value=notifications) as compliance:
@@ -69,7 +69,7 @@ class TestAuditAnalyser(TestCase):
 
     def test_check_github_webhook_compliance(self, *_: Mock) -> None:
         logger = getLogger()
-        notifications = {findings(item="item-1"), findings(item="item-2")}
+        notifications = {finding(item="item-1"), finding(item="item-2")}
         audit = Audit(
             type="github_webhook_report1",
             report=[
@@ -94,7 +94,7 @@ class TestAuditAnalyser(TestCase):
 
     def test_check_vpc_peering_compliance(self, *_: Mock) -> None:
         logger = getLogger()
-        notifications = {findings(item="item-1"), findings(item="item-2")}
+        notifications = {finding(item="item-1"), finding(item="item-2")}
         audit = Audit(type="audit_vpc_peering.json", report=[{"report": "val-1"}, {"report": "val-2"}])
 
         with patch.object(VpcPeeringCompliance, "analyse", return_value=notifications) as vpc_peering_compliance:
@@ -109,7 +109,7 @@ class TestAuditAnalyser(TestCase):
 
     def test_ec2_policy_compliance(self, *_: Mock) -> None:
         logger = getLogger()
-        the_findings = {findings(item="item-1"), findings(item="item-2")}
+        the_findings = {finding(item="item-1"), finding(item="item-2")}
         audit = Audit(type="audit_ec2.json", report=[{"report": "val-1"}, {"report": "val-2"}])
 
         with patch.object(Ec2Compliance, "analyse", return_value=the_findings) as password_policy_compliance:
@@ -126,7 +126,7 @@ class TestAuditAnalyser(TestCase):
 
     def test_check_vpc_resolver_compliance(self, *_: Mock) -> None:
         logger = getLogger()
-        notifications = {findings(item="item-1"), findings(item="item-2")}
+        notifications = {finding(item="item-1"), finding(item="item-2")}
         audit = Audit(type="audit_vpc_resolver_logs.json", report=[{"report": "val-1"}, {"report": "val-2"}])
 
         with patch.object(ActionableReportCompliance, "analyse", return_value=notifications) as vpc_compliance:

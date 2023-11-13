@@ -1,14 +1,14 @@
 from typing import Dict, Any, Set, Sequence
 
 from src.data.account import Account
-from src.data.findings import Findings
+from src.data.finding import Finding
 
 
 class CodePipeline:
     Type: str = "CodePipeline Pipeline Execution State Change"
 
     @staticmethod
-    def create_finding(message: Dict[str, Any]) -> Findings:
+    def create_finding(message: Dict[str, Any]) -> Finding:
         account = Account(identifier=message["account"])
         pipeline_name = message["detail"]["pipeline"]
         region = message["region"]
@@ -25,7 +25,7 @@ class CodePipeline:
             "assume a role in the account and click the link to find out why."
         )
 
-        return Findings(
+        return Finding(
             compliance_item_type="codepipeline",
             account=account,
             region_name=region,

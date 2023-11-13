@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 from src.compliance.analyser import Analyser
 from src.config.config import Config
 from src.data.audit import Audit
-from src.data.findings import Findings
+from src.data.finding import Finding
 
 
 class GithubWebhookCompliance(Analyser):
@@ -15,7 +15,7 @@ class GithubWebhookCompliance(Analyser):
         self.config = config
         super().__init__(logger=logger, item_type="github_repository_webhook")
 
-    def analyse(self, audit: Audit) -> Set[Findings]:
+    def analyse(self, audit: Audit) -> Set[Finding]:
         for repositories in audit.report:
             for webhook in repositories["Webhooks"]:
                 self._check_webhook_rules(repositories["RepositoryName"], webhook)
@@ -39,8 +39,8 @@ class GithubWebhookCompliance(Analyser):
             else:
                 self.webhooks[webhookURL] = findings
 
-    def _set_all_findings(self, webhook: str, findings: Set[str]) -> Findings:
-        return Findings(
+    def _set_all_findings(self, webhook: str, findings: Set[str]) -> Finding:
+        return Finding(
             description=f"`{webhook}`",
             compliance_item_type=self.item_type,
             item=webhook,

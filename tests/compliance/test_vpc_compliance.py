@@ -2,12 +2,12 @@ from logging import getLogger
 from typing import Any, Dict, Optional, Sequence, Set
 
 from src.data.severity import Severity
-from tests.test_types_generator import create_account, create_audit, findings
+from tests.test_types_generator import create_account, create_audit, finding
 from src.compliance.actionable_report_compliance import ActionableReportCompliance
 
 from src.data.account import Account
 from src.data.audit import Audit
-from src.data.findings import Findings
+from src.data.finding import Finding
 
 
 def test_empty_findings_when_audit_has_no_actions() -> None:
@@ -62,9 +62,9 @@ def _vpc_audit(acc: Account, actions: Optional[Sequence[Dict[str, Any]]] = None)
 
 def _vpc_findings(
     severity: Severity, acc: Account, desc: Optional[str] = None, find: Optional[Set[str]] = None
-) -> Set[Findings]:
+) -> Set[Finding]:
     return {
-        findings(
+        finding(
             severity=severity,
             account=acc,
             compliance_item_type="vpc",

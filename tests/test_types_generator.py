@@ -4,7 +4,7 @@ from typing import Optional, Set, List, Dict, Any
 
 from src.data.account import Account
 from src.data.audit import Audit
-from src.data.findings import Findings
+from src.data.finding import Finding
 from src.data.severity import Severity
 
 
@@ -19,7 +19,7 @@ def create_account() -> Account:
     )
 
 
-def findings(
+def finding(
     severity: Severity = Severity.HIGH,
     account: Optional[Account] = account(),
     compliance_item_type: str = "item_type",
@@ -27,8 +27,8 @@ def findings(
     region_name: Optional[str] = "test-region-name",
     findings: Optional[Set[str]] = None,
     description: Optional[str] = None,
-) -> Findings:
-    return Findings(
+) -> Finding:
+    return Finding(
         severity=severity,
         account=account,
         region_name=region_name,

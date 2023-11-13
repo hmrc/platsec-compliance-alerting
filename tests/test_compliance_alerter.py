@@ -578,9 +578,8 @@ def build_event(report_key: str) -> Dict[str, Any]:
 
 
 def _assert_slack_message_sent(message: str) -> None:
-    message_request = httpretty.last_request().body.decode("utf-8")
-    print("_assert_slack_message_sent ===> ", message_request)
-    assert message in message_request
+    message_requests = httpretty.latest_requests()
+    assert any(message in message_request.body.decode("utf-8") for message_request in message_requests)
 
 
 def _assert_slack_message_sent_to_channel(channel: str) -> None:

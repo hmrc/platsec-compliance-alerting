@@ -2,7 +2,7 @@ from typing import Any, Dict, Set
 from logging import Logger
 
 from src.data.audit import Audit
-from src.data.findings import Findings
+from src.data.finding import Finding
 from src.compliance.analyser import Analyser
 
 
@@ -11,10 +11,10 @@ class GithubCompliance(Analyser):
         super().__init__(logger=logger, item_type="github_repository")
         self.enable_wiki_checking = enable_wiki_checking
 
-    def analyse(self, audit: Audit) -> Set[Findings]:
+    def analyse(self, audit: Audit) -> Set[Finding]:
         return {self._check_repository_rules(repository) for repository in audit.report if not repository["isFork"]}
 
-    def _check_repository_rules(self, repository: Dict[str, Any]) -> Findings:
+    def _check_repository_rules(self, repository: Dict[str, Any]) -> Finding:
         findings = set()
 
         if not self._is_signed(repository):
@@ -26,7 +26,7 @@ class GithubCompliance(Analyser):
         if self._has_wiki_enabled(repository):
             findings.add("repository has wiki enabled")
 
-        return Findings(
+        return Finding(
             description=f"<https://www.github.com/{repository['nameWithOwner']}|{repository['name']}>",
             compliance_item_type=self.item_type,
             item=repository["name"],

@@ -12,8 +12,8 @@ from src.config.config import Config
 from src.config.notification_filter_config import NotificationFilterConfig
 from src.config.notification_mapping_config import NotificationMappingConfig
 from src.config.pagerduty_notifier_config import PagerDutyNotifierConfig
+from src.config.slack_notifier_config import SlackNotifierConfig
 from src.data.exceptions import AwsClientException, MissingConfigException, InvalidConfigException
-from src.slack_notifier import SlackNotifierConfig
 
 
 MOCK_CLIENTS: Dict[str, Any] = {

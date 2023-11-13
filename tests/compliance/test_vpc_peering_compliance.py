@@ -3,20 +3,20 @@ from logging import getLogger
 from src.compliance.vpc_peering_compliance import VpcPeeringCompliance
 
 from tests.fixtures.vpc_peering_compliance import vpc_peering_audit
-from tests.test_types_generator import account, create_audit, findings
+from tests.test_types_generator import account, create_audit, finding
 
 
 acc_1 = account("111222333444", "account-1")
 acc_2 = account("787878787878", "account-2")
 
-finding_1 = findings(account=acc_1, compliance_item_type="vpc_peering", item="pcx-1a1a1a1a", findings=None)
-finding_2 = findings(
+finding_1 = finding(account=acc_1, compliance_item_type="vpc_peering", item="pcx-1a1a1a1a", findings=None)
+finding_2 = finding(
     account=acc_1,
     compliance_item_type="vpc_peering",
     item="pcx-2b2b2b2b",
     findings={"vpc peering connection with unknown account 989898989898"},
 )
-finding_3 = findings(
+finding_3 = finding(
     account=acc_2,
     compliance_item_type="vpc_peering",
     item="pcx-3c3c3c3c",

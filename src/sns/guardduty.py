@@ -4,7 +4,7 @@ from typing import Dict, Any
 
 from src.config.config import Config
 from src.data.account import Account
-from src.data.findings import Findings
+from src.data.finding import Finding
 
 
 class GuardDuty:
@@ -13,8 +13,8 @@ class GuardDuty:
 
     Type: str = "GuardDuty Finding"
 
-    def create_finding(self, message: Dict[str, Any]) -> Findings:
-        return Findings(
+    def create_finding(self, message: Dict[str, Any]) -> Finding:
+        return Finding(
             compliance_item_type="guardduty",
             account=Account(identifier=message["detail"]["accountId"]),
             region_name=message["region"],

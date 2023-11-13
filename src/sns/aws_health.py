@@ -1,15 +1,15 @@
 from typing import Set, Dict, Any
 
 from src.data.account import Account
-from src.data.findings import Findings
+from src.data.finding import Finding
 from src.notifiers.pagerduty_notifier import PagerDutyPayload
 
 
 class AwsHealth:
     Type: str = "AWS Health Event"
 
-    def create_finding(self, message: Dict[str, Any]) -> Findings:
-        return Findings(
+    def create_finding(self, message: Dict[str, Any]) -> Finding:
+        return Finding(
             compliance_item_type="aws_health",
             account=Account(identifier=message["detail"]["affectedAccount"]),
             item=message["detail"]["eventTypeCode"],

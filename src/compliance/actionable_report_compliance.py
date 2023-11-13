@@ -7,7 +7,7 @@ from src.compliance.analyser import Analyser
 from src.data.account import Account
 from src.data.action import Action
 from src.data.audit import Audit
-from src.data.findings import Findings
+from src.data.finding import Finding
 from src.data.severity import Severity
 
 
@@ -19,7 +19,7 @@ class ActionableReportCompliance(Analyser):
         self.action = BriefActionDescriber()
         super().__init__(logger=logger, item_type=item_type)
 
-    def analyse(self, audit: Audit) -> Set[Findings]:
+    def analyse(self, audit: Audit) -> Set[Finding]:
         return {
             self._account_findings(
                 account=Account.from_dict(report["account"]),
@@ -32,8 +32,8 @@ class ActionableReportCompliance(Analyser):
 
     def _account_findings(
         self, account: Account, region_name: str, actions: Sequence[Action], results: Dict[str, Any]
-    ) -> Findings:
-        return Findings(
+    ) -> Finding:
+        return Finding(
             account=account,
             region_name=region_name,
             compliance_item_type=self.item_type,
