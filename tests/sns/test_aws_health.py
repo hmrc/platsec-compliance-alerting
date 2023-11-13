@@ -22,3 +22,13 @@ def test_event_to_findings() -> None:
             "A description of the event will be provided here",
         }
     )
+
+def test_create_pagerduty_event_payload() -> None:
+    message = load_json_resource("health_message.json")
+    payload = AwsHealth().create_pagerduty_event_payload(message)
+
+    assert payload.account
+    assert payload.account.identifier == "123456789012"
+    assert payload.source == "123456789012"
+    assert payload.group == "EC2"
+    assert payload.custom_details == {"eventArn": "arn:aws:health:us-west-2::event/AWS_EC2_INSTANCE_STORE_DRIVE_PERFORMANCE_DEGRADED_90353408594353980"}

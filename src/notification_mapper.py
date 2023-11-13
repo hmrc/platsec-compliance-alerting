@@ -2,14 +2,14 @@ from typing import List, Set, Optional
 
 from src.clients.aws_org_client import AwsOrgClient
 from src.data.account import Account
-from src.data.findings import Findings
+from src.data.finding import Finding
 from src.config.notification_mapping_config import NotificationMappingConfig
-from src.slack_notifier import SlackMessage
+from src.data.slack_message import SlackMessage
 
 
 class NotificationMapper:
     def do_map(
-        self, notifications: Set[Findings], mappings: Set[NotificationMappingConfig], org_client: AwsOrgClient
+        self, notifications: Set[Finding], mappings: Set[NotificationMappingConfig], org_client: AwsOrgClient
     ) -> List[SlackMessage]:
         return sorted(
             [
@@ -35,7 +35,7 @@ class NotificationMapper:
             return f"{account.name} ({account.identifier}) {region_name} {account.slack_handle}"
 
     @staticmethod
-    def _find_channels(notification: Findings, mappings: Set[NotificationMappingConfig]) -> Set[str]:
+    def _find_channels(notification: Finding, mappings: Set[NotificationMappingConfig]) -> Set[str]:
         return {
             mapping.channel
             for mapping in mappings
@@ -47,7 +47,7 @@ class NotificationMapper:
         }
 
     @staticmethod
-    def _create_message_text(notification: Findings) -> str:
+    def _create_message_text(notification: Finding) -> str:
         findings = "\n".join(sorted(notification.findings))
         if notification.description:
             return f"{notification.description}\n\n{findings}"

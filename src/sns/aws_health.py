@@ -2,6 +2,7 @@ from typing import Set, Dict, Any
 
 from src.data.account import Account
 from src.data.findings import Findings
+from src.notifiers.pagerduty_notifier import PagerDutyPayload
 
 
 class AwsHealth:
@@ -13,6 +14,26 @@ class AwsHealth:
             account=Account(identifier=message["detail"]["affectedAccount"]),
             item=message["detail"]["eventTypeCode"],
             findings=self.build_description(message),
+        )
+
+    def create_pagerduty_event_payload(self, message: Dict[str, Any]) -> PagerDutyPayload:
+        latestDescription = "This event has no description"
+        for description in message["detail"]["eventDescription"]:
+            if description["language"] == "en_US":
+                latestDescription = description["latestDescription"]
+
+        return PagerDutyPayload(
+            description=latestDescription,
+            source=message["detail"]["affectedAccount"],
+            component=" ".join(message["resources"]),
+            event_class=message["detail"]["eventTypeCode"],
+            group=message["detail"]["service"],
+            timestamp=message["time"],
+            account=Account(identifier=message["detail"]["affectedAccount"]),
+            region_name=message["region"],
+            custom_details={
+                "eventArn": message["detail"]["eventArn"],
+            }
         )
 
     def build_description(self, message: Dict[str, Any]) -> Set[str]:

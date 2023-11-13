@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from unittest.mock import Mock, patch
+from unittest.mock import ANY, Mock, patch
 
 import os
 from copy import deepcopy
@@ -19,9 +19,12 @@ from src.clients.aws_org_client import AwsOrgClient
 from src.clients.aws_s3_client import AwsS3Client
 from src.clients.aws_ssm_client import AwsSsmClient
 from src.config.config import Config
+from src.data.account import Account
 from src.data.exceptions import UnsupportedEventException
+from src.data.finding import Finding
 from src.data.severity import Severity
-from src.slack_notifier import SlackMessage
+from src.data.slack_message import SlackMessage
+from src.notifiers.slack_notifier import SlackNotifier
 
 from tests.fixtures.github_compliance import github_report
 from tests.fixtures.github_webhook_compliance import github_webhook_report
@@ -55,22 +58,23 @@ SLACK_TOKEN_KEY = "the-slack-token-key"
 @patch("src.compliance_alerter.AwsClientFactory.get_org_client")
 @patch("src.compliance_alerter.ComplianceAlerter")
 def test_main(
-    mock_compliance_alerter: Mock, mock_s3_client: Mock, mock_ssm_client: Mock, mock_org_client: Mock
+    mock_compliance_alerter: Mock , mock_s3_client: Mock, mock_ssm_client: Mock, mock_org_client: Mock
 ) -> None:
-    message = SlackMessage(
-        channels=[CHANNEL],
-        header="test-account 111222333444 eu-west-2 @some-team-name",
-        title="aTitle",
-        text="Words of Advice",
-        color=Severity.HIGH,
+    finding = Finding(
+        compliance_item_type="compliance-item-type",
+        item="item",
+        findings={"Words of Advice"},
+        account=Account(identifier="111222333444", name="", slack_handle="@some-team-name"),
+        region_name="region",
     )
-    mock_compliance_alerter.return_value.send.return_value = Mock()
+    mock_compliance_alerter.return_value.send_new.return_value = Mock()
     _mock = mock_compliance_alerter.return_value
-    _mock.generate_slack_messages.return_value = message
-    _mock.send.return_value = Mock()
+    _mock.build_findings.return_value = {finding}
+    _mock.send_new.return_value = Mock()
     compliance_alerter.main(build_event(S3_KEY))
 
-    _mock.send.assert_called_once_with(message)
+    _mock.send_new.assert_called_once_with(notifier=ANY, payloads={finding})
+
 
 
 def test_send(helper_test_config: Any) -> None:
@@ -82,17 +86,14 @@ def test_send(helper_test_config: Any) -> None:
             org_client=helper_test_config.org_client,
         )
     )
-    ca.send(
-        slack_messages=[
-            SlackMessage(
-                channels=[CHANNEL],
-                header="test-account 111222333444 eu-west-2 @some-team-name",
-                title="aTitle",
-                text="Words of Advice",
-                color=Severity.HIGH,
-            )
-        ]
+    finding = Finding(
+        compliance_item_type="compliance-item-type",
+        item="item",
+        findings={"Words of Advice"},
+        account=Account(identifier=helper_test_config.account_id, name="test-account-name", slack_handle="@some-team-name"),
+        region_name="region",
     )
+    ca.send_new(notifier=SlackNotifier(config=ca.config), payloads={finding})
     _assert_slack_message_sent("@some-team-name")
 
 
@@ -105,8 +106,8 @@ def test_compliance_alerter_main_s3_audit(helper_test_config: Any) -> None:
             org_client=helper_test_config.org_client,
         )
     )
-    messages = ca.generate_slack_messages(build_event(S3_KEY))
-    ca.send(messages)
+    findings = ca.build_findings(build_event(S3_KEY))
+    ca.send_new(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("the-alerting-channel")
     _assert_slack_message_sent("bad-bucket")
     _assert_slack_message_sent("@some-team-name")
@@ -121,8 +122,8 @@ def test_compliance_alerter_main_github_audit(helper_test_config: Any) -> None:
             org_client=helper_test_config.org_client,
         )
     )
-    messages = ca.generate_slack_messages(build_event(GITHUB_KEY))
-    ca.send(messages)
+    findings = ca.build_findings(build_event(GITHUB_KEY))
+    ca.send_new(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("the-alerting-channel")
     _assert_slack_message_sent("bad-repo-no-signing")
 
@@ -136,8 +137,8 @@ def test_compliance_alerter_main_github_webhook(helper_test_config: Any) -> None
             org_client=helper_test_config.org_client,
         )
     )
-    messages = ca.generate_slack_messages(build_event(GITHUB_WEBHOOK_KEY))
-    ca.send(messages)
+    findings = ca.build_findings(build_event(GITHUB_WEBHOOK_KEY))
+    ca.send_new(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("the-alerting-channel")
     _assert_slack_message_sent("https://unknown-host.com")
 
@@ -151,8 +152,8 @@ def test_compliance_alerter_main_vpc_audit(helper_test_config: Any) -> None:
             org_client=helper_test_config.org_client,
         )
     )
-    messages = ca.generate_slack_messages(build_event(VPC_KEY))
-    ca.send(messages)
+    findings = ca.build_findings(build_event(VPC_KEY))
+    ca.send_new(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("the-alerting-channel")
     _assert_slack_message_sent("VPC flow logs compliance enforcement success")
     _assert_slack_message_sent("@some-team-name")
@@ -167,8 +168,8 @@ def test_compliance_alerter_main_vpc_peering_audit(helper_test_config: Any) -> N
             org_client=helper_test_config.org_client,
         )
     )
-    messages = ca.generate_slack_messages(build_event(VPC_PEERING_KEY))
-    ca.send(messages)
+    findings = ca.build_findings(build_event(VPC_PEERING_KEY))
+    ca.send_new(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("vpc-peering-alerts")
     _assert_slack_message_sent("vpc peering connection with unknown account")
     _assert_slack_message_sent("@some-team-name")
@@ -183,8 +184,8 @@ def test_compliance_alerter_main_password_policy_audit(helper_test_config: Any) 
             org_client=helper_test_config.org_client,
         )
     )
-    messages = ca.generate_slack_messages(build_event(PASSWORD_POLICY_KEY))
-    ca.send(messages)
+    findings = ca.build_findings(build_event(PASSWORD_POLICY_KEY))
+    ca.send_new(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("the-alerting-channel")
     _assert_slack_message_sent("password policy compliance enforcement success")
     _assert_slack_message_sent("@some-team-name")
@@ -203,8 +204,8 @@ def test_codepipeline_sns_event(helper_test_config: Any) -> None:
             org_client=helper_test_config.org_client,
         )
     )
-    messages = ca.generate_slack_messages(test_event)
-    ca.send(messages)
+    findings = ca.build_findings(test_event)
+    ca.send_new(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("codepipeline-alerts")
     _assert_slack_message_sent("@some-team-name")
 
@@ -222,8 +223,8 @@ def test_codebuild_sns_event(helper_test_config: Any) -> None:
             org_client=helper_test_config.org_client,
         )
     )
-    messages = ca.generate_slack_messages(test_event)
-    ca.send(messages)
+    findings = ca.build_findings(test_event)
+    ca.send_new(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("codebuild-alerts")
     _assert_slack_message_sent("@some-team-name")
 
@@ -244,8 +245,8 @@ def test_health_sns_event(helper_test_config: Any) -> None:
             org_client=helper_test_config.org_client,
         )
     )
-    messages = ca.generate_slack_messages(test_event)
-    ca.send(messages)
+    findings = ca.build_findings(test_event)
+    ca.send_new(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("the-health-channel")
     _assert_slack_message_sent("@some-team-name")
 
@@ -271,8 +272,8 @@ def test_grant_user_access_lambda_sns_event(helper_test_config: Any, _org_client
             org_client=helper_test_config.org_client,
         )
     )
-    messages = ca.generate_slack_messages(test_event)
-    ca.send(messages)
+    findings = ca.build_findings(test_event)
+    ca.send_new(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("grant-user-access-lambda-alerts")
     _assert_slack_message_sent("@some-team-name")
 
@@ -298,8 +299,8 @@ def test_guardduty_sns_event(helper_test_config: Any, _org_client: BaseClient) -
     message["detail"]["accountId"] = sub_account_id
     test_event["Records"][0]["Sns"]["Message"] = json.dumps(message)
 
-    messages = ca.generate_slack_messages(test_event)
-    ca.send(messages)
+    findings = ca.build_findings(test_event)
+    ca.send_new(notifier=SlackNotifier(config=ca.config), payloads=findings)
 
     _assert_slack_message_sent_to_channel("guardduty-alerts")
     _assert_slack_message_sent_to_channel("the-alerting-channel")
@@ -316,8 +317,8 @@ def test_unknown_sns_event(helper_test_config: Any) -> None:
             org_client=helper_test_config.org_client,
         )
     )
-    messages = ca.generate_slack_messages(load_json_resource("unknown_sns_event.json"))
-    ca.send(messages)
+    findings = ca.build_findings(load_json_resource("unknown_sns_event.json"))
+    ca.send_new(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_no_slack_message_sent()
 
 
@@ -331,8 +332,8 @@ def test_unsupported_event(helper_test_config: Any) -> None:
         )
     )
     with pytest.raises(UnsupportedEventException, match="a_value"):
-        messages = ca.generate_slack_messages({"a_key": "a_value"})
-        ca.send(messages)
+        findings = ca.build_findings({"a_key": "a_value"})
+        ca.send_new(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_no_slack_message_sent()
 
 
