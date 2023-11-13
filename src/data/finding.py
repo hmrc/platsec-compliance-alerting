@@ -20,8 +20,8 @@ class Finding(Payload):
         region_name: Optional[str] = None,
     ):
         self.compliance_item_type = compliance_item_type
-        self.item = item,
-        self.severity = severity, 
+        self.item = item
+        self.severity = severity
         self.findings = frozenset(findings) if findings else frozenset()
         super().__init__(description=description, account=account, region_name=region_name)
 
@@ -36,3 +36,16 @@ class Finding(Payload):
                 and self.account == other.account
                 and self.region_name == other.region_name
             )
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}("
+            f"compliance_item_type={self.compliance_item_type}, "
+            f"item={self.item}, "
+            f"findings={self.findings}, "
+            f"severity={self.severity}, "
+            f"description={self.description}, "
+            f"account={self.account}, "
+            f"region_name={self.region_name}"
+            ")"
+        )
