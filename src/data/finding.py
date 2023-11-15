@@ -8,7 +8,6 @@ from src.data.severity import Severity
 
 @dataclass(eq=True, unsafe_hash=True)
 class Finding(Payload):
-
     def __init__(
         self,
         compliance_item_type: str,
@@ -28,7 +27,7 @@ class Finding(Payload):
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Finding):
             return (
-                self.compliance_item_type == other.compliance_item_type 
+                self.compliance_item_type == other.compliance_item_type
                 and self.item == other.item
                 and self.findings == other.findings
                 and self.severity == other.severity

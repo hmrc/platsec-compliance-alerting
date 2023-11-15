@@ -33,8 +33,10 @@ class UnsupportedAuditException(ComplianceAlertingException):
 class UnsupportedEventException(ComplianceAlertingException):
     pass
 
+
 class SlackNotifierException(Exception):
     pass
+
 
 class PagerDutyNotifierException(Exception):
     pass

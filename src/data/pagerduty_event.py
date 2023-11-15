@@ -1,4 +1,3 @@
-
 from dataclasses import dataclass
 from typing import Any, Dict, List
 
@@ -18,11 +17,11 @@ class PagerDutyEvent(Notification):
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-          "payload": self.payload.to_dict(),
-          "routing_key": self.routing_key,
-          "event_action": self.event_action,
-          "client": self.client,
-          "client_url": self.client_url,
-          "links": self.links,
-          "images": self.images
+            "payload": self.payload.to_dict(),
+            "routing_key": self.routing_key,
+            "event_action": self.event_action,
+            "client": self.client,
+            "client_url": self.client_url,
+            "links": self.links,
+            "images": self.images,
         }

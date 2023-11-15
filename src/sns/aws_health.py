@@ -40,7 +40,7 @@ class AwsHealth:
             region_name=message["region"],
             custom_details={
                 "eventArn": message["detail"]["eventArn"],
-            }
+            },
         )
 
     def build_description(self, message: Dict[str, Any]) -> Set[str]:

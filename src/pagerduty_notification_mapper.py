@@ -11,7 +11,7 @@ from src.data.slack_message import SlackMessage
 
 CLIENT = "platsec-compliance-alerting"
 CLIENT_URL = f"https://github.com/hmrc/{CLIENT}"
-EVENT_ACTION="trigger"
+EVENT_ACTION = "trigger"
 PAGERDUTY_SSM_PARAMETER_STORE_PREFIX = "/pagerduty/"
 
 
@@ -20,17 +20,19 @@ class PagerDutyNotificationMapper:
         self.ssm_client = ssm_client
 
     def do_map(
-        self, notifications: Set[PagerDutyPayload], mappings: Set[NotificationMappingConfig],
+        self,
+        notifications: Set[PagerDutyPayload],
+        mappings: Set[NotificationMappingConfig],
     ) -> List[PagerDutyEvent]:
         events = [
             PagerDutyEvent(
-                payload = notification,
-                routing_key = routing_key,
-                event_action = "trigger",
-                client = CLIENT,
-                client_url = CLIENT_URL,
-                links = [],
-                images = [],
+                payload=notification,
+                routing_key=routing_key,
+                event_action="trigger",
+                client=CLIENT,
+                client_url=CLIENT_URL,
+                links=[],
+                images=[],
             )
             for notification in notifications
             for routing_key in self._find_routing_keys(notification, mappings)

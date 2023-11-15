@@ -18,19 +18,23 @@ def _pagerduty_event(payload: PagerDutyPayload, routing_key: str) -> PagerDutyEv
     return PagerDutyEvent(
         payload=payload,
         routing_key=routing_key,
-        event_action='trigger',
-        client='platsec-compliance-alerting',
-        client_url='https://github.com/hmrc/platsec-compliance-alerting',
+        event_action="trigger",
+        client="platsec-compliance-alerting",
+        client_url="https://github.com/hmrc/platsec-compliance-alerting",
         links=[],
-        images=[]
+        images=[],
     )
 
 
 class TestPagerDutyNotificationMapper(TestCase):
     def test_findings_mapper_with_compliance_item_type_mapping(self) -> None:
         mapping_0 = NotificationMappingConfig(channel="central", pagerduty_service="service-0")
-        mapping_1 = NotificationMappingConfig(channel="channel-1", pagerduty_service="service-1", compliance_item_types=["type-b", "type-c"])
-        mapping_2 = NotificationMappingConfig(channel="channel-2", pagerduty_service="service-2", compliance_item_types=["type-c", "type-a"])
+        mapping_1 = NotificationMappingConfig(
+            channel="channel-1", pagerduty_service="service-1", compliance_item_types=["type-b", "type-c"]
+        )
+        mapping_2 = NotificationMappingConfig(
+            channel="channel-2", pagerduty_service="service-2", compliance_item_types=["type-c", "type-a"]
+        )
 
         payloads = {payload_a, payload_b, payload_c}
         mappings = {mapping_0, mapping_1, mapping_2}
@@ -54,7 +58,9 @@ class TestPagerDutyNotificationMapper(TestCase):
     def test_findings_mapper_with_account_mapping(self) -> None:
         mapping_0 = NotificationMappingConfig(channel="central", pagerduty_service="service-0")
         mapping_1 = NotificationMappingConfig(channel="channel-1", pagerduty_service="service-1", accounts=["2222"])
-        mapping_2 = NotificationMappingConfig(channel="channel-2", pagerduty_service="service-2", accounts=["1111", "3333"])
+        mapping_2 = NotificationMappingConfig(
+            channel="channel-2", pagerduty_service="service-2", accounts=["1111", "3333"]
+        )
 
         payloads = {payload_a, payload_b, payload_c}
         mappings = {mapping_0, mapping_1, mapping_2}
@@ -76,8 +82,18 @@ class TestPagerDutyNotificationMapper(TestCase):
 
     def test_multiple_filter_configs(self) -> None:
         acct_a = account(name="a", identifier="1")
-        mapping_1 = NotificationMappingConfig(channel="channel-1", pagerduty_service="service-1", accounts=["2222"], compliance_item_types=["type-b", "type-c"])
-        mapping_2 = NotificationMappingConfig(channel="channel-2", pagerduty_service="service-2", accounts=["1111", "3333"], compliance_item_types=["type-b", "type-c"])
+        mapping_1 = NotificationMappingConfig(
+            channel="channel-1",
+            pagerduty_service="service-1",
+            accounts=["2222"],
+            compliance_item_types=["type-b", "type-c"],
+        )
+        mapping_2 = NotificationMappingConfig(
+            channel="channel-2",
+            pagerduty_service="service-2",
+            accounts=["1111", "3333"],
+            compliance_item_types=["type-b", "type-c"],
+        )
 
         payloads = {payload_a, payload_b, payload_c}
         mappings = {mapping_1, mapping_2}

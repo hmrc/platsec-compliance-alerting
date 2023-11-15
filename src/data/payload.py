@@ -3,7 +3,6 @@ from typing import Optional
 from src.data.account import Account
 
 
-
 @dataclass
 class Payload:
     description: Optional[str]

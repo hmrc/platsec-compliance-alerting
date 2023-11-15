@@ -12,9 +12,9 @@ class PagerDutySeverity(str, Enum):
     ERROR = "error"
     INFO = "info"
 
+
 @dataclass(eq=True, unsafe_hash=True)
 class PagerDutyPayload(Payload):
-
     def __init__(
         self,
         compliance_item_type: str,  # this gives a way to map pd_service to notification and by extension routing_key
@@ -43,7 +43,7 @@ class PagerDutyPayload(Payload):
     def __eq__(self, other: object) -> bool:
         if isinstance(other, PagerDutyPayload):
             return (
-                self.compliance_item_type == other.compliance_item_type 
+                self.compliance_item_type == other.compliance_item_type
                 and self.summary == other.summary
                 and self.source == other.source
                 and self.component == other.component
@@ -52,7 +52,6 @@ class PagerDutyPayload(Payload):
                 and self.custom_details == other.custom_details
                 and self.account == other.account
                 and self.region_name == other.region_name
-
             )
 
     def __repr__(self) -> str:
@@ -71,6 +70,7 @@ class PagerDutyPayload(Payload):
         )
 
     def to_dict(self) -> Dict[str, Any]:
+        default_custom_details = {"account": self.account_name, "region": self.region_name},
         return {
             "summary": self.summary,
             "timestamp": self.timestamp,
@@ -79,5 +79,5 @@ class PagerDutyPayload(Payload):
             "class": self.event_class,
             "group": self.group,
             "severity": self.severity,
-            "custom_details": self.custom_details if self.custom_details else {"account": self.account_name, "region": self.region_name},
+            "custom_details": self.custom_details if self.custom_details else default_custom_details
         }

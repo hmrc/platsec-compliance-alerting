@@ -7,7 +7,6 @@ from src.data.payload import Payload
 
 
 class Notifier(ABC):
-
     @abstractmethod
     def apply_filters(self, payloads: Set[Payload]) -> Set[Payload]:
         pass

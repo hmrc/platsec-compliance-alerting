@@ -55,5 +55,5 @@ def _pagerduty_payload(source: str, component: str, compliance_item_type: str = 
         timestamp="2022-06-03T06:27:57Z",
         account=Account(identifier=source),
         region_name="a-region",
-        custom_details={}
+        custom_details={},
     )

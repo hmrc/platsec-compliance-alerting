@@ -133,6 +133,7 @@ def test_get_slack_notifier_config(monkeypatch: Any) -> None:
 
     assert SlackNotifierConfig("the-user", "the-token", "the-url") == Config(**MOCK_CLIENTS).get_slack_notifier_config()
 
+
 def test_get_pagerduty_notifier_config(monkeypatch: Any) -> None:
     monkeypatch.setenv("PAGERDUTY_API_URL", "the-url")
     monkeypatch.setenv("PAGERDUTY_SERVICE", "pd-service")
@@ -140,7 +141,10 @@ def test_get_pagerduty_notifier_config(monkeypatch: Any) -> None:
     ssm_client.get_parameter.return_value = "pd-service-routing-key"
     MOCK_CLIENTS["ssm_client"] = ssm_client
 
-    assert PagerDutyNotifierConfig("pd-service", "pd-service-routing-key", "the-url") == Config(**MOCK_CLIENTS).get_pagerduty_notifier_config()
+    assert (
+        PagerDutyNotifierConfig("pd-service", "pd-service-routing-key", "the-url")
+        == Config(**MOCK_CLIENTS).get_pagerduty_notifier_config()
+    )
 
 
 @patch("src.config.config.Config._fetch_config_files")

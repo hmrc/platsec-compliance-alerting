@@ -56,16 +56,16 @@ class SlackNotifier(Notifier):
         return dict(response.json())
 
     def _build_headers(self) -> Dict[str, str]:
-        credentials = b64encode(f"{self._notifier_config.username}:{self._notifier_config.token}".encode("utf-8")).decode("utf-8")
+        credentials = b64encode(
+            f"{self._notifier_config.username}:{self._notifier_config.token}".encode("utf-8")
+        ).decode("utf-8")
         return {"Content-Type": "application/json", "Authorization": f"Basic {credentials}"}
 
     def apply_filters(self, findings: Set[Finding]) -> Set[Finding]:
         return FindingsFilter().do_filter(findings, self._filters_config)
 
     def apply_mappings(self, findings: Set[Finding]) -> Set[SlackMessage]:
-        return NotificationMapper().do_map(
-            findings, self._mappings_config, self._org_client
-        )
+        return NotificationMapper().do_map(findings, self._mappings_config, self._org_client)
 
     # this method should replace send_messages()
     def send(self, notifications: Set[SlackMessage]) -> None:

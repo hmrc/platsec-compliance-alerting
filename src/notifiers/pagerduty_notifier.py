@@ -29,13 +29,13 @@ class PagerDutyNotifier(Notifier):
     # not really relevant - moved to pagerduty_notification_mapper.py
     def _build_event(self, payload: PagerDutyPayload) -> PagerDutyEvent:
         return PagerDutyEvent(
-            payload = payload,
-            routing_key = self._notifier_config.routing_key,
-            event_action = "trigger",
-            client = CLIENT,
-            client_url = CLIENT_URL,
-            links = [],
-            images = [],
+            payload=payload,
+            routing_key=self._notifier_config.routing_key,
+            event_action="trigger",
+            client=CLIENT,
+            client_url=CLIENT_URL,
+            links=[],
+            images=[],
         )
 
     def apply_filters(self, payloads: Set[PagerDutyPayload]) -> Set[PagerDutyPayload]:
@@ -76,9 +76,13 @@ class PagerDutyNotifier(Notifier):
 
     def send_pagerduty_event(self, pagerduty_event: PagerDutyEvent) -> None:
         try:
-            self._handle_response(self._send(pagerduty_event), pagerduty_event.service) if pagerduty_event.service else None
+            self._handle_response(
+                self._send(pagerduty_event), pagerduty_event.service
+            ) if pagerduty_event.service else None
         except requests.RequestException as ex:
-            raise PagerDutyNotifierException(f"unable to event to pagerduty service {pagerduty_event.service}: {ex}") from None
+            raise PagerDutyNotifierException(
+                f"unable to event to pagerduty service {pagerduty_event.service}: {ex}"
+            ) from None
 
     def _build_headers(self) -> Dict[str, str]:
         return {"Accept": "application/json", "Content-Type": "application/json"}
