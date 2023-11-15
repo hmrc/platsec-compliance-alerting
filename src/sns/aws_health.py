@@ -29,6 +29,7 @@ class AwsHealth:
                 latestDescription = description["latestDescription"]
 
         return PagerDutyPayload(
+            compliance_item_type="aws_health",
             description=latestDescription,
             source=message["detail"]["affectedAccount"],
             component=" ".join(message["resources"]),

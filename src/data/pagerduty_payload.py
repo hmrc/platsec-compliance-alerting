@@ -12,11 +12,12 @@ class PagerDutySeverity(str, Enum):
     ERROR = "error"
     INFO = "info"
 
-@dataclass
+@dataclass(eq=True, unsafe_hash=True)
 class PagerDutyPayload(Payload):
 
     def __init__(
         self,
+        compliance_item_type: str,  # this gives a way to map pd_service to notification and by extension routing_key
         description: str,
         source: str,
         component: str,
@@ -28,6 +29,7 @@ class PagerDutyPayload(Payload):
         custom_details: Dict[str, Any] = {},
         severity: PagerDutySeverity = PagerDutySeverity.CRITICAL,
     ):
+        self.compliance_item_type = compliance_item_type
         self.summary = description
         self.source = source
         self.component = component
@@ -37,6 +39,36 @@ class PagerDutyPayload(Payload):
         self.group = group
         self.severity = severity
         super().__init__(description=description, account=account, region_name=region_name)
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, PagerDutyPayload):
+            return (
+                self.compliance_item_type == other.compliance_item_type 
+                and self.summary == other.summary
+                and self.source == other.source
+                and self.component == other.component
+                and self.event_class == other.event_class
+                and self.timestamp == other.timestamp
+                and self.custom_details == other.custom_details
+                and self.account == other.account
+                and self.region_name == other.region_name
+
+            )
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}("
+            f"compliance_item_type={self.compliance_item_type}, "
+            f"summary={self.summary}, "
+            f"source={self.source}, "
+            f"component={self.component}, "
+            f"event_class={self.event_class}, "
+            f"timestamp={self.timestamp}, "
+            f"custom_details={self.custom_details}, "
+            f"account={self.account}, "
+            f"region_name={self.region_name}"
+            ")"
+        )
 
     def to_dict(self) -> Dict[str, Any]:
         return {

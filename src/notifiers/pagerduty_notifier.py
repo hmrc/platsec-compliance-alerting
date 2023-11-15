@@ -10,7 +10,10 @@ from src.data.pagerduty_event import PagerDutyEvent
 from src.data.pagerduty_payload import PagerDutyPayload
 
 from src.notifiers.notifier import Notifier
+from src.pagerduty_notification_mapper import PagerDutyNotificationMapper
+from src.pagerduty_payload_filter import PagerDutyPayloadFilter
 
+# moved to pagerduty_notification_mapper.py
 CLIENT = "platsec-compliance-alerting"
 CLIENT_URL = f"https://github.com/hmrc/{CLIENT}"
 
@@ -19,11 +22,11 @@ class PagerDutyNotifier(Notifier):
     def __init__(self, config: Config) -> None:
         self.config = config
         self._logger = getLogger(self.__class__.__name__)
-        self._org_client = config.org_client
         self._notifier_config = config.get_pagerduty_notifier_config()
         self._filters_config = config.get_notification_filters()
         self._mappings_config = config.get_notification_mappings()
 
+    # not really relevant - moved to pagerduty_notification_mapper.py
     def _build_event(self, payload: PagerDutyPayload) -> PagerDutyEvent:
         return PagerDutyEvent(
             payload = payload,
@@ -36,14 +39,12 @@ class PagerDutyNotifier(Notifier):
         )
 
     def apply_filters(self, payloads: Set[PagerDutyPayload]) -> Set[PagerDutyPayload]:
-        # PagerDutyPayloadFilter().do_filter(notifications, self.config)
-        # return FindingsFilter().do_filter(payloads, self.config.get_notification_filters())
-        pass
+        return PagerDutyPayloadFilter().do_filter(payloads, self.config.get_notification_filters())
 
     def apply_mappings(self, payloads: Set[PagerDutyPayload]) -> Set[PagerDutyEvent]:
-        # return NotificationMapper().do_map(
-        #     payloads, self.config.get_notification_mappings(), self.config.org_client
-        # )
+        return PagerDutyNotificationMapper().do_map(
+            payloads, self.config.get_notification_mappings(), self._notifier_config.routing_key
+        )
         pass
 
     def send(self, pagerduty_events: Set[PagerDutyEvent]) -> None:

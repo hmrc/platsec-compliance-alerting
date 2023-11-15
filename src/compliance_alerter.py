@@ -81,7 +81,7 @@ class ComplianceAlerter:
                 logging.getLogger(__name__).warning(f"Received unknown event with detailType '{type}'. Ignoring...")
         return findings
 
-    def build_pagerduty_payload(self, event) -> Set[PagerDutyPayload]:
+    def build_pagerduty_payloads(self, event) -> Set[PagerDutyPayload]:
         payloads: Set[PagerDutyPayload] = set()
         for record in event["Records"]:
             message = json.loads(record["Sns"]["Message"])

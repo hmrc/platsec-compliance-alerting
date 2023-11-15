@@ -5,6 +5,7 @@ from typing import Optional, Set, List, Dict, Any
 from src.data.account import Account
 from src.data.audit import Audit
 from src.data.finding import Finding
+from src.data.pagerduty_payload import PagerDutyPayload
 from src.data.severity import Severity
 
 
@@ -41,3 +42,18 @@ def finding(
 
 def create_audit(report: List[Dict[str, Any]], type: str = "iam_access_keys") -> Audit:
     return Audit(type=type, report=report)
+
+
+def _pagerduty_payload(source: str, component: str, compliance_item_type: str = "aws_health"):
+    return PagerDutyPayload(
+        compliance_item_type=compliance_item_type,
+        description="A description of the event",
+        source=source,
+        component=component,
+        event_class="eventTypeCode",
+        group="EC2",
+        timestamp="2022-06-03T06:27:57Z",
+        account=Account(identifier=source),
+        region_name="a-region",
+        custom_details={}
+    )

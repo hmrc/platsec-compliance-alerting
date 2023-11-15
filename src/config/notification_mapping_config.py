@@ -8,6 +8,7 @@ from src.data.exceptions import NotificationMappingException
 @dataclass(unsafe_hash=True)
 class NotificationMappingConfig:
     channel: str
+    pagerduty_service: Optional[str]
     accounts: FrozenSet[str]
     items: FrozenSet[str]
     compliance_item_types: FrozenSet[str]
