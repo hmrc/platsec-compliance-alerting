@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from typing import Set
-from src.config.config import Config
 from src.data.notification import Notification
 
 from src.data.payload import Payload

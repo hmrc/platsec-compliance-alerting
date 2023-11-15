@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, Set
 import json
 
 from src.audit_analyser import AuditAnalyser
@@ -9,11 +9,8 @@ from src.config.config import Config
 from src.data.audit import Audit
 from src.data.finding import Finding
 from src.data.payload import Payload
-from src.data.slack_message import SlackMessage
-from src.findings_filter import FindingsFilter
-from src.notification_mapper import NotificationMapper
 from src.notifiers.notifier import Notifier
-from src.notifiers.pagerduty_notifier import PagerDutyEvent, PagerDutyPayload
+from src.notifiers.pagerduty_notifier import PagerDutyPayload
 from src.notifiers.slack_notifier import SlackNotifier
 from src.sns.codebuild import CodeBuild
 from src.sns.codepipeline import CodePipeline

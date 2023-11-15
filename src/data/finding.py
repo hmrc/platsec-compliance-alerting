@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import FrozenSet, Optional, Set
+from typing import Optional, Set
 
 from src.data.account import Account
 from src.data.payload import Payload

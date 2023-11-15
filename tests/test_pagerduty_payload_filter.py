@@ -1,5 +1,3 @@
-from unittest import TestCase
-
 from src.config.notification_filter_config import NotificationFilterConfig
 from src.pagerduty_payload_filter import PagerDutyPayloadFilter
 

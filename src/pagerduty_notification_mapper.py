@@ -1,15 +1,11 @@
 from dataclasses import dataclass
-from typing import List, Set, Optional
+from typing import List, Set
 
 
-from src.clients.aws_org_client import AwsOrgClient
 from src.clients.aws_ssm_client import AwsSsmClient
-from src.data.account import Account
-from src.data.finding import Finding
 from src.config.notification_mapping_config import NotificationMappingConfig
 from src.data.pagerduty_event import PagerDutyEvent
 from src.data.pagerduty_payload import PagerDutyPayload
-from src.data.slack_message import SlackMessage
 
 CLIENT = "platsec-compliance-alerting"
 CLIENT_URL = f"https://github.com/hmrc/{CLIENT}"

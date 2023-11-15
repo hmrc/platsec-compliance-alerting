@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Set
 
 import requests
 
-from dataclasses import dataclass
 from src.config.config import Config
 from src.data.exceptions import SlackNotifierException
 from src.data.finding import Finding

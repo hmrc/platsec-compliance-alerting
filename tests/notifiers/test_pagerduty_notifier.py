@@ -1,17 +1,15 @@
 import json
 import logging
-import os
 from typing import Any
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 import httpretty
 import pytest
-from src.config.config import Config
 from src.config.notification_filter_config import NotificationFilterConfig
 from src.config.notification_mapping_config import NotificationMappingConfig
 from src.config.pagerduty_notifier_config import PagerDutyNotifierConfig
 from src.data.exceptions import PagerDutyNotifierException
-from src.notifiers.pagerduty_notifier import CLIENT, CLIENT_URL, PagerDutyNotifier, PagerDutyPayload
+from src.notifiers.pagerduty_notifier import CLIENT, CLIENT_URL, PagerDutyNotifier
 from tests.test_types_generator import _pagerduty_payload, _pagerduty_event
 
 
@@ -106,7 +104,7 @@ def test_send_pagerduty_event_success() -> None:
     )
     mock_config = Mock(get_pagerduty_notifier_config=Mock(return_value=pagerduty_notifier_config))
 
-    assert None == PagerDutyNotifier(mock_config).send_pagerduty_event(pagerduty_event=pagerduty_event)
+    assert not PagerDutyNotifier(mock_config).send_pagerduty_event(pagerduty_event=pagerduty_event)
 
 
 @httpretty.activate  # type: ignore
@@ -152,7 +150,7 @@ def test_send_multiple_pagerduty_event_success() -> None:
     )
     mock_config = Mock(get_pagerduty_notifier_config=Mock(return_value=pagerduty_notifier_config))
 
-    assert None == PagerDutyNotifier(mock_config).send(pagerduty_events=pagerduty_events)
+    assert not PagerDutyNotifier(mock_config).send(pagerduty_events=pagerduty_events)
 
 
 @httpretty.activate  # type: ignore

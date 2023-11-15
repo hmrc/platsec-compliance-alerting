@@ -22,8 +22,6 @@ from src.config.config import Config
 from src.data.account import Account
 from src.data.exceptions import UnsupportedEventException
 from src.data.finding import Finding
-from src.data.severity import Severity
-from src.data.slack_message import SlackMessage
 from src.notifiers.pagerduty_notifier import PagerDutyNotifier
 from src.notifiers.slack_notifier import SlackNotifier
 

@@ -1,7 +1,5 @@
-from dataclasses import dataclass
-from datetime import datetime
 from logging import getLogger
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Set
 
 import requests
 from src.config.config import Config
