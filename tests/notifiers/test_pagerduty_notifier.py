@@ -1,62 +1,180 @@
-
+import json
+import logging
 import os
+from typing import Any
 from unittest.mock import Mock, patch
+
+import httpretty
+import pytest
 from src.config.config import Config
+from src.config.notification_filter_config import NotificationFilterConfig
+from src.config.notification_mapping_config import NotificationMappingConfig
 from src.config.pagerduty_notifier_config import PagerDutyNotifierConfig
+from src.data.exceptions import PagerDutyNotifierException
 from src.notifiers.pagerduty_notifier import CLIENT, CLIENT_URL, PagerDutyNotifier, PagerDutyPayload
+from tests.test_types_generator import _pagerduty_payload, _pagerduty_event
 
 
-API_URL="https://pagerduty/api"
-ROUTING_KEY="pagerduty-routing-key"
+API_URL = "https://pagerduty/api"
+ROUTING_KEY = "pagerduty-routing-key"
 
-PAGERDUTY_EVENT={
-  "payload": {
-    "summary": "DISK at 99% on machine prod-datapipe03.example.com",
-    "timestamp": "2015-07-17T08:42:58.315",
-    "severity": "critical",
-    "source": "prod-datapipe03.example.com",
-    "component": "mysql",
-    "group": "prod-datapipe",
-    "class": "disk",
-    "custom_details": {
-      "free space": "1%",
-      "ping time": "1500ms",
-      "load avg": 0.75
-    }
-  },
-  "routing_key": ROUTING_KEY,
-  "event_action": "trigger",
-  "client": CLIENT,
-  "client_url": CLIENT_URL,
-  "links": [],
-  "images": []
+PAGERDUTY_EVENT = {
+    "payload": {
+        "summary": "DISK at 99% on machine prod-datapipe03.example.com",
+        "timestamp": "2015-07-17T08:42:58.315",
+        "severity": "critical",
+        "source": "prod-datapipe03.example.com",
+        "component": "mysql",
+        "group": "prod-datapipe",
+        "class": "disk",
+        "custom_details": {"free space": "1%", "ping time": "1500ms", "load avg": 0.75},
+    },
+    "routing_key": ROUTING_KEY,
+    "event_action": "trigger",
+    "client": CLIENT,
+    "client_url": CLIENT_URL,
+    "links": [],
+    "images": [],
 }
 
-def test_build_pagerduty_event() -> None:
-    pagerduty_notifier_config = PagerDutyNotifierConfig(
-        service="pd-service",
-        routing_key=ROUTING_KEY,
-        api_url=API_URL
-    )
-    pagerduty_payload = PagerDutyPayload(
-        description="DISK at 99% on machine prod-datapipe03.example.com",
-        timestamp="2015-07-17T08:42:58.315",
-        source="prod-datapipe03.example.com",
-        component="mysql",
-        group="prod-datapipe",
-        event_class="disk",
-        custom_details={
-            "free space": "1%",
-            "ping time": "1500ms",
-            "load avg": 0.75
-        }
-    )
-    mock_config = Mock(
-        get_pagerduty_notifier_config=Mock(return_value=pagerduty_notifier_config),
-        get_notification_filters=Mock(),
-        get_notification_mappings=Mock(),
-        org_client=Mock(),
-    )
-    pagerduty_notifier = PagerDutyNotifier(mock_config)
 
-    assert PAGERDUTY_EVENT == pagerduty_notifier._build_event(payload=pagerduty_payload).to_dict()
+def _register_pagerduty_api_success() -> None:
+    httpretty.register_uri(
+        httpretty.POST,
+        API_URL,
+        body=json.dumps({"status": "success", "message": "Event processed", "dedup_key": "srv01/HTTP"}),
+        status=200,
+    )
+
+
+def _register_slack_api_failure(status: int) -> None:
+    httpretty.register_uri(
+        httpretty.POST,
+        API_URL,
+        body=json.dumps(
+            {
+                "status": "Unrecognized object",
+                "message": "Event object format is unrecognized",
+                "errors": ["JSON parse error"],
+            }
+        ),
+        status=status,
+    )
+
+
+def test_apply_filters() -> None:
+    filters = {NotificationFilterConfig(item="dynamodb-resource-id", reason="good reason")}
+    mock_config = Mock(get_notification_filters=Mock(return_value=filters))
+
+    payload_1 = _pagerduty_payload(source="111122223333", component="mysql-resource-id")
+    payload_2 = _pagerduty_payload(source="444455556666", component="dynamodb-resource-id")
+
+    expected = {payload_1}
+    actual = PagerDutyNotifier(mock_config).apply_filters(payloads={payload_1, payload_2})
+
+    assert expected == actual
+
+
+def test_apply_mappings() -> None:
+    mappings = {NotificationMappingConfig(channel="central", pagerduty_service="service-0")}
+    mock_config = Mock(
+        get_notification_mappings=Mock(return_value=mappings),
+        ssm_client=Mock(get_parameter=Mock(return_value="service-0-routing-key")),
+    )
+
+    payload_1 = _pagerduty_payload(source="111122223333", component="mysql-resource-id")
+    payload_2 = _pagerduty_payload(source="444455556666", component="dynamodb-resource-id")
+
+    expected = [
+        _pagerduty_event(payload=payload_1, service="service-0"),
+        _pagerduty_event(payload=payload_2, service="service-0"),
+    ]
+    actual = PagerDutyNotifier(mock_config).apply_mappings(payloads={payload_1, payload_2})
+
+    assert expected == actual
+
+
+@httpretty.activate  # type: ignore
+def test_send_pagerduty_event_success() -> None:
+    _register_pagerduty_api_success()
+
+    pagerduty_event = _pagerduty_event(
+        payload=_pagerduty_payload(source="111122223333", component="mysql-resource-id"), service="pd-service"
+    )
+    pagerduty_notifier_config = PagerDutyNotifierConfig(
+        service="pd-service", routing_key="pd-service-routing-key", api_url=API_URL
+    )
+    mock_config = Mock(get_pagerduty_notifier_config=Mock(return_value=pagerduty_notifier_config))
+
+    assert None == PagerDutyNotifier(mock_config).send_pagerduty_event(pagerduty_event=pagerduty_event)
+
+
+@httpretty.activate  # type: ignore
+def test_send_pagerduty_event_failure() -> None:
+    _register_slack_api_failure(500)
+
+    pagerduty_event = _pagerduty_event(
+        payload=_pagerduty_payload(source="111122223333", component="mysql-resource-id"), service="pd-service"
+    )
+    pagerduty_notifier_config = PagerDutyNotifierConfig(
+        service="pd-service", routing_key="pd-service-routing-key", api_url=API_URL
+    )
+    mock_config = Mock(get_pagerduty_notifier_config=Mock(return_value=pagerduty_notifier_config))
+
+    with pytest.raises(PagerDutyNotifierException):
+        PagerDutyNotifier(mock_config).send_pagerduty_event(pagerduty_event=pagerduty_event)
+
+
+def test_handle_response() -> None:
+    response = {"errors": ["error-1", "error-2"]}
+    with pytest.raises(PagerDutyNotifierException):
+        PagerDutyNotifier(Mock())._handle_response(response=response, service="the-service")
+
+    response = {"exclusions": ["exclusion-1", "exclusion-2"]}
+    with pytest.raises(PagerDutyNotifierException):
+        PagerDutyNotifier(Mock())._handle_response(response=response, service="the-service")
+
+
+@httpretty.activate  # type: ignore
+def test_send_multiple_pagerduty_event_success() -> None:
+    _register_pagerduty_api_success()
+
+    pagerduty_events = [
+        _pagerduty_event(
+            payload=_pagerduty_payload(source="111122223333", component="mysql-resource-id"), service="pd-service"
+        ),
+        _pagerduty_event(
+            payload=_pagerduty_payload(source="111122223333", component="dynamodb-resource-id"), service="pd-service"
+        ),
+    ]
+    pagerduty_notifier_config = PagerDutyNotifierConfig(
+        service="pd-service", routing_key="pd-service-routing-key", api_url=API_URL
+    )
+    mock_config = Mock(get_pagerduty_notifier_config=Mock(return_value=pagerduty_notifier_config))
+
+    assert None == PagerDutyNotifier(mock_config).send(pagerduty_events=pagerduty_events)
+
+
+@httpretty.activate  # type: ignore
+def test_send_multiple_pagerduty_event_failure(caplog: Any) -> None:
+    _register_slack_api_failure(500)
+
+    pagerduty_events = [
+        _pagerduty_event(
+            payload=_pagerduty_payload(source="111122223333", component="mysql-resource-id"), service="pd-service"
+        ),
+        _pagerduty_event(
+            payload=_pagerduty_payload(source="111122223333", component="dynamodb-resource-id"), service="pd-service"
+        ),
+    ]
+    pagerduty_notifier_config = PagerDutyNotifierConfig(
+        service="pd-service", routing_key="pd-service-routing-key", api_url=API_URL
+    )
+    mock_config = Mock(get_pagerduty_notifier_config=Mock(return_value=pagerduty_notifier_config))
+
+    with caplog.at_level(logging.ERROR):
+        PagerDutyNotifier(mock_config).send(pagerduty_events=pagerduty_events)
+
+    assert len(caplog.records) == 2
+    assert caplog.records[0].levelname == "ERROR"
+    assert "unable to event to pagerduty service pd-service" in caplog.text

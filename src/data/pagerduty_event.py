@@ -5,7 +5,7 @@ from src.data.notification import Notification
 from src.data.pagerduty_payload import PagerDutyPayload
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class PagerDutyEvent(Notification):
     payload: PagerDutyPayload
     routing_key: str
@@ -14,6 +14,7 @@ class PagerDutyEvent(Notification):
     client_url: str
     links: List[Dict[str, str]] = None
     images: List[Dict[str, str]] = None
+    service: str = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {

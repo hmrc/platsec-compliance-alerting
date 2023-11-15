@@ -13,7 +13,7 @@ class PagerDutySeverity(str, Enum):
     INFO = "info"
 
 
-@dataclass(eq=True, unsafe_hash=True)
+@dataclass(unsafe_hash=True)
 class PagerDutyPayload(Payload):
     def __init__(
         self,
@@ -70,7 +70,7 @@ class PagerDutyPayload(Payload):
         )
 
     def to_dict(self) -> Dict[str, Any]:
-        default_custom_details = {"account": self.account_name, "region": self.region_name},
+        default_custom_details = {"account": self.account_name, "region": self.region_name}
         return {
             "summary": self.summary,
             "timestamp": self.timestamp,
@@ -78,6 +78,6 @@ class PagerDutyPayload(Payload):
             "component": self.component,
             "class": self.event_class,
             "group": self.group,
-            "severity": self.severity,
-            "custom_details": self.custom_details if self.custom_details else default_custom_details
+            "severity": self.severity.value,
+            "custom_details": self.custom_details if self.custom_details else default_custom_details,
         }

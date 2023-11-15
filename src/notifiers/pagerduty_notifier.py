@@ -26,32 +26,20 @@ class PagerDutyNotifier(Notifier):
         self._filters_config = config.get_notification_filters()
         self._mappings_config = config.get_notification_mappings()
 
-    # not really relevant - moved to pagerduty_notification_mapper.py
-    def _build_event(self, payload: PagerDutyPayload) -> PagerDutyEvent:
-        return PagerDutyEvent(
-            payload=payload,
-            routing_key=self._notifier_config.routing_key,
-            event_action="trigger",
-            client=CLIENT,
-            client_url=CLIENT_URL,
-            links=[],
-            images=[],
-        )
-
     def apply_filters(self, payloads: Set[PagerDutyPayload]) -> Set[PagerDutyPayload]:
         return PagerDutyPayloadFilter().do_filter(payloads, self.config.get_notification_filters())
 
-    def apply_mappings(self, payloads: Set[PagerDutyPayload]) -> Set[PagerDutyEvent]:
-        return PagerDutyNotificationMapper().do_map(
-            payloads, self.config.get_notification_mappings(), self._notifier_config.routing_key
+    def apply_mappings(self, payloads: Set[PagerDutyPayload]) -> List[PagerDutyEvent]:
+        return PagerDutyNotificationMapper(ssm_client=self.config.ssm_client).do_map(
+            payloads, self.config.get_notification_mappings()
         )
-        pass
 
-    def send(self, pagerduty_events: Set[PagerDutyEvent]) -> None:
+    def send(self, pagerduty_events: List[PagerDutyEvent]) -> None:
         self._logger.debug("Sending the following events: %s", pagerduty_events)
         for event in pagerduty_events:
             try:
                 self.send_pagerduty_event(event)
+                print("I got here")
             except PagerDutyNotifierException as ex:
                 self._logger.error(f"unable to send event: {event}. Cause: {ex}")
 
@@ -68,7 +56,7 @@ class PagerDutyNotifier(Notifier):
         response = requests.post(
             url=self._notifier_config.api_url,
             headers=self._build_headers(),
-            json=pagerduty_event.todict(),
+            json=pagerduty_event.to_dict(),
             timeout=10,
         )
         response.raise_for_status()

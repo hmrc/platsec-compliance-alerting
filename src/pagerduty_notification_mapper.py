@@ -1,4 +1,6 @@
+from dataclasses import dataclass
 from typing import List, Set, Optional
+
 
 from src.clients.aws_org_client import AwsOrgClient
 from src.clients.aws_ssm_client import AwsSsmClient
@@ -15,6 +17,12 @@ EVENT_ACTION = "trigger"
 PAGERDUTY_SSM_PARAMETER_STORE_PREFIX = "/pagerduty/"
 
 
+@dataclass(unsafe_hash=True)
+class PagerDutyService:
+    name: str
+    routing_key: str
+
+
 class PagerDutyNotificationMapper:
     def __init__(self, ssm_client: AwsSsmClient) -> None:
         self.ssm_client = ssm_client
@@ -27,7 +35,8 @@ class PagerDutyNotificationMapper:
         events = [
             PagerDutyEvent(
                 payload=notification,
-                routing_key=routing_key,
+                service=service.name,
+                routing_key=service.routing_key,
                 event_action="trigger",
                 client=CLIENT,
                 client_url=CLIENT_URL,
@@ -35,7 +44,7 @@ class PagerDutyNotificationMapper:
                 images=[],
             )
             for notification in notifications
-            for routing_key in self._find_routing_keys(notification, mappings)
+            for service in self._find_routing_keys(notification, mappings)
         ]
         return sorted(events, key=lambda msg: (msg.payload.source, msg.payload.component, msg.routing_key))
 
@@ -45,11 +54,17 @@ class PagerDutyNotificationMapper:
     def _get_pagerduty_service_routing_key(self, service: str) -> str:
         return self.ssm_client.get_parameter(parameter_name=self._pagerduty_ssm_parameter_name(service))
 
-    def _find_routing_keys(self, notification: PagerDutyPayload, mappings: Set[NotificationMappingConfig]) -> Set[str]:
+    def _find_routing_keys(
+        self, notification: PagerDutyPayload, mappings: Set[NotificationMappingConfig]
+    ) -> Set[PagerDutyService]:
         return {
-            self._get_pagerduty_service_routing_key(mapping.pagerduty_service)
+            PagerDutyService(
+                name=mapping.pagerduty_service,
+                routing_key=self._get_pagerduty_service_routing_key(mapping.pagerduty_service),
+            )
             for mapping in mappings
-            if (not mapping.accounts or (notification.account and notification.account.identifier in mapping.accounts))
+            if mapping.pagerduty_service
+            and (not mapping.accounts or (notification.account and notification.account.identifier in mapping.accounts))
             and (
                 not mapping.compliance_item_types or notification.compliance_item_type in mapping.compliance_item_types
             )

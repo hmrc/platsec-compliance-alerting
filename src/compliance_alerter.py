@@ -37,7 +37,7 @@ def main(event: Dict[str, Any]) -> None:
     )
     compliance_alerter.send_new(
         notifier=SlackNotifier(config=compliance_alerter.config),
-        payloads=compliance_alerter.build_findings(event=event)
+        payloads=compliance_alerter.build_findings(event=event),
     )
 
 
@@ -58,7 +58,9 @@ class ComplianceAlerter:
 
     def build_findings(self, event) -> Set[Finding]:
         findings = (
-            self.build_sns_event_findings(event) if ComplianceAlerter.is_sns_event(event) else self.analyse(self.fetch(event))
+            self.build_sns_event_findings(event)
+            if ComplianceAlerter.is_sns_event(event)
+            else self.analyse(self.fetch(event))
         )
         return findings
 
@@ -93,8 +95,4 @@ class ComplianceAlerter:
         return payloads
 
     def send_new(self, notifier: Notifier, payloads: Set[Payload]) -> None:
-        notifier.send(
-            notifier.apply_mappings(
-                notifier.apply_filters(payloads)
-            )
-        )
+        notifier.send(notifier.apply_mappings(notifier.apply_filters(payloads)))

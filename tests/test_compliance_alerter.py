@@ -24,6 +24,7 @@ from src.data.exceptions import UnsupportedEventException
 from src.data.finding import Finding
 from src.data.severity import Severity
 from src.data.slack_message import SlackMessage
+from src.notifiers.pagerduty_notifier import PagerDutyNotifier
 from src.notifiers.slack_notifier import SlackNotifier
 
 from tests.fixtures.github_compliance import github_report
@@ -51,6 +52,9 @@ PASSWORD_POLICY_KEY = "password_policy_audit"
 SLACK_API_URL = "https://the-slack-api-url.com"
 SLACK_USERNAME_KEY = "the-slack-username-key"
 SLACK_TOKEN_KEY = "the-slack-token-key"
+PAGERDUTY_SERVICE = "the-pagerduty-service"
+PAGERDUTY_API_URL = "https://the-pagerduty-api-url.com"
+PAGERDUTY_SERVICE_ROUTING_KEY = f"{PAGERDUTY_SERVICE}-routing-key"
 
 
 @patch("src.compliance_alerter.AwsClientFactory.get_s3_client")
@@ -58,7 +62,7 @@ SLACK_TOKEN_KEY = "the-slack-token-key"
 @patch("src.compliance_alerter.AwsClientFactory.get_org_client")
 @patch("src.compliance_alerter.ComplianceAlerter")
 def test_main(
-    mock_compliance_alerter: Mock , mock_s3_client: Mock, mock_ssm_client: Mock, mock_org_client: Mock
+    mock_compliance_alerter: Mock, mock_s3_client: Mock, mock_ssm_client: Mock, mock_org_client: Mock
 ) -> None:
     finding = Finding(
         compliance_item_type="compliance-item-type",
@@ -76,7 +80,6 @@ def test_main(
     _mock.send_new.assert_called_once_with(notifier=ANY, payloads={finding})
 
 
-
 def test_send(helper_test_config: Any) -> None:
     ca = compliance_alerter.ComplianceAlerter(
         config=Config(
@@ -90,7 +93,9 @@ def test_send(helper_test_config: Any) -> None:
         compliance_item_type="compliance-item-type",
         item="item",
         findings={"Words of Advice"},
-        account=Account(identifier=helper_test_config.account_id, name="test-account-name", slack_handle="@some-team-name"),
+        account=Account(
+            identifier=helper_test_config.account_id, name="test-account-name", slack_handle="@some-team-name"
+        ),
         region_name="region",
     )
     ca.send_new(notifier=SlackNotifier(config=ca.config), payloads={finding})
@@ -251,6 +256,27 @@ def test_health_sns_event(helper_test_config: Any) -> None:
     _assert_slack_message_sent("@some-team-name")
 
 
+def test_health_sns_event_pagerduty_notification(helper_test_config: Any) -> None:
+    test_event = set_affected_account_id(
+        account_id=helper_test_config.account_id,
+        test_event=set_event_account_id(
+            account_id=helper_test_config.account_id, test_event=load_json_resource("health_event.json")
+        ),
+    )
+
+    ca = compliance_alerter.ComplianceAlerter(
+        config=Config(
+            config_s3_client=helper_test_config.config_s3_client,
+            report_s3_client=helper_test_config.report_s3_client,
+            ssm_client=helper_test_config.ssm_client,
+            org_client=helper_test_config.org_client,
+        )
+    )
+    payloads = ca.build_pagerduty_payloads(test_event)
+    ca.send_new(notifier=PagerDutyNotifier(config=ca.config), payloads=payloads)
+    _assert_pagerduty_event_sent_to_service(routing_key=PAGERDUTY_SERVICE_ROUTING_KEY)
+
+
 def test_grant_user_access_lambda_sns_event(helper_test_config: Any, _org_client: BaseClient) -> None:
     test_event = set_event_account_id(
         account_id=helper_test_config.account_id,
@@ -320,6 +346,10 @@ def test_unknown_sns_event(helper_test_config: Any) -> None:
     findings = ca.build_findings(load_json_resource("unknown_sns_event.json"))
     ca.send_new(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_no_slack_message_sent()
+
+    payloads = ca.build_pagerduty_payloads(load_json_resource("unknown_sns_event.json"))
+    ca.send_new(notifier=PagerDutyNotifier(config=ca.config), payloads=payloads)
+    _assert_no_pagerduty_event_sent()
 
 
 def test_unsupported_event(helper_test_config: Any) -> None:
@@ -398,6 +428,8 @@ def _setup_environment(monkeypatch: Any) -> None:
         "ORG_ACCOUNT": "ORG-ACCOUNT-ID-12374234",
         "ORG_READ_ROLE": "the-org-read-role",
         "VPC_RESOLVER_AUDIT_REPORT_KEY": "vpc resolver audit report key",
+        "PAGERDUTY_SERVICE": PAGERDUTY_SERVICE,
+        "PAGERDUTY_API_URL": PAGERDUTY_API_URL,
     }
 
     for key, value in env_vars.items():
@@ -413,6 +445,9 @@ def _ssm_client() -> Iterator[BaseClient]:
 def _setup_ssm_parameters(ssm_client: BaseClient) -> BaseClient:
     ssm_client.put_parameter(Name=SLACK_USERNAME_KEY, Value="the-slack-username", Type="SecureString")
     ssm_client.put_parameter(Name=SLACK_TOKEN_KEY, Value="the-slack-username", Type="SecureString")
+    ssm_client.put_parameter(
+        Name=f"/pagerduty/{PAGERDUTY_SERVICE}", Value=PAGERDUTY_SERVICE_ROUTING_KEY, Type="SecureString"
+    )
     return ssm_client
 
 
@@ -504,6 +539,19 @@ def setup_config_bucket(s3_client: BaseClient) -> BaseClient:
         Key="mappings/aws_health",
         Body=json.dumps([{"channel": "the-health-channel", "compliance_item_types": ["aws_health"]}]),
     )
+    s3_client.put_object(
+        Bucket=CONFIG_BUCKET,
+        Key="mappings/aws_health_pagerduty",
+        Body=json.dumps(
+            [
+                {
+                    "channel": "the-health-channel",
+                    "pagerduty_service": "the-pagerduty-service",
+                    "compliance_item_types": ["aws_health"],
+                }
+            ]
+        ),
+    )
     return s3_client
 
 
@@ -555,6 +603,20 @@ def _mock_slack_notifier() -> Iterator[Any]:
     httpretty.reset()
 
 
+@pytest.fixture(autouse=True)
+def _mock_pagerduty_notifier() -> Iterator[Any]:
+    httpretty.enable()
+    httpretty.register_uri(
+        httpretty.POST,
+        PAGERDUTY_API_URL,
+        body=json.dumps({"status": "success", "message": "Event processed", "dedup_key": "srv01/HTTP"}),
+        status=200,
+    )
+    yield
+    httpretty.disable()
+    httpretty.reset()
+
+
 def set_event_account_id(account_id: str, test_event: Dict[str, Any]) -> Dict[str, Any]:
     # moto does not let us set the expected account id
     # so we change the event to match the mocked value
@@ -593,6 +655,15 @@ def _assert_slack_message_sent_to_channel(channel: str) -> None:
 def _assert_no_slack_message_sent() -> None:
     last_request = httpretty.last_request()
     assert type(last_request) is httpretty.core.HTTPrettyRequestEmpty, "A request was made to slack"
+
+
+def _assert_no_pagerduty_event_sent() -> None:
+    last_request = httpretty.last_request()
+    assert type(last_request) is httpretty.core.HTTPrettyRequestEmpty, "A request was made to pagerduty"
+
+
+def _assert_pagerduty_event_sent_to_service(routing_key: str) -> None:
+    assert routing_key in httpretty.last_request().body.decode("utf-8")
 
 
 def load_json_resource(filename: str) -> Any:

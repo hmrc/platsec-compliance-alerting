@@ -5,6 +5,7 @@ from typing import Optional, Set, List, Dict, Any
 from src.data.account import Account
 from src.data.audit import Audit
 from src.data.finding import Finding
+from src.data.pagerduty_event import PagerDutyEvent
 from src.data.pagerduty_payload import PagerDutyPayload
 from src.data.severity import Severity
 
@@ -56,4 +57,17 @@ def _pagerduty_payload(source: str, component: str, compliance_item_type: str = 
         account=Account(identifier=source),
         region_name="a-region",
         custom_details={},
+    )
+
+
+def _pagerduty_event(payload: PagerDutyPayload, service: str) -> PagerDutyEvent:
+    return PagerDutyEvent(
+        payload=payload,
+        routing_key=f"{service}-routing-key",
+        event_action="trigger",
+        client="platsec-compliance-alerting",
+        client_url="https://github.com/hmrc/platsec-compliance-alerting",
+        links=[],
+        images=[],
+        service=service,
     )
