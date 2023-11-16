@@ -22,4 +22,3 @@ def test_event_to_findings() -> None:
     )
 
     assert finding.findings == frozenset({"A description of the event will be provided here"})
-    

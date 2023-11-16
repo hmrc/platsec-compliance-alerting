@@ -17,6 +17,7 @@ from tests.test_types_generator import _pagerduty_payload, _pagerduty_event
 API_URL = "https://pagerduty/api"
 ROUTING_KEY = "pagerduty-routing-key"
 
+
 def _register_pagerduty_api_success() -> None:
     httpretty.register_uri(
         httpretty.POST,

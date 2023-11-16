@@ -21,6 +21,7 @@ from src.sns.aws_health import AwsHealth
 N = TypeVar("N")
 P = TypeVar("P")
 
+
 def main(event: Dict[str, Any]) -> None:
     compliance_alerter = ComplianceAlerter(
         config=Config(
@@ -60,7 +61,6 @@ class ComplianceAlerter:
         return AuditAnalyser().analyse(self.logger, audit, self.config)
 
     def build_findings(self, event: Dict[str, Any]) -> Set[Finding]:
-        # findings: Set[Payload] 
         findings = (
             self.build_sns_event_findings(event)
             if ComplianceAlerter.is_sns_event(event)

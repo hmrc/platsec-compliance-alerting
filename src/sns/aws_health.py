@@ -28,4 +28,3 @@ class AwsHealth:
                 latestDescription = description["latestDescription"]
 
         return {latestDescription}
-      
