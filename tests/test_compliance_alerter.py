@@ -75,7 +75,6 @@ def test_main(
     _mock.send.return_value = Mock()
     compliance_alerter.main(build_event(S3_KEY))
 
-    print("DEBUG : ", _mock.send.mock_calls)
     _mock.send.assert_any_call(notifier=ANY, payloads={finding})
 
 
