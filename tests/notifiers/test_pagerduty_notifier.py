@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Any, List, Set
+from typing import Any
 from unittest.mock import Mock
 
 import httpretty
@@ -9,8 +9,7 @@ from src.config.notification_filter_config import NotificationFilterConfig
 from src.config.notification_mapping_config import NotificationMappingConfig
 from src.config.pagerduty_notifier_config import PagerDutyNotifierConfig
 from src.data.exceptions import PagerDutyNotifierException
-from src.data.notification import Notification
-from src.notifiers.pagerduty_notifier import CLIENT, CLIENT_URL, PagerDutyNotifier
+from src.notifiers.pagerduty_notifier import PagerDutyNotifier
 from tests.test_types_generator import _pagerduty_payload, _pagerduty_event
 
 

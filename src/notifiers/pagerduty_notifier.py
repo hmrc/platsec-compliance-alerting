@@ -4,10 +4,8 @@ from typing import Any, Dict, List, Set
 import requests
 from src.config.config import Config
 from src.data.exceptions import PagerDutyNotifierException
-from src.data.notification import Notification
 from src.data.pagerduty_event import PagerDutyEvent
 from src.data.pagerduty_payload import PagerDutyPayload
-from src.data.payload import Payload
 
 from src.notifiers.notifier import Notifier
 from src.pagerduty_notification_mapper import PagerDutyNotificationMapper

@@ -1,8 +1,5 @@
 from abc import ABC, abstractmethod
 from typing import Generic, List, Set, TypeVar
-from src.data.notification import Notification
-
-from src.data.payload import Payload
 
 N = TypeVar("N")
 P = TypeVar("P")

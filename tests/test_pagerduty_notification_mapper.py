@@ -1,10 +1,9 @@
-from typing import List, Set
+from typing import List
 from unittest import TestCase
 from unittest.mock import Mock
 
 from src.clients.aws_ssm_client import AwsSsmClient
 from src.config.notification_mapping_config import NotificationMappingConfig
-from src.data.notification import Notification
 from src.data.pagerduty_event import PagerDutyEvent
 from src.pagerduty_notification_mapper import PagerDutyNotificationMapper
 

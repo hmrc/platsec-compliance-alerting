@@ -7,8 +7,6 @@ import requests
 from src.config.config import Config
 from src.data.exceptions import SlackNotifierException
 from src.data.finding import Finding
-from src.data.notification import Notification
-from src.data.payload import Payload
 
 from src.data.slack_message import SlackMessage
 from src.findings_filter import FindingsFilter
