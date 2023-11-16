@@ -1,8 +1,11 @@
+from typing import List, Set
 from unittest import TestCase
 from unittest.mock import Mock
 
 from src.clients.aws_ssm_client import AwsSsmClient
 from src.config.notification_mapping_config import NotificationMappingConfig
+from src.data.notification import Notification
+from src.data.pagerduty_event import PagerDutyEvent
 from src.pagerduty_notification_mapper import PagerDutyNotificationMapper
 
 from tests.test_types_generator import _pagerduty_event, _pagerduty_payload
@@ -104,6 +107,6 @@ class TestPagerDutyNotificationMapper(TestCase):
         mock_client.get_parameter.side_effect = lambda parameter_name: f"{parameter_name.split('/')[-1]}-routing-key"
 
         pagerduty_events = PagerDutyNotificationMapper(mock_client).do_map(payloads, mappings)
-        expected = []
+        expected: List[PagerDutyEvent] = []
         assert len(pagerduty_events) == 0
         assert expected == pagerduty_events

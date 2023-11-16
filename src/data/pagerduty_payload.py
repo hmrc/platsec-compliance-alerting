@@ -25,7 +25,7 @@ class PagerDutyPayload(Payload):
         timestamp: str,
         account: Optional[Account] = None,
         region_name: Optional[str] = None,
-        group: str = None,
+        group: Optional[str] = None,
         custom_details: Dict[str, Any] = {},
         severity: PagerDutySeverity = PagerDutySeverity.CRITICAL,
     ):
@@ -53,6 +53,7 @@ class PagerDutyPayload(Payload):
                 and self.account == other.account
                 and self.region_name == other.region_name
             )
+        return False
 
     def __repr__(self) -> str:
         return (

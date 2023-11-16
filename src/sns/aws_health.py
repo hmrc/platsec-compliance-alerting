@@ -2,7 +2,7 @@ from typing import Set, Dict, Any
 
 from src.data.account import Account
 from src.data.finding import Finding
-from src.notifiers.pagerduty_notifier import PagerDutyPayload
+from src.data.pagerduty_payload import PagerDutyPayload
 
 
 class AwsHealth:

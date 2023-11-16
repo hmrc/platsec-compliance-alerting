@@ -8,9 +8,9 @@ from src.clients.aws_client_factory import AwsClientFactory
 from src.config.config import Config
 from src.data.audit import Audit
 from src.data.finding import Finding
+from src.data.pagerduty_payload import PagerDutyPayload
 from src.data.payload import Payload
 from src.notifiers.notifier import Notifier
-from src.notifiers.pagerduty_notifier import PagerDutyPayload
 from src.notifiers.slack_notifier import SlackNotifier
 from src.sns.codebuild import CodeBuild
 from src.sns.codepipeline import CodePipeline
@@ -50,10 +50,11 @@ class ComplianceAlerter:
     def fetch(self, event: Dict[str, Any]) -> Audit:
         return AuditFetcher().fetch_audit(self.config.get_report_s3_client(), event)
 
-    def analyse(self, audit: Audit) -> Set[Finding]:
+    def analyse(self, audit: Audit) -> Set[Payload]:
         return AuditAnalyser().analyse(self.logger, audit, self.config)
 
-    def build_findings(self, event) -> Set[Finding]:
+    def build_findings(self, event: Dict[str, Any]) -> Set[Payload]:
+        findings: Set[Payload] 
         findings = (
             self.build_sns_event_findings(event)
             if ComplianceAlerter.is_sns_event(event)
@@ -61,7 +62,7 @@ class ComplianceAlerter:
         )
         return findings
 
-    def build_sns_event_findings(self, events: Dict[str, Any]) -> Set[Finding]:
+    def build_sns_event_findings(self, events: Dict[str, Any]) -> Set[Payload]:
         findings: Set[Finding] = set()
         for record in events["Records"]:
             message = json.loads(record["Sns"]["Message"])
@@ -80,15 +81,18 @@ class ComplianceAlerter:
                 logging.getLogger(__name__).warning(f"Received unknown event with detailType '{type}'. Ignoring...")
         return findings
 
-    def build_pagerduty_payloads(self, event) -> Set[PagerDutyPayload]:
-        payloads: Set[PagerDutyPayload] = set()
+    def build_pagerduty_payloads(self, event: Dict[str, Any]) -> Set[Payload]:
+        payloads: Set[Payload] = set()
         for record in event["Records"]:
             message = json.loads(record["Sns"]["Message"])
             type = message.get("detailType") or message.get("detail-type")
             if type == AwsHealth.Type:
                 payloads.add(AwsHealth().create_pagerduty_event_payload(message))
             else:
-                logging.getLogger(__name__).warning(f"Received unknown event with detailType '{type}'. Ignoring...")
+                # Rethink!!! This warning might get unnecessarily noisy
+                logging.getLogger(__name__).warning(
+                    f"PagerDuty notification is not supported for event with detailType '{type}'. Ignoring..."
+                )
         return payloads
 
     def send_new(self, notifier: Notifier, payloads: Set[Payload]) -> None:

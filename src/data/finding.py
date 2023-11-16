@@ -35,6 +35,7 @@ class Finding(Payload):
                 and self.account == other.account
                 and self.region_name == other.region_name
             )
+        return False
 
     def __repr__(self) -> str:
         return (

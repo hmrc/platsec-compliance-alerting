@@ -8,3 +8,4 @@ def test_pagerduty_payload_equality() -> None:
 
     assert payload_a == payload_b
     assert payload_a != payload_c
+    assert payload_a != ""

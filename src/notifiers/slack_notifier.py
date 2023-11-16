@@ -7,6 +7,8 @@ import requests
 from src.config.config import Config
 from src.data.exceptions import SlackNotifierException
 from src.data.finding import Finding
+from src.data.notification import Notification
+from src.data.payload import Payload
 
 from src.data.slack_message import SlackMessage
 from src.findings_filter import FindingsFilter
@@ -60,13 +62,13 @@ class SlackNotifier(Notifier):
         ).decode("utf-8")
         return {"Content-Type": "application/json", "Authorization": f"Basic {credentials}"}
 
-    def apply_filters(self, findings: Set[Finding]) -> Set[Finding]:
+    def apply_filters(self, findings: Set[Payload]) -> Set[Finding]:
         return FindingsFilter().do_filter(findings, self._filters_config)
 
-    def apply_mappings(self, findings: Set[Finding]) -> Set[SlackMessage]:
+    def apply_mappings(self, findings: Set[Payload]) -> Set[SlackMessage]:
         return NotificationMapper().do_map(findings, self._mappings_config, self._org_client)
 
     # this method should replace send_messages()
-    def send(self, notifications: Set[SlackMessage]) -> None:
+    def send(self, notifications: Set[Notification]) -> None:
         self._logger.debug("Sending the following messages: %s", notifications)
         self.send_messages(notifications)

@@ -45,7 +45,7 @@ def create_audit(report: List[Dict[str, Any]], type: str = "iam_access_keys") ->
     return Audit(type=type, report=report)
 
 
-def _pagerduty_payload(source: str, component: str, compliance_item_type: str = "aws_health"):
+def _pagerduty_payload(source: str, component: str, compliance_item_type: str = "aws_health") -> PagerDutyPayload:
     return PagerDutyPayload(
         compliance_item_type=compliance_item_type,
         description="A description of the event",

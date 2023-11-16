@@ -4,8 +4,10 @@ from typing import Any, Dict, List, Set
 import requests
 from src.config.config import Config
 from src.data.exceptions import PagerDutyNotifierException
+from src.data.notification import Notification
 from src.data.pagerduty_event import PagerDutyEvent
 from src.data.pagerduty_payload import PagerDutyPayload
+from src.data.payload import Payload
 
 from src.notifiers.notifier import Notifier
 from src.pagerduty_notification_mapper import PagerDutyNotificationMapper
@@ -24,20 +26,19 @@ class PagerDutyNotifier(Notifier):
         self._filters_config = config.get_notification_filters()
         self._mappings_config = config.get_notification_mappings()
 
-    def apply_filters(self, payloads: Set[PagerDutyPayload]) -> Set[PagerDutyPayload]:
+    def apply_filters(self, payloads: Set[Payload]) -> Set[Payload]:
         return PagerDutyPayloadFilter().do_filter(payloads, self.config.get_notification_filters())
 
-    def apply_mappings(self, payloads: Set[PagerDutyPayload]) -> List[PagerDutyEvent]:
+    def apply_mappings(self, payloads: Set[Payload]) -> Set[PagerDutyEvent]:
         return PagerDutyNotificationMapper(ssm_client=self.config.ssm_client).do_map(
             payloads, self.config.get_notification_mappings()
         )
 
-    def send(self, pagerduty_events: List[PagerDutyEvent]) -> None:
+    def send(self, pagerduty_events: Set[Notification]) -> None:
         self._logger.debug("Sending the following events: %s", pagerduty_events)
         for event in pagerduty_events:
             try:
                 self.send_pagerduty_event(event)
-                print("I got here")
             except PagerDutyNotifierException as ex:
                 self._logger.error(f"unable to send event: {event}. Cause: {ex}")
 

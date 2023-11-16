@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Any
+from typing import Any, List, Set
 from unittest.mock import Mock
 
 import httpretty
@@ -9,32 +9,13 @@ from src.config.notification_filter_config import NotificationFilterConfig
 from src.config.notification_mapping_config import NotificationMappingConfig
 from src.config.pagerduty_notifier_config import PagerDutyNotifierConfig
 from src.data.exceptions import PagerDutyNotifierException
+from src.data.notification import Notification
 from src.notifiers.pagerduty_notifier import CLIENT, CLIENT_URL, PagerDutyNotifier
 from tests.test_types_generator import _pagerduty_payload, _pagerduty_event
 
 
 API_URL = "https://pagerduty/api"
 ROUTING_KEY = "pagerduty-routing-key"
-
-PAGERDUTY_EVENT = {
-    "payload": {
-        "summary": "DISK at 99% on machine prod-datapipe03.example.com",
-        "timestamp": "2015-07-17T08:42:58.315",
-        "severity": "critical",
-        "source": "prod-datapipe03.example.com",
-        "component": "mysql",
-        "group": "prod-datapipe",
-        "class": "disk",
-        "custom_details": {"free space": "1%", "ping time": "1500ms", "load avg": 0.75},
-    },
-    "routing_key": ROUTING_KEY,
-    "event_action": "trigger",
-    "client": CLIENT,
-    "client_url": CLIENT_URL,
-    "links": [],
-    "images": [],
-}
-
 
 def _register_pagerduty_api_success() -> None:
     httpretty.register_uri(
@@ -58,6 +39,13 @@ def _register_slack_api_failure(status: int) -> None:
         ),
         status=status,
     )
+
+
+def __assert_payload_correct(source: str, component: str, routing_key: str) -> None:
+    assert (source, component, routing_key) in [
+        (req.parsed_body["payload"]["source"], req.parsed_body["payload"]["component"], req.parsed_body["routing_key"])
+        for req in httpretty.latest_requests()
+    ]
 
 
 def test_apply_filters() -> None:
@@ -93,7 +81,7 @@ def test_apply_mappings() -> None:
 
 
 @httpretty.activate  # type: ignore
-def test_send_pagerduty_event_success() -> None:
+def test_send_pagerduty_event_success(caplog: Any) -> None:
     _register_pagerduty_api_success()
 
     pagerduty_event = _pagerduty_event(
@@ -103,8 +91,9 @@ def test_send_pagerduty_event_success() -> None:
         service="pd-service", routing_key="pd-service-routing-key", api_url=API_URL
     )
     mock_config = Mock(get_pagerduty_notifier_config=Mock(return_value=pagerduty_notifier_config))
+    PagerDutyNotifier(mock_config).send_pagerduty_event(pagerduty_event=pagerduty_event)
 
-    assert not PagerDutyNotifier(mock_config).send_pagerduty_event(pagerduty_event=pagerduty_event)
+    __assert_payload_correct(source="111122223333", component="mysql-resource-id", routing_key="pd-service-routing-key")
 
 
 @httpretty.activate  # type: ignore
@@ -137,7 +126,7 @@ def test_handle_response() -> None:
 def test_send_multiple_pagerduty_event_success() -> None:
     _register_pagerduty_api_success()
 
-    pagerduty_events = [
+    pagerduty_events: List[Notification] = [
         _pagerduty_event(
             payload=_pagerduty_payload(source="111122223333", component="mysql-resource-id"), service="pd-service"
         ),
@@ -149,15 +138,19 @@ def test_send_multiple_pagerduty_event_success() -> None:
         service="pd-service", routing_key="pd-service-routing-key", api_url=API_URL
     )
     mock_config = Mock(get_pagerduty_notifier_config=Mock(return_value=pagerduty_notifier_config))
+    PagerDutyNotifier(mock_config).send(pagerduty_events=pagerduty_events)
 
-    assert not PagerDutyNotifier(mock_config).send(pagerduty_events=pagerduty_events)
+    __assert_payload_correct(source="111122223333", component="mysql-resource-id", routing_key="pd-service-routing-key")
+    __assert_payload_correct(
+        source="111122223333", component="dynamodb-resource-id", routing_key="pd-service-routing-key"
+    )
 
 
 @httpretty.activate  # type: ignore
 def test_send_multiple_pagerduty_event_failure(caplog: Any) -> None:
     _register_slack_api_failure(500)
 
-    pagerduty_events = [
+    pagerduty_events: List[Notification] = [
         _pagerduty_event(
             payload=_pagerduty_payload(source="111122223333", component="mysql-resource-id"), service="pd-service"
         ),
