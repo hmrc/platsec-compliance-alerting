@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from src.data.notification import Notification
 from src.data.pagerduty_payload import PagerDutyPayload
@@ -12,9 +12,9 @@ class PagerDutyEvent(Notification):
     event_action: str
     client: str
     client_url: str
-    links: List[Dict[str, str]] = None
-    images: List[Dict[str, str]] = None
-    service: str = None
+    links: Optional[List[Dict[str, str]]] = None
+    images: Optional[List[Dict[str, str]]] = None
+    service: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {

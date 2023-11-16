@@ -18,7 +18,7 @@ CLIENT = "platsec-compliance-alerting"
 CLIENT_URL = f"https://github.com/hmrc/{CLIENT}"
 
 
-class PagerDutyNotifier(Notifier):
+class PagerDutyNotifier(Notifier[PagerDutyEvent, PagerDutyPayload]):
     def __init__(self, config: Config) -> None:
         self.config = config
         self._logger = getLogger(self.__class__.__name__)
@@ -26,15 +26,15 @@ class PagerDutyNotifier(Notifier):
         self._filters_config = config.get_notification_filters()
         self._mappings_config = config.get_notification_mappings()
 
-    def apply_filters(self, payloads: Set[Payload]) -> Set[Payload]:
+    def apply_filters(self, payloads: Set[PagerDutyPayload]) -> Set[PagerDutyPayload]:
         return PagerDutyPayloadFilter().do_filter(payloads, self.config.get_notification_filters())
 
-    def apply_mappings(self, payloads: Set[Payload]) -> Set[PagerDutyEvent]:
+    def apply_mappings(self, payloads: Set[PagerDutyPayload]) -> List[PagerDutyEvent]:
         return PagerDutyNotificationMapper(ssm_client=self.config.ssm_client).do_map(
             payloads, self.config.get_notification_mappings()
         )
 
-    def send(self, pagerduty_events: Set[Notification]) -> None:
+    def send(self, pagerduty_events: List[PagerDutyEvent]) -> None:
         self._logger.debug("Sending the following events: %s", pagerduty_events)
         for event in pagerduty_events:
             try:

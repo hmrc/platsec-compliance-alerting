@@ -126,7 +126,7 @@ def test_handle_response() -> None:
 def test_send_multiple_pagerduty_event_success() -> None:
     _register_pagerduty_api_success()
 
-    pagerduty_events: List[Notification] = [
+    pagerduty_events = [
         _pagerduty_event(
             payload=_pagerduty_payload(source="111122223333", component="mysql-resource-id"), service="pd-service"
         ),
@@ -150,7 +150,7 @@ def test_send_multiple_pagerduty_event_success() -> None:
 def test_send_multiple_pagerduty_event_failure(caplog: Any) -> None:
     _register_slack_api_failure(500)
 
-    pagerduty_events: List[Notification] = [
+    pagerduty_events = [
         _pagerduty_event(
             payload=_pagerduty_payload(source="111122223333", component="mysql-resource-id"), service="pd-service"
         ),
