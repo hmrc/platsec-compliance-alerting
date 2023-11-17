@@ -22,6 +22,7 @@ npm-debug.log
 yarn-debug.log
 yarn-error.log
 .coverage
+".coverage 2"
 .mypy_cache
 coverage.xml
 __pycache__
