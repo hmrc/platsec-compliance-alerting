@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, Set, TypeVar
 import json
 
 from src.audit_analyser import AuditAnalyser
@@ -7,15 +7,19 @@ from src.audit_fetcher import AuditFetcher
 from src.clients.aws_client_factory import AwsClientFactory
 from src.config.config import Config
 from src.data.audit import Audit
-from src.data.findings import Findings
-from src.findings_filter import FindingsFilter
-from src.notification_mapper import NotificationMapper
-from src.slack_notifier import SlackMessage, SlackNotifier
+from src.data.finding import Finding
+from src.data.pagerduty_payload import PagerDutyPayload
+from src.notifiers.notifier import Notifier
+from src.notifiers.pagerduty_notifier import PagerDutyNotifier
+from src.notifiers.slack_notifier import SlackNotifier
 from src.sns.codebuild import CodeBuild
 from src.sns.codepipeline import CodePipeline
 from src.sns.grant_user_access_lambda import GrantUserAccessLambda
 from src.sns.guardduty import GuardDuty
 from src.sns.aws_health import AwsHealth
+
+N = TypeVar("N")
+P = TypeVar("P")
 
 
 def main(event: Dict[str, Any]) -> None:
@@ -31,7 +35,14 @@ def main(event: Dict[str, Any]) -> None:
             org_client=AwsClientFactory().get_org_client(Config.get_org_account(), Config.get_org_read_role()),
         )
     )
-    compliance_alerter.send(compliance_alerter.generate_slack_messages(event))
+    compliance_alerter.send(
+        notifier=SlackNotifier(config=compliance_alerter.config),
+        payloads=compliance_alerter.build_findings(event=event),
+    )
+    compliance_alerter.send(
+        notifier=PagerDutyNotifier(config=compliance_alerter.config),
+        payloads=compliance_alerter.build_pagerduty_payloads(event=event),
+    )
 
 
 class ComplianceAlerter:
@@ -39,19 +50,26 @@ class ComplianceAlerter:
         self.config = config
         self.logger = Config.configure_logging()
 
-    def generate_slack_messages(self, event: Dict[str, Any]) -> List[SlackMessage]:
-        findings = (
-            self.handle_sns_event(event) if ComplianceAlerter.is_sns_event(event) else self.analyse(self.fetch(event))
-        )
-        slack_messages = self.apply_mappings(self.apply_filters(findings))
-        return slack_messages
-
     @staticmethod
     def is_sns_event(event: Dict[str, Any]) -> bool:
         return "EventSource" in event.get("Records", [{}])[0] and event["Records"][0].get("EventSource") == "aws:sns"
 
-    def handle_sns_event(self, events: Dict[str, Any]) -> Set[Findings]:
-        findings: Set[Findings] = set()
+    def fetch(self, event: Dict[str, Any]) -> Audit:
+        return AuditFetcher().fetch_audit(self.config.get_report_s3_client(), event)
+
+    def analyse(self, audit: Audit) -> Set[Finding]:
+        return AuditAnalyser().analyse(self.logger, audit, self.config)
+
+    def build_findings(self, event: Dict[str, Any]) -> Set[Finding]:
+        findings = (
+            self.build_sns_event_findings(event)
+            if ComplianceAlerter.is_sns_event(event)
+            else self.analyse(self.fetch(event))
+        )
+        return findings
+
+    def build_sns_event_findings(self, events: Dict[str, Any]) -> Set[Finding]:
+        findings: Set[Finding] = set()
         for record in events["Records"]:
             message = json.loads(record["Sns"]["Message"])
             type = message.get("detailType") or message.get("detail-type")
@@ -69,20 +87,19 @@ class ComplianceAlerter:
                 logging.getLogger(__name__).warning(f"Received unknown event with detailType '{type}'. Ignoring...")
         return findings
 
-    def fetch(self, event: Dict[str, Any]) -> Audit:
-        return AuditFetcher().fetch_audit(self.config.get_report_s3_client(), event)
+    def build_pagerduty_payloads(self, event: Dict[str, Any]) -> Set[PagerDutyPayload]:
+        payloads: Set[PagerDutyPayload] = set()
+        for record in event["Records"]:
+            message = json.loads(record["Sns"]["Message"])
+            type = message.get("detailType") or message.get("detail-type")
+            if type == AwsHealth.Type:
+                payloads.add(AwsHealth().create_pagerduty_event_payload(message))
+            else:
+                # A "warning" log level will get unnecessarily noisy.
+                logging.getLogger(__name__).debug(
+                    f"PagerDuty notification is not supported for event with detailType '{type}'. Ignoring..."
+                )
+        return payloads
 
-    def analyse(self, audit: Audit) -> Set[Findings]:
-        return AuditAnalyser().analyse(self.logger, audit, self.config)
-
-    def apply_filters(self, notifications: Set[Findings]) -> Set[Findings]:
-        return FindingsFilter().do_filter(notifications, self.config.get_notification_filters())
-
-    def apply_mappings(self, notifications: Set[Findings]) -> List[SlackMessage]:
-        return NotificationMapper().do_map(
-            notifications, self.config.get_notification_mappings(), self.config.org_client
-        )
-
-    def send(self, slack_messages: List[SlackMessage]) -> None:
-        self.logger.debug("Sending the following messages: %s", slack_messages)
-        SlackNotifier(self.config.get_slack_notifier_config()).send_messages(slack_messages)
+    def send(self, notifier: Notifier[N, P], payloads: Set[P]) -> None:
+        notifier.send(notifier.apply_mappings(notifier.apply_filters(payloads)))

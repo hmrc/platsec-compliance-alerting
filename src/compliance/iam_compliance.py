@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 
 from src.data.audit import Audit
 from src.data.account import Account
-from src.data.findings import Findings
+from src.data.finding import Finding
 from src.compliance.analyser import Analyser
 
 ACCEPTABLE_MAX_AGE = timedelta(days=30)
@@ -16,14 +16,14 @@ class IamCompliance(Analyser):
         self._max_age = datetime.now(timezone.utc) - ACCEPTABLE_MAX_AGE
         super().__init__(logger=logger, item_type="iam_access_key")
 
-    def analyse(self, audit: Audit) -> Set[Findings]:
+    def analyse(self, audit: Audit) -> Set[Finding]:
         notifications = set()
         for report in audit.report:
             account = Account.from_dict(report["account"])
             for access_key in report["results"]["iam_access_keys"]:
                 IamCompliance._convert_dates(access_key)
                 notifications.add(
-                    Findings(
+                    Finding(
                         account=account,
                         region_name=report["region"],
                         compliance_item_type=self.item_type,

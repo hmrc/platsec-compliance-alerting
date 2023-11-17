@@ -1,12 +1,17 @@
 import base64
 import logging
 from typing import Any
+from unittest.mock import Mock
 
 import httpretty
 import json
 import pytest
+from src.config.slack_notifier_config import SlackNotifierConfig
+from src.data.exceptions import SlackNotifierException
 
-from src.slack_notifier import SlackMessage, SlackNotifier, SlackNotifierConfig, SlackNotifierException
+from src.data.slack_message import SlackMessage
+from src.notifiers.slack_notifier import SlackNotifier
+
 
 TEST_COLOUR = "some-colour"
 SLACK_MESSAGE = SlackMessage(["channel-a", "channel-b"], "a-header", "a-title", "a-text", "#c1e7c6")
@@ -17,7 +22,8 @@ BASIC_AUTH = base64.b64encode(f"{USER}:{USER_PASS}".encode("utf-8")).decode("utf
 
 
 def _create_slack_notifier() -> SlackNotifier:
-    return SlackNotifier(SlackNotifierConfig(USER, USER_PASS, API_URL))
+    slack_notifier_config = SlackNotifierConfig(USER, USER_PASS, API_URL)
+    return SlackNotifier(Mock(get_slack_notifier_config=Mock(return_value=slack_notifier_config)))
 
 
 def _register_slack_api_success() -> None:

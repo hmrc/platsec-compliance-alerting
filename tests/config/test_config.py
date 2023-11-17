@@ -11,8 +11,9 @@ from src.clients.aws_s3_client import AwsS3Client
 from src.config.config import Config
 from src.config.notification_filter_config import NotificationFilterConfig
 from src.config.notification_mapping_config import NotificationMappingConfig
+from src.config.pagerduty_notifier_config import PagerDutyNotifierConfig
+from src.config.slack_notifier_config import SlackNotifierConfig
 from src.data.exceptions import AwsClientException, MissingConfigException, InvalidConfigException
-from src.slack_notifier import SlackNotifierConfig
 
 
 MOCK_CLIENTS: Dict[str, Any] = {
@@ -47,6 +48,8 @@ MOCK_CLIENTS: Dict[str, Any] = {
         ("SSM_READ_ROLE", Config(**MOCK_CLIENTS).get_ssm_read_role),
         ("ORG_ACCOUNT", Config(**MOCK_CLIENTS).get_org_account),
         ("ORG_READ_ROLE", Config(**MOCK_CLIENTS).get_org_read_role),
+        ("PAGERDUTY_API_URL", Config(**MOCK_CLIENTS).get_pagerduty_api_url),
+        ("PAGERDUTY_SERVICE", Config(**MOCK_CLIENTS).get_pagerduty_service),
     ],
 )
 def test_missing_env_vars(env_var_key: str, config_function: Any, monkeypatch: Any) -> None:
@@ -129,6 +132,19 @@ def test_get_slack_notifier_config(monkeypatch: Any) -> None:
     MOCK_CLIENTS["ssm_client"] = ssm_client
 
     assert SlackNotifierConfig("the-user", "the-token", "the-url") == Config(**MOCK_CLIENTS).get_slack_notifier_config()
+
+
+def test_get_pagerduty_notifier_config(monkeypatch: Any) -> None:
+    monkeypatch.setenv("PAGERDUTY_API_URL", "the-url")
+    monkeypatch.setenv("PAGERDUTY_SERVICE", "pd-service")
+    ssm_client = Mock().return_value
+    ssm_client.get_parameter.return_value = "pd-service-routing-key"
+    MOCK_CLIENTS["ssm_client"] = ssm_client
+
+    assert (
+        PagerDutyNotifierConfig("pd-service", "pd-service-routing-key", "the-url")
+        == Config(**MOCK_CLIENTS).get_pagerduty_notifier_config()
+    )
 
 
 @patch("src.config.config.Config._fetch_config_files")

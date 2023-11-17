@@ -4,7 +4,7 @@ from unittest.mock import Mock
 from src.config.config import Config
 from tests.fixtures.github_webhook_compliance import github_webhook_report
 from tests.test_compliance_alerter import GITHUB_WEBHOOK_HOST_IGNORE_LIST
-from tests.test_types_generator import findings
+from tests.test_types_generator import finding
 
 from src.data.audit import Audit
 from src.compliance.github_webhook_compliance import GithubWebhookCompliance
@@ -62,7 +62,7 @@ def test_check() -> None:
     notifications = GithubWebhookCompliance(logger=getLogger(), config=get_config()).analyse(audit)
 
     expected_findings = {
-        findings(
+        finding(
             account=None,
             region_name=None,
             description="`https://known-host.com`",
@@ -72,7 +72,7 @@ def test_check() -> None:
                 "webhook is set to insecure_url for `repository-with-insecure-url`",
             },
         ),
-        findings(
+        finding(
             account=None,
             region_name=None,
             description="`https://unknown-host.com`",

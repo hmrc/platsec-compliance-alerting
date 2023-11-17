@@ -2,14 +2,14 @@ import urllib
 from typing import Dict, Any
 
 from src.data.account import Account
-from src.data.findings import Findings
+from src.data.finding import Finding
 
 
 class CodeBuild:
     Type: str = "CodeBuild Build State Change"
 
     @staticmethod
-    def create_finding(message: Dict[str, Any]) -> Findings:
+    def create_finding(message: Dict[str, Any]) -> Finding:
         account = Account(identifier=message["account"])
         region = message["region"]
         project_name = message["detail"]["project-name"]
@@ -22,7 +22,7 @@ class CodeBuild:
             account_id=account.identifier, build_id=build_id, project_name=project_name, region=region
         )
 
-        return Findings(
+        return Finding(
             compliance_item_type="codebuild",
             account=account,
             region_name=region,

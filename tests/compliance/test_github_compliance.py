@@ -2,7 +2,7 @@ from logging import getLogger
 from unittest import TestCase
 
 from tests.fixtures.github_compliance import github_report
-from tests.test_types_generator import findings
+from tests.test_types_generator import finding
 
 from src.data.audit import Audit
 from src.compliance.github_compliance import GithubCompliance
@@ -86,7 +86,7 @@ class TestGithubCompliance(TestCase):
         )
         notifications = GithubCompliance(getLogger(), enable_wiki_checking=True).analyse(audit)
         expected_findings = {
-            findings(
+            finding(
                 account=None,
                 region_name=None,
                 description="<https://www.github.com/org/bad-repo-no-signing|bad-repo-no-signing>",
@@ -96,7 +96,7 @@ class TestGithubCompliance(TestCase):
                     "repository commit signing should be turned on",
                 },
             ),
-            findings(
+            finding(
                 account=None,
                 region_name=None,
                 description="<https://www.github.com/org/bad-repo-no-admin|bad-repo-no-admin>",
@@ -106,7 +106,7 @@ class TestGithubCompliance(TestCase):
                     "repository should have admin permissions",
                 },
             ),
-            findings(
+            finding(
                 account=None,
                 region_name=None,
                 description="<https://www.github.com/org/bad-repo-has-wiki-enabled|bad-repo-has-wiki-enabled>",
@@ -116,7 +116,7 @@ class TestGithubCompliance(TestCase):
                     "repository has wiki enabled",
                 },
             ),
-            findings(
+            finding(
                 account=None,
                 region_name=None,
                 description="<https://www.github.com/org/good-repo|good-repo>",
