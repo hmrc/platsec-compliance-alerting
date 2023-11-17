@@ -16,7 +16,7 @@ class PagerDutyNotifier(Notifier[PagerDutyEvent, PagerDutyPayload]):
     def __init__(self, config: Config) -> None:
         self.config = config
         self._logger = getLogger(self.__class__.__name__)
-        self._notifier_config = config.get_pagerduty_notifier_config()
+        self._api_url = config.get_pagerduty_api_url()
         self._filters_config = config.get_notification_filters()
         self._mappings_config = config.get_notification_mappings()
 
@@ -47,7 +47,7 @@ class PagerDutyNotifier(Notifier[PagerDutyEvent, PagerDutyPayload]):
 
     def _send(self, pagerduty_event: PagerDutyEvent) -> Dict[str, Any]:
         response = requests.post(
-            url=self._notifier_config.api_url,
+            url=self._api_url,
             headers=self._build_headers(),
             json=pagerduty_event.to_dict(),
             timeout=10,

@@ -10,7 +10,6 @@ from src.clients.aws_org_client import AwsOrgClient
 from src.clients.aws_ssm_client import AwsSsmClient
 from src.config.notification_filter_config import NotificationFilterConfig
 from src.config.notification_mapping_config import NotificationMappingConfig
-from src.config.pagerduty_notifier_config import PagerDutyNotifierConfig
 from src.config.slack_notifier_config import SlackNotifierConfig
 from src.data.exceptions import ComplianceAlertingException, MissingConfigException, InvalidConfigException
 
@@ -151,21 +150,6 @@ class Config:
     @classmethod
     def get_pagerduty_api_url(self) -> str:
         return self._get_env("PAGERDUTY_API_URL")
-
-    @classmethod
-    def get_pagerduty_service(self) -> str:
-        return self._get_env("PAGERDUTY_SERVICE")
-
-    @classmethod
-    def get_pagerduty_routing_key_store(self) -> str:
-        return f"/pagerduty/{self.get_pagerduty_service()}"
-
-    def get_pagerduty_notifier_config(self) -> PagerDutyNotifierConfig:
-        return PagerDutyNotifierConfig(
-            service=self.get_pagerduty_service(),
-            routing_key=self.ssm_client.get_parameter(self.get_pagerduty_routing_key_store()),
-            api_url=self.get_pagerduty_api_url(),
-        )
 
     def get_report_s3_client(self) -> AwsS3Client:
         return self.report_s3_client
