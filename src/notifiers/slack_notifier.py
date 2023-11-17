@@ -66,7 +66,6 @@ class SlackNotifier(Notifier[SlackMessage, Finding]):
     def apply_mappings(self, findings: Set[Finding]) -> List[SlackMessage]:
         return NotificationMapper().do_map(findings, self._mappings_config, self._org_client)
 
-    # this method should replace send_messages()
     def send(self, notifications: List[SlackMessage]) -> None:
         self._logger.debug("Sending the following messages: %s", notifications)
         self.send_messages(notifications)

@@ -11,10 +11,6 @@ from src.notifiers.notifier import Notifier
 from src.pagerduty_notification_mapper import PagerDutyNotificationMapper
 from src.pagerduty_payload_filter import PagerDutyPayloadFilter
 
-# moved to pagerduty_notification_mapper.py
-CLIENT = "platsec-compliance-alerting"
-CLIENT_URL = f"https://github.com/hmrc/{CLIENT}"
-
 
 class PagerDutyNotifier(Notifier[PagerDutyEvent, PagerDutyPayload]):
     def __init__(self, config: Config) -> None:
