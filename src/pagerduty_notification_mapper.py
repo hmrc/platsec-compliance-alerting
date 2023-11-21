@@ -10,7 +10,7 @@ from src.data.pagerduty_payload import PagerDutyPayload
 CLIENT = "platsec-compliance-alerting"
 CLIENT_URL = f"https://github.com/hmrc/{CLIENT}"
 EVENT_ACTION = "trigger"
-PAGERDUTY_SSM_PARAMETER_STORE_PREFIX = "/pagerduty/"
+PAGERDUTY_SSM_PARAMETER_STORE_PREFIX = "/service_accounts/pagerduty/"
 
 
 @dataclass(unsafe_hash=True)
@@ -45,7 +45,7 @@ class PagerDutyNotificationMapper:
         return sorted(events, key=lambda msg: (msg.payload.source, msg.payload.component, msg.routing_key))
 
     def _pagerduty_ssm_parameter_name(self, service: str) -> str:
-        return f"{PAGERDUTY_SSM_PARAMETER_STORE_PREFIX}{service}"
+        return f"{PAGERDUTY_SSM_PARAMETER_STORE_PREFIX}{service}".replace(" ", "_").lower()
 
     def _get_pagerduty_service_routing_key(self, service: str) -> str:
         return self.ssm_client.get_parameter(parameter_name=self._pagerduty_ssm_parameter_name(service))

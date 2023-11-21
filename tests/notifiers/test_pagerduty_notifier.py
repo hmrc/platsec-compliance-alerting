@@ -7,7 +7,6 @@ import httpretty
 import pytest
 from src.config.notification_filter_config import NotificationFilterConfig
 from src.config.notification_mapping_config import NotificationMappingConfig
-from src.config.pagerduty_notifier_config import PagerDutyNotifierConfig
 from src.data.exceptions import PagerDutyNotifierException
 from src.notifiers.pagerduty_notifier import PagerDutyNotifier
 from tests.test_types_generator import _pagerduty_payload, _pagerduty_event
@@ -87,10 +86,7 @@ def test_send_pagerduty_event_success(caplog: Any) -> None:
     pagerduty_event = _pagerduty_event(
         payload=_pagerduty_payload(source="111122223333", component="mysql-resource-id"), service="pd-service"
     )
-    pagerduty_notifier_config = PagerDutyNotifierConfig(
-        service="pd-service", routing_key="pd-service-routing-key", api_url=API_URL
-    )
-    mock_config = Mock(get_pagerduty_notifier_config=Mock(return_value=pagerduty_notifier_config))
+    mock_config = Mock(get_pagerduty_api_url=Mock(return_value=API_URL))
     PagerDutyNotifier(mock_config).send_pagerduty_event(pagerduty_event=pagerduty_event)
 
     __assert_payload_correct(source="111122223333", component="mysql-resource-id", routing_key="pd-service-routing-key")
@@ -103,10 +99,7 @@ def test_send_pagerduty_event_failure() -> None:
     pagerduty_event = _pagerduty_event(
         payload=_pagerduty_payload(source="111122223333", component="mysql-resource-id"), service="pd-service"
     )
-    pagerduty_notifier_config = PagerDutyNotifierConfig(
-        service="pd-service", routing_key="pd-service-routing-key", api_url=API_URL
-    )
-    mock_config = Mock(get_pagerduty_notifier_config=Mock(return_value=pagerduty_notifier_config))
+    mock_config = Mock(get_pagerduty_api_url=Mock(return_value=API_URL))
 
     with pytest.raises(PagerDutyNotifierException):
         PagerDutyNotifier(mock_config).send_pagerduty_event(pagerduty_event=pagerduty_event)
@@ -134,10 +127,8 @@ def test_send_multiple_pagerduty_event_success() -> None:
             payload=_pagerduty_payload(source="111122223333", component="dynamodb-resource-id"), service="pd-service"
         ),
     ]
-    pagerduty_notifier_config = PagerDutyNotifierConfig(
-        service="pd-service", routing_key="pd-service-routing-key", api_url=API_URL
-    )
-    mock_config = Mock(get_pagerduty_notifier_config=Mock(return_value=pagerduty_notifier_config))
+
+    mock_config = Mock(get_pagerduty_api_url=Mock(return_value=API_URL))
     PagerDutyNotifier(mock_config).send(pagerduty_events=pagerduty_events)
 
     __assert_payload_correct(source="111122223333", component="mysql-resource-id", routing_key="pd-service-routing-key")
@@ -158,10 +149,7 @@ def test_send_multiple_pagerduty_event_failure(caplog: Any) -> None:
             payload=_pagerduty_payload(source="111122223333", component="dynamodb-resource-id"), service="pd-service"
         ),
     ]
-    pagerduty_notifier_config = PagerDutyNotifierConfig(
-        service="pd-service", routing_key="pd-service-routing-key", api_url=API_URL
-    )
-    mock_config = Mock(get_pagerduty_notifier_config=Mock(return_value=pagerduty_notifier_config))
+    mock_config = Mock(get_pagerduty_api_url=Mock(return_value=API_URL))
 
     with caplog.at_level(logging.ERROR):
         PagerDutyNotifier(mock_config).send(pagerduty_events=pagerduty_events)

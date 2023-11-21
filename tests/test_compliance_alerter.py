@@ -24,6 +24,7 @@ from src.data.exceptions import UnsupportedEventException
 from src.data.finding import Finding
 from src.notifiers.pagerduty_notifier import PagerDutyNotifier
 from src.notifiers.slack_notifier import SlackNotifier
+from src.pagerduty_notification_mapper import PAGERDUTY_SSM_PARAMETER_STORE_PREFIX
 
 from tests.fixtures.github_compliance import github_report
 from tests.fixtures.github_webhook_compliance import github_webhook_report
@@ -426,7 +427,6 @@ def _setup_environment(monkeypatch: Any) -> None:
         "ORG_ACCOUNT": "ORG-ACCOUNT-ID-12374234",
         "ORG_READ_ROLE": "the-org-read-role",
         "VPC_RESOLVER_AUDIT_REPORT_KEY": "vpc resolver audit report key",
-        "PAGERDUTY_SERVICE": PAGERDUTY_SERVICE,
         "PAGERDUTY_API_URL": PAGERDUTY_API_URL,
     }
 
@@ -444,7 +444,9 @@ def _setup_ssm_parameters(ssm_client: BaseClient) -> BaseClient:
     ssm_client.put_parameter(Name=SLACK_USERNAME_KEY, Value="the-slack-username", Type="SecureString")
     ssm_client.put_parameter(Name=SLACK_TOKEN_KEY, Value="the-slack-username", Type="SecureString")
     ssm_client.put_parameter(
-        Name=f"/pagerduty/{PAGERDUTY_SERVICE}", Value=PAGERDUTY_SERVICE_ROUTING_KEY, Type="SecureString"
+        Name=f"{PAGERDUTY_SSM_PARAMETER_STORE_PREFIX}{PAGERDUTY_SERVICE}",
+        Value=PAGERDUTY_SERVICE_ROUTING_KEY,
+        Type="SecureString",
     )
     return ssm_client
 
