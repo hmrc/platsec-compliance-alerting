@@ -27,10 +27,9 @@ def test_event_to_findings() -> None:
 def test_create_pagerduty_event_payload() -> None:
     message = load_json_resource("health_message.json")
     payload = AwsHealth().create_pagerduty_event_payload(message)
-    event_arn = "arn:aws:health:us-west-2::event/AWS_EC2_INSTANCE_STORE_DRIVE_PERFORMANCE_DEGRADED_90353408594353980"
 
     assert payload.account
     assert payload.account.identifier == "123456789012"
     assert payload.source == "123456789012"
     assert payload.group == "EC2"
-    assert payload.custom_details == {"eventArn": event_arn}
+    assert payload.custom_details == message["detail"]
