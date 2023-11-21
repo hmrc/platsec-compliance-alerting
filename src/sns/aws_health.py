@@ -38,9 +38,7 @@ class AwsHealth:
             timestamp=message["time"],
             account=Account(identifier=message["detail"]["affectedAccount"]),
             region_name=message["region"],
-            custom_details={
-                "eventArn": message["detail"]["eventArn"],
-            },
+            custom_details=message["detail"],
         )
 
     def build_description(self, message: Dict[str, Any]) -> Set[str]:
