@@ -25,11 +25,19 @@ def test_event_to_findings() -> None:
 
 
 def test_create_pagerduty_event_payload() -> None:
-    message = load_json_resource("health_message.json")
-    payload = AwsHealth().create_pagerduty_event_payload(message)
+    payload = AwsHealth().create_pagerduty_event_payload(load_json_resource("health_message.json"))
 
     assert payload.account
     assert payload.account.identifier == "123456789012"
     assert payload.source == "123456789012"
     assert payload.group == "EC2"
-    assert payload.custom_details == message["detail"]
+
+    expected = load_json_resource("health_message.json")
+    expected["detail"]["eventDescription"] = [
+        {
+            "language": "en_US",
+            "latestDescription": "A description of the event will be provided here",
+            "runbook": "https://confluence.tools.tax.service.gov.uk/display/SEC/Compromised+Credentials+Runbook",
+        }
+    ]
+    assert payload.custom_details == expected["detail"]
