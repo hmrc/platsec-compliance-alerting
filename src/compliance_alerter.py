@@ -35,14 +35,22 @@ def main(event: Dict[str, Any]) -> None:
             org_client=AwsClientFactory().get_org_client(Config.get_org_account(), Config.get_org_read_role()),
         )
     )
-    compliance_alerter.send(
-        notifier=SlackNotifier(config=compliance_alerter.config),
-        payloads=compliance_alerter.build_findings(event=event),
-    )
-    compliance_alerter.send(
-        notifier=PagerDutyNotifier(config=compliance_alerter.config),
-        payloads=compliance_alerter.build_pagerduty_payloads(event=event),
-    )
+
+    if compliance_alerter.is_sns_event(event=event):
+        compliance_alerter.send(
+            notifier=SlackNotifier(config=compliance_alerter.config),
+            payloads=compliance_alerter.build_sns_event_findings(event=event),
+        )
+        compliance_alerter.send(
+            notifier=PagerDutyNotifier(config=compliance_alerter.config),
+            payloads=compliance_alerter.build_pagerduty_payloads(event=event),
+        )
+
+    if compliance_alerter.is_s3_event(event=event):
+        compliance_alerter.send(
+            notifier=SlackNotifier(config=compliance_alerter.config),
+            payloads=compliance_alerter.build_audit_report_findings(event=event),
+        )
 
 
 class ComplianceAlerter:
@@ -51,8 +59,23 @@ class ComplianceAlerter:
         self.logger = Config.configure_logging()
 
     @staticmethod
+    def event_source(event: Dict[str, Any]) -> str:
+        source = ""
+        if "EventSource" in event.get("Records", [{}])[0]:
+            source = event["Records"][0].get("EventSource")
+
+        if "eventSource" in event.get("Records", [{}])[0]:
+            source = event["Records"][0].get("eventSource")
+
+        return source
+
+    @staticmethod
     def is_sns_event(event: Dict[str, Any]) -> bool:
-        return "EventSource" in event.get("Records", [{}])[0] and event["Records"][0].get("EventSource") == "aws:sns"
+        return ComplianceAlerter.event_source(event=event) == "aws:sns"
+
+    @staticmethod
+    def is_s3_event(event: Dict[str, Any]) -> bool:
+        return ComplianceAlerter.event_source(event=event) == "aws:s3"
 
     def fetch(self, event: Dict[str, Any]) -> Audit:
         return AuditFetcher().fetch_audit(self.config.get_report_s3_client(), event)
@@ -60,17 +83,12 @@ class ComplianceAlerter:
     def analyse(self, audit: Audit) -> Set[Finding]:
         return AuditAnalyser().analyse(self.logger, audit, self.config)
 
-    def build_findings(self, event: Dict[str, Any]) -> Set[Finding]:
-        findings = (
-            self.build_sns_event_findings(event)
-            if ComplianceAlerter.is_sns_event(event)
-            else self.analyse(self.fetch(event))
-        )
-        return findings
+    def build_audit_report_findings(self, event: Dict[str, Any]) -> Set[Finding]:
+        return self.analyse(self.fetch(event))
 
-    def build_sns_event_findings(self, events: Dict[str, Any]) -> Set[Finding]:
+    def build_sns_event_findings(self, event: Dict[str, Any]) -> Set[Finding]:
         findings: Set[Finding] = set()
-        for record in events["Records"]:
+        for record in event["Records"]:
             message = json.loads(record["Sns"]["Message"])
             type = message.get("detailType") or message.get("detail-type")
             if type == CodePipeline.Type:

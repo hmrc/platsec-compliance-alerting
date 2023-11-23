@@ -15,6 +15,7 @@ from botocore.client import BaseClient
 from moto import mock_s3, mock_ssm, mock_organizations
 
 from src import compliance_alerter
+from src.compliance_alerter import ComplianceAlerter
 from src.clients.aws_org_client import AwsOrgClient
 from src.clients.aws_s3_client import AwsS3Client
 from src.clients.aws_ssm_client import AwsSsmClient
@@ -56,11 +57,29 @@ PAGERDUTY_API_URL = "https://the-pagerduty-api-url.com"
 PAGERDUTY_SERVICE_ROUTING_KEY = f"{PAGERDUTY_SERVICE}-routing-key"
 
 
+def test_event_source() -> None:
+    ca = ComplianceAlerter(Mock())
+    assert "aws:s3" == ca.event_source(_s3_event())
+    assert "aws:sns" == ca.event_source(_sns_event())
+
+
+def test_is_sns_event() -> None:
+    ca = ComplianceAlerter(Mock())
+    assert ca.is_sns_event(_s3_event()) is False
+    assert ca.is_sns_event(_sns_event()) is True
+
+
+def test_is_s3_event() -> None:
+    ca = ComplianceAlerter(Mock())
+    assert ca.is_s3_event(_s3_event()) is True
+    assert ca.is_s3_event(_sns_event()) is False
+
+
 @patch("src.compliance_alerter.AwsClientFactory.get_s3_client")
 @patch("src.compliance_alerter.AwsClientFactory.get_ssm_client")
 @patch("src.compliance_alerter.AwsClientFactory.get_org_client")
 @patch("src.compliance_alerter.ComplianceAlerter")
-def test_main(
+def test_main_sns_event(
     mock_compliance_alerter: Mock, mock_s3_client: Mock, mock_ssm_client: Mock, mock_org_client: Mock
 ) -> None:
     finding = Finding(
@@ -72,7 +91,32 @@ def test_main(
     )
     mock_compliance_alerter.return_value.send.return_value = Mock()
     _mock = mock_compliance_alerter.return_value
-    _mock.build_findings.return_value = {finding}
+    _mock.is_sns_event.return_value = True
+    _mock.build_sns_event_findings.return_value = {finding}
+    _mock.send.return_value = Mock()
+    compliance_alerter.main(load_json_resource("codebuild_event.json"))
+
+    _mock.send.assert_any_call(notifier=ANY, payloads={finding})
+
+
+@patch("src.compliance_alerter.AwsClientFactory.get_s3_client")
+@patch("src.compliance_alerter.AwsClientFactory.get_ssm_client")
+@patch("src.compliance_alerter.AwsClientFactory.get_org_client")
+@patch("src.compliance_alerter.ComplianceAlerter")
+def test_main_s3_event(
+    mock_compliance_alerter: Mock, mock_s3_client: Mock, mock_ssm_client: Mock, mock_org_client: Mock
+) -> None:
+    finding = Finding(
+        compliance_item_type="compliance-item-type",
+        item="item",
+        findings={"Words of Advice"},
+        account=Account(identifier="111222333444", name="", slack_handle="@some-team-name"),
+        region_name="region",
+    )
+    mock_compliance_alerter.return_value.send.return_value = Mock()
+    _mock = mock_compliance_alerter.return_value
+    _mock.is_sns_event.return_value = False
+    _mock.build_audit_report_findings.return_value = {finding}
     _mock.send.return_value = Mock()
     compliance_alerter.main(build_event(S3_KEY))
 
@@ -110,7 +154,7 @@ def test_compliance_alerter_main_s3_audit(helper_test_config: Any) -> None:
             org_client=helper_test_config.org_client,
         )
     )
-    findings = ca.build_findings(build_event(S3_KEY))
+    findings = ca.build_audit_report_findings(build_event(S3_KEY))
     ca.send(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("the-alerting-channel")
     _assert_slack_message_sent("bad-bucket")
@@ -126,7 +170,7 @@ def test_compliance_alerter_main_github_audit(helper_test_config: Any) -> None:
             org_client=helper_test_config.org_client,
         )
     )
-    findings = ca.build_findings(build_event(GITHUB_KEY))
+    findings = ca.build_audit_report_findings(build_event(GITHUB_KEY))
     ca.send(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("the-alerting-channel")
     _assert_slack_message_sent("bad-repo-no-signing")
@@ -141,7 +185,7 @@ def test_compliance_alerter_main_github_webhook(helper_test_config: Any) -> None
             org_client=helper_test_config.org_client,
         )
     )
-    findings = ca.build_findings(build_event(GITHUB_WEBHOOK_KEY))
+    findings = ca.build_audit_report_findings(build_event(GITHUB_WEBHOOK_KEY))
     ca.send(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("the-alerting-channel")
     _assert_slack_message_sent("https://unknown-host.com")
@@ -156,7 +200,7 @@ def test_compliance_alerter_main_vpc_audit(helper_test_config: Any) -> None:
             org_client=helper_test_config.org_client,
         )
     )
-    findings = ca.build_findings(build_event(VPC_KEY))
+    findings = ca.build_audit_report_findings(build_event(VPC_KEY))
     ca.send(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("the-alerting-channel")
     _assert_slack_message_sent("VPC flow logs compliance enforcement success")
@@ -172,7 +216,7 @@ def test_compliance_alerter_main_vpc_peering_audit(helper_test_config: Any) -> N
             org_client=helper_test_config.org_client,
         )
     )
-    findings = ca.build_findings(build_event(VPC_PEERING_KEY))
+    findings = ca.build_audit_report_findings(build_event(VPC_PEERING_KEY))
     ca.send(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("vpc-peering-alerts")
     _assert_slack_message_sent("vpc peering connection with unknown account")
@@ -188,7 +232,7 @@ def test_compliance_alerter_main_password_policy_audit(helper_test_config: Any) 
             org_client=helper_test_config.org_client,
         )
     )
-    findings = ca.build_findings(build_event(PASSWORD_POLICY_KEY))
+    findings = ca.build_audit_report_findings(build_event(PASSWORD_POLICY_KEY))
     ca.send(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("the-alerting-channel")
     _assert_slack_message_sent("password policy compliance enforcement success")
@@ -208,7 +252,7 @@ def test_codepipeline_sns_event(helper_test_config: Any) -> None:
             org_client=helper_test_config.org_client,
         )
     )
-    findings = ca.build_findings(test_event)
+    findings = ca.build_sns_event_findings(test_event)
     ca.send(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("codepipeline-alerts")
     _assert_slack_message_sent("@some-team-name")
@@ -227,7 +271,7 @@ def test_codebuild_sns_event(helper_test_config: Any) -> None:
             org_client=helper_test_config.org_client,
         )
     )
-    findings = ca.build_findings(test_event)
+    findings = ca.build_sns_event_findings(test_event)
     ca.send(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("codebuild-alerts")
     _assert_slack_message_sent("@some-team-name")
@@ -249,7 +293,7 @@ def test_health_sns_event(helper_test_config: Any) -> None:
             org_client=helper_test_config.org_client,
         )
     )
-    findings = ca.build_findings(test_event)
+    findings = ca.build_sns_event_findings(test_event)
     ca.send(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("the-health-channel")
     _assert_slack_message_sent("@some-team-name")
@@ -297,7 +341,7 @@ def test_grant_user_access_lambda_sns_event(helper_test_config: Any, _org_client
             org_client=helper_test_config.org_client,
         )
     )
-    findings = ca.build_findings(test_event)
+    findings = ca.build_sns_event_findings(test_event)
     ca.send(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("grant-user-access-lambda-alerts")
     _assert_slack_message_sent("@some-team-name")
@@ -324,7 +368,7 @@ def test_guardduty_sns_event(helper_test_config: Any, _org_client: BaseClient) -
     message["detail"]["accountId"] = sub_account_id
     test_event["Records"][0]["Sns"]["Message"] = json.dumps(message)
 
-    findings = ca.build_findings(test_event)
+    findings = ca.build_sns_event_findings(test_event)
     ca.send(notifier=SlackNotifier(config=ca.config), payloads=findings)
 
     _assert_slack_message_sent_to_channel("guardduty-alerts")
@@ -342,7 +386,7 @@ def test_unknown_sns_event(helper_test_config: Any) -> None:
             org_client=helper_test_config.org_client,
         )
     )
-    findings = ca.build_findings(load_json_resource("unknown_sns_event.json"))
+    findings = ca.build_sns_event_findings(load_json_resource("unknown_sns_event.json"))
     ca.send(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_no_slack_message_sent()
 
@@ -361,7 +405,7 @@ def test_unsupported_event(helper_test_config: Any) -> None:
         )
     )
     with pytest.raises(UnsupportedEventException, match="a_value"):
-        findings = ca.build_findings({"a_key": "a_value"})
+        findings = ca.build_audit_report_findings({"a_key": "a_value"})
         ca.send(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_no_slack_message_sent()
 
@@ -635,7 +679,13 @@ def set_affected_account_id(account_id: str, test_event: Dict[str, Any]) -> Dict
 
 def build_event(report_key: str) -> Dict[str, Any]:
     return {
-        "Records": [{"eventVersion": "2.1", "s3": {"bucket": {"name": REPORT_BUCKET}, "object": {"key": report_key}}}]
+        "Records": [
+            {
+                "eventVersion": "2.1",
+                "eventSource": "aws:s3",
+                "s3": {"bucket": {"name": REPORT_BUCKET}, "object": {"key": report_key}},
+            }
+        ]
     }
 
 
@@ -670,3 +720,11 @@ def load_json_resource(filename: str) -> Any:
     with open(os.path.join("tests", "resources", filename), "r") as json_file:
         resource = json.load(json_file)
     return resource
+
+
+def _s3_event() -> Dict[str, Any]:
+    return {"Records": [{"eventVersion": "2.1", "eventSource": "aws:s3", "s3": {}}]}
+
+
+def _sns_event() -> Dict[str, Any]:
+    return {"Records": [{"EventVersion": "1.0", "EventSource": "aws:sns", "Sns": {}}]}
