@@ -57,22 +57,22 @@ PAGERDUTY_API_URL = "https://the-pagerduty-api-url.com"
 PAGERDUTY_SERVICE_ROUTING_KEY = f"{PAGERDUTY_SERVICE}-routing-key"
 
 
-def test_event_source():
+def test_event_source() -> None:
     ca = ComplianceAlerter(Mock())
     assert "aws:s3" == ca.event_source(_s3_event())
     assert "aws:sns" == ca.event_source(_sns_event())
 
 
-def test_is_sns_event():
+def test_is_sns_event() -> None:
     ca = ComplianceAlerter(Mock())
-    assert False == ca.is_sns_event(_s3_event())
-    assert True == ca.is_sns_event(_sns_event())
+    assert ca.is_sns_event(_s3_event()) is False
+    assert ca.is_sns_event(_sns_event()) is True
 
 
-def test_is_s3_event():
+def test_is_s3_event() -> None:
     ca = ComplianceAlerter(Mock())
-    assert True == ca.is_s3_event(_s3_event())
-    assert False == ca.is_s3_event(_sns_event())
+    assert ca.is_s3_event(_s3_event()) is True
+    assert ca.is_s3_event(_sns_event()) is False
 
 
 @patch("src.compliance_alerter.AwsClientFactory.get_s3_client")
@@ -722,9 +722,9 @@ def load_json_resource(filename: str) -> Any:
     return resource
 
 
-def _s3_event():
+def _s3_event() -> Dict[str, Any]:
     return {"Records": [{"eventVersion": "2.1", "eventSource": "aws:s3", "s3": {}}]}
 
 
-def _sns_event():
+def _sns_event() -> Dict[str, Any]:
     return {"Records": [{"EventVersion": "1.0", "EventSource": "aws:sns", "Sns": {}}]}

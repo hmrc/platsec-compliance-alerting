@@ -60,11 +60,14 @@ class ComplianceAlerter:
 
     @staticmethod
     def event_source(event: Dict[str, Any]) -> str:
+        source = ""
         if "EventSource" in event.get("Records", [{}])[0]:
-            return event["Records"][0].get("EventSource")
+            source = event["Records"][0].get("EventSource")
 
         if "eventSource" in event.get("Records", [{}])[0]:
-            return event["Records"][0].get("eventSource")
+            source = event["Records"][0].get("eventSource")
+
+        return source
 
     @staticmethod
     def is_sns_event(event: Dict[str, Any]) -> bool:
@@ -83,9 +86,9 @@ class ComplianceAlerter:
     def build_audit_report_findings(self, event: Dict[str, Any]) -> Set[Finding]:
         return self.analyse(self.fetch(event))
 
-    def build_sns_event_findings(self, events: Dict[str, Any]) -> Set[Finding]:
+    def build_sns_event_findings(self, event: Dict[str, Any]) -> Set[Finding]:
         findings: Set[Finding] = set()
-        for record in events["Records"]:
+        for record in event["Records"]:
             message = json.loads(record["Sns"]["Message"])
             type = message.get("detailType") or message.get("detail-type")
             if type == CodePipeline.Type:
