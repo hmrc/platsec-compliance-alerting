@@ -5,6 +5,14 @@ from src.data.finding import Finding
 from src.data.pagerduty_payload import PagerDutyPayload
 
 RUNBOOK = "https://confluence.tools.tax.service.gov.uk/display/SEC/Compromised+Credentials+Runbook"
+EVENT_TYPE_CODES = [
+    "AWS_RISK_ACCOUNT_CONSOLE_COMPROMISE",
+    "AWS_RISK_CREDENTIALS_COMPROMISED",
+    "AWS_RISK_CREDENTIALS_COMPROMISE_SUSPECTED",
+    "AWS_RISK_CREDENTIALS_EXPOSED",
+    "AWS_RISK_CREDENTIALS_EXPOSURE_SUSPECTED",
+    "AWS_RISK_IAM_QUARANTINE",
+]
 
 
 class AwsHealth:
@@ -29,7 +37,7 @@ class AwsHealth:
             compliance_item_type="aws_health",
             description=self.latest_description(message),
             source=message["detail"]["affectedAccount"],
-            component=" ".join(message["resources"]),
+            component=" ".join([e["entityValue"] for e in message["detail"]["affectedEntities"]]),
             event_class=message["detail"]["eventTypeCode"],
             group=message["detail"]["service"],
             timestamp=message["time"],
@@ -56,3 +64,6 @@ class AwsHealth:
 
     def build_finding(self, message: Dict[str, Any]) -> Set[str]:
         return {self.latest_description(message)}
+
+    def is_a_target_event_type(self, message: Dict[str, Any]) -> bool:
+        return message["detail"]["eventTypeCode"] in EVENT_TYPE_CODES

@@ -277,11 +277,12 @@ def test_codebuild_sns_event(helper_test_config: Any) -> None:
     _assert_slack_message_sent("@some-team-name")
 
 
-def test_health_sns_event(helper_test_config: Any) -> None:
+def test_slack_notification_for_aws_health_sns_event(helper_test_config: Any) -> None:
     test_event = set_affected_account_id(
         account_id=helper_test_config.account_id,
         test_event=set_event_account_id(
-            account_id=helper_test_config.account_id, test_event=load_json_resource("health_event.json")
+            account_id=helper_test_config.account_id,
+            test_event=load_json_resource("health_event_with_target_event_type.json"),
         ),
     )
 
@@ -299,11 +300,34 @@ def test_health_sns_event(helper_test_config: Any) -> None:
     _assert_slack_message_sent("@some-team-name")
 
 
-def test_health_sns_event_pagerduty_notification(helper_test_config: Any) -> None:
+def test_slack_notification_for_aws_health_sns_event_with_nontarget_event_type(helper_test_config: Any) -> None:
     test_event = set_affected_account_id(
         account_id=helper_test_config.account_id,
         test_event=set_event_account_id(
-            account_id=helper_test_config.account_id, test_event=load_json_resource("health_event.json")
+            account_id=helper_test_config.account_id,
+            test_event=load_json_resource("health_event_with_nontarget_event_type.json"),
+        ),
+    )
+
+    ca = compliance_alerter.ComplianceAlerter(
+        config=Config(
+            config_s3_client=helper_test_config.config_s3_client,
+            report_s3_client=helper_test_config.report_s3_client,
+            ssm_client=helper_test_config.ssm_client,
+            org_client=helper_test_config.org_client,
+        )
+    )
+    findings = ca.build_sns_event_findings(test_event)
+    ca.send(notifier=SlackNotifier(config=ca.config), payloads=findings)
+    _assert_no_slack_message_sent()
+
+
+def test_pagerduty_notification_for_aws_health_sns_event(helper_test_config: Any) -> None:
+    test_event = set_affected_account_id(
+        account_id=helper_test_config.account_id,
+        test_event=set_event_account_id(
+            account_id=helper_test_config.account_id,
+            test_event=load_json_resource("health_event_with_target_event_type.json"),
         ),
     )
 
@@ -318,6 +342,28 @@ def test_health_sns_event_pagerduty_notification(helper_test_config: Any) -> Non
     payloads = ca.build_pagerduty_payloads(test_event)
     ca.send(notifier=PagerDutyNotifier(config=ca.config), payloads=payloads)
     _assert_pagerduty_event_sent_to_service(routing_key=PAGERDUTY_SERVICE_ROUTING_KEY)
+
+
+def test_pagerduty_notification_for_aws_health_sns_event_with_nontarget_event_type(helper_test_config: Any) -> None:
+    test_event = set_affected_account_id(
+        account_id=helper_test_config.account_id,
+        test_event=set_event_account_id(
+            account_id=helper_test_config.account_id,
+            test_event=load_json_resource("health_event_with_nontarget_event_type.json"),
+        ),
+    )
+
+    ca = compliance_alerter.ComplianceAlerter(
+        config=Config(
+            config_s3_client=helper_test_config.config_s3_client,
+            report_s3_client=helper_test_config.report_s3_client,
+            ssm_client=helper_test_config.ssm_client,
+            org_client=helper_test_config.org_client,
+        )
+    )
+    payloads = ca.build_pagerduty_payloads(test_event)
+    ca.send(notifier=PagerDutyNotifier(config=ca.config), payloads=payloads)
+    _assert_no_pagerduty_event_sent()
 
 
 def test_grant_user_access_lambda_sns_event(helper_test_config: Any, _org_client: BaseClient) -> None:
