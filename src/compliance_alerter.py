@@ -99,7 +99,7 @@ class ComplianceAlerter:
                 findings.add(GuardDuty(self.config).create_finding(message))
             elif type == GrantUserAccessLambda.Type:
                 findings.add(GrantUserAccessLambda().create_finding(message))
-            elif type == AwsHealth.Type:
+            elif type == AwsHealth.Type and AwsHealth().is_a_target_event_type(message):
                 findings.add(AwsHealth().create_finding(message))
             else:
                 logging.getLogger(__name__).warning(f"Received unknown event with detailType '{type}'. Ignoring...")
@@ -110,7 +110,7 @@ class ComplianceAlerter:
         for record in event["Records"]:
             message = json.loads(record["Sns"]["Message"])
             type = message.get("detailType") or message.get("detail-type")
-            if type == AwsHealth.Type:
+            if type == AwsHealth.Type and AwsHealth().is_a_target_event_type(message):
                 payloads.add(AwsHealth().create_pagerduty_event_payload(message))
             else:
                 # A "warning" log level will get unnecessarily noisy.
