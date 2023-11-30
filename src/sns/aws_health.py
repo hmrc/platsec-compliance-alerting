@@ -4,7 +4,7 @@ from src.data.account import Account
 from src.data.finding import Finding
 from src.data.pagerduty_payload import PagerDutyPayload
 
-RUNBOOK = "https://confluence.tools.tax.service.gov.uk/display/SEC/Compromised+Credentials+Runbook"
+RUNBOOK = "https://confluence.tools.tax.service.gov.uk/display/SEC/Out+Of+Hours+-+Compromised+Credentials+Runbook"
 EVENT_TYPE_CODES = [
     "AWS_RISK_ACCOUNT_CONSOLE_COMPROMISE",
     "AWS_RISK_CREDENTIALS_COMPROMISED",

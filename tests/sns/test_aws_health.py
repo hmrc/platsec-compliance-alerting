@@ -1,4 +1,4 @@
-from src.sns.aws_health import AwsHealth
+from src.sns.aws_health import RUNBOOK, AwsHealth
 
 from tests.sns import load_json_resource
 
@@ -39,7 +39,7 @@ def test_create_pagerduty_event_payload() -> None:
         {
             "language": "en_US",
             "latestDescription": "A description of the event is provided here",
-            "runbook": "https://confluence.tools.tax.service.gov.uk/display/SEC/Compromised+Credentials+Runbook",
+            "runbook": RUNBOOK,
         }
     ]
     assert payload.custom_details == expected["detail"]
