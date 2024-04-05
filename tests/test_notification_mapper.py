@@ -21,21 +21,21 @@ findings_c = finding(
 
 msg_a = SlackMessage(
     channels=["central", "channel-2"],
-    header="aaa (111) test-region-name <@team-a>",
+    header="aaa (111) test-region-name <team-a>",
     title="item-a",
     text="a-1\na-2",
     color="#ff4d4d",
 )
 msg_b = SlackMessage(
     channels=["central", "channel-1"],
-    header="bbb (222) test-region-name <@team-a>",
+    header="bbb (222) test-region-name <team-a>",
     title="item-b",
     text="finding b",
     color="#ff4d4d",
 )
 msg_c = SlackMessage(
     channels=["central", "channel-1", "channel-2"],
-    header="ccc (333) test-region-name <@team-b>",
+    header="ccc (333) test-region-name <team-b>",
     title="item-c",
     text="finding c",
     color="#ffffff",
