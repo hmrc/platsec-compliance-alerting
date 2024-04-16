@@ -25,14 +25,12 @@ class SlackMessage(Notification):
                 "by": "slack-channel",
                 "slackChannels": self.channels,
             },
-            "messageDetails": {
-                "text": self.header,
-                "attachments": [
-                    {
-                        "color": self.color,
-                        "title": self.title,
-                        "text": self.text,
-                    }
-                ],
-            },
+            "text": self.header,
+            "attachments": [
+                {
+                    "color": self.color,
+                    "title": self.title,
+                    "text": self.text,
+                }
+            ],
         }

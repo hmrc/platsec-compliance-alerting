@@ -56,21 +56,19 @@ def _assert_payload_correct() -> None:
             "by": "slack-channel",
             "slackChannels": ["channel-a", "channel-b"],
         },
-        "messageDetails": {
-            "text": "a-header",
-            "attachments": [
-                {
-                    "color": "#c1e7c6",
-                    "title": "a-title",
-                    "text": "a-text",
-                }
-            ],
-        },
+        "text": "a-header",
+        "attachments": [
+            {
+                "color": "#c1e7c6",
+                "title": "a-title",
+                "text": "a-text",
+            }
+        ],
     } == json.loads(httpretty.last_request().body)
 
 
 def _assert_message_request_sent(msg_header: str) -> None:
-    assert msg_header in [req.parsed_body["messageDetails"]["text"] for req in httpretty.latest_requests()]
+    assert msg_header in [req.parsed_body["text"] for req in httpretty.latest_requests()]
 
 
 @httpretty.activate  # type: ignore
