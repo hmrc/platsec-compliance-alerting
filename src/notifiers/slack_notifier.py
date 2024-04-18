@@ -55,10 +55,8 @@ class SlackNotifier(Notifier[SlackMessage, Finding]):
         return dict(response.json())
 
     def _build_headers(self) -> Dict[str, str]:
-        credentials = b64encode(
-            f"{self._notifier_config.username}:{self._notifier_config.token}".encode("utf-8")
-        ).decode("utf-8")
-        return {"Content-Type": "application/json", "Authorization": f"Basic {credentials}"}
+        credentials = b64encode(f"{self._notifier_config.api_v2_key}".encode("utf-8")).decode("utf-8")
+        return {"Content-Type": "application/json", "Authorization": f"{credentials}"}
 
     def apply_filters(self, findings: Set[Finding]) -> Set[Finding]:
         return FindingsFilter().do_filter(findings, self._filters_config)

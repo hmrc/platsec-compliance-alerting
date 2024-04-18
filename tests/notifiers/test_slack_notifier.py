@@ -15,21 +15,20 @@ from src.notifiers.slack_notifier import SlackNotifier
 
 TEST_COLOUR = "some-colour"
 SLACK_MESSAGE = SlackMessage(["channel-a", "channel-b"], "a-header", "a-title", "a-text", "#c1e7c6")
-API_URL = "https://fake-api-url.com/"
-USER = "user"
-USER_PASS = "token"
-BASIC_AUTH = base64.b64encode(f"{USER}:{USER_PASS}".encode("utf-8")).decode("utf-8")
+TEST_SLACK_API_URL = "https://fake-api-url.com/"
+API_V2_KEY = "testapiv2key"
+AUTH = base64.b64encode(f"{API_V2_KEY}".encode("utf-8")).decode("utf-8")
 
 
 def _create_slack_notifier() -> SlackNotifier:
-    slack_notifier_config = SlackNotifierConfig(USER, USER_PASS, API_URL)
+    slack_notifier_config = SlackNotifierConfig(API_V2_KEY, TEST_SLACK_API_URL)
     return SlackNotifier(Mock(get_slack_notifier_config=Mock(return_value=slack_notifier_config)))
 
 
 def _register_slack_api_success() -> None:
     httpretty.register_uri(
         httpretty.POST,
-        API_URL,
+        TEST_SLACK_API_URL,
         body=json.dumps({"successfullySentTo": ["channel-a", "channel-b"]}),
         status=200,
     )
@@ -38,7 +37,7 @@ def _register_slack_api_success() -> None:
 def _register_slack_api_failure(status: int) -> None:
     httpretty.register_uri(
         httpretty.POST,
-        API_URL,
+        TEST_SLACK_API_URL,
         body=json.dumps({"errors": [{"code": "error", "message": "statusCode: 404, msg: 'channel_not_found'"}]}),
         status=status,
     )
@@ -47,7 +46,7 @@ def _register_slack_api_failure(status: int) -> None:
 def _assert_headers_correct() -> None:
     headers = httpretty.last_request().headers.items()
     assert ("Content-Type", "application/json") in headers
-    assert ("Authorization", f"Basic {BASIC_AUTH}") in headers  # base64 of "user:token"
+    assert ("Authorization", f"{AUTH}") in headers  # base64 of "user:token"
 
 
 def _assert_payload_correct() -> None:
