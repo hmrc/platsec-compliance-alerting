@@ -121,12 +121,8 @@ class Config:
         return self._get_env("SLACK_API_URL")
 
     @classmethod
-    def get_slack_username_key(self) -> str:
-        return self._get_env("SLACK_USERNAME_KEY")
-
-    @classmethod
-    def get_slack_token_key(self) -> str:
-        return self._get_env("SLACK_TOKEN_KEY")
+    def get_slack_v2_api_key(self) -> str:
+        return self._get_env("SLACK_V2_API_KEY")
 
     @classmethod
     def get_ssm_read_role(self) -> str:
@@ -142,8 +138,7 @@ class Config:
 
     def get_slack_notifier_config(self) -> SlackNotifierConfig:
         return SlackNotifierConfig(
-            username=self.ssm_client.get_parameter(self.get_slack_username_key()),
-            token=self.ssm_client.get_parameter(self.get_slack_token_key()),
+            api_v2_key=self.ssm_client.get_parameter(self.get_slack_v2_api_key()),
             api_url=self.get_slack_api_url(),
         )
 
