@@ -1,4 +1,3 @@
-from base64 import b64encode
 from logging import getLogger
 from typing import Any, Dict, List, Set
 
@@ -55,7 +54,7 @@ class SlackNotifier(Notifier[SlackMessage, Finding]):
         return dict(response.json())
 
     def _build_headers(self) -> Dict[str, str]:
-        credentials = b64encode(f"{self._notifier_config.api_v2_key}".encode("utf-8")).decode("utf-8")
+        credentials = f"{self._notifier_config.api_v2_key}"
         return {"Content-Type": "application/json", "Authorization": f"{credentials}"}
 
     def apply_filters(self, findings: Set[Finding]) -> Set[Finding]:
