@@ -1,4 +1,3 @@
-import base64
 import logging
 from typing import Any
 from unittest.mock import Mock
@@ -17,7 +16,7 @@ TEST_COLOUR = "some-colour"
 SLACK_MESSAGE = SlackMessage(["channel-a", "channel-b"], "a-header", "a-title", "a-text", "#c1e7c6")
 TEST_SLACK_API_URL = "https://fake-api-url.com/"
 API_V2_KEY = "testapiv2key"
-AUTH = base64.b64encode(f"{API_V2_KEY}".encode("utf-8")).decode("utf-8")
+AUTH = f"{API_V2_KEY}"
 
 
 def _create_slack_notifier() -> SlackNotifier:
@@ -46,7 +45,7 @@ def _register_slack_api_failure(status: int) -> None:
 def _assert_headers_correct() -> None:
     headers = httpretty.last_request().headers.items()
     assert ("Content-Type", "application/json") in headers
-    assert ("Authorization", f"{AUTH}") in headers  # base64 of "user:token"
+    assert ("Authorization", f"{AUTH}") in headers
 
 
 def _assert_payload_correct() -> None:
