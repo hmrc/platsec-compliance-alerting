@@ -55,6 +55,8 @@ def _assert_payload_correct() -> None:
             "by": "slack-channel",
             "slackChannels": ["channel-a", "channel-b"],
         },
+        "displayName": "DisplayName",
+        "emoji": "Emoji",
         "text": "a-header",
         "attachments": [
             {

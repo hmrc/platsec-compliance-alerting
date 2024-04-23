@@ -25,6 +25,8 @@ class SlackMessage(Notification):
                 "by": "slack-channel",
                 "slackChannels": self.channels,
             },
+            "displayName": "DisplayName",
+            "emoji": "Emoji",
             "text": self.header,
             "attachments": [
                 {
