@@ -19,14 +19,15 @@ class SlackMessage(Notification):
         self.text = text
         self.color = color
 
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "channelLookup": {
                 "by": "slack-channel",
                 "slackChannels": self.channels,
             },
-            "displayName": "DisplayName",
-            "emoji": "Emoji",
+            "displayName": self.title,
+            "emoji": ":fire-on-fire:",
             "text": self.header,
             "attachments": [
                 {
