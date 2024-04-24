@@ -16,7 +16,6 @@ TEST_COLOUR = "some-colour"
 SLACK_MESSAGE = SlackMessage(["channel-a", "channel-b"], "a-header", "a-title", "a-text", "#c1e7c6")
 TEST_SLACK_API_URL = "https://fake-api-url.com/"
 API_V2_KEY = "testapiv2key"
-AUTH = f"{API_V2_KEY}"
 
 
 def _create_slack_notifier() -> SlackNotifier:
@@ -45,7 +44,7 @@ def _register_slack_api_failure(status: int) -> None:
 def _assert_headers_correct() -> None:
     headers = httpretty.last_request().headers.items()
     assert ("Content-Type", "application/json") in headers
-    assert ("Authorization", f"{AUTH}") in headers
+    assert ("Authorization", API_V2_KEY) in headers
 
 
 def _assert_payload_correct() -> None:
@@ -54,8 +53,8 @@ def _assert_payload_correct() -> None:
             "by": "slack-channel",
             "slackChannels": ["channel-a", "channel-b"],
         },
-        "displayName": "DisplayName",
-        "emoji": "Emoji",
+        "displayName": "a-title",
+        "emoji": ":fire-on-fire:",
         "text": "a-header",
         "attachments": [
             {
