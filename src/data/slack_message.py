@@ -19,7 +19,6 @@ class SlackMessage(Notification):
         self.text = text
         self.color = color
 
-
     def to_dict(self) -> Dict[str, Any]:
         return {
             "channelLookup": {
