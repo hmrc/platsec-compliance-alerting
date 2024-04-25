@@ -1,4 +1,5 @@
 from typing import List, Set, Optional
+import json
 
 from src.clients.aws_org_client import AwsOrgClient
 from src.data.account import Account
@@ -25,6 +26,19 @@ class NotificationMapper:
             key=lambda msg: (msg.header, msg.title),
         )
 
+    @staticmethod
+    def _convert_text_to_slack_block_kit(account_name: str, account_id: str, region: str, team_handle: str) -> str:
+        output_block_kit = {
+            "blocks": [
+                {
+                    "type": "section",
+                    "text": {"type": "mrkdwn", "text": f"{account_name} ({account_id}), {region} @{team_handle}"},
+                },
+                {"type": "divider"},
+            ]
+        }
+        return json.dumps(output_block_kit)
+
     def build_header(self, org_client: AwsOrgClient, region_name: Optional[str], account: Optional[Account]) -> str:
         if region_name is None:
             region_name = ""
@@ -32,7 +46,11 @@ class NotificationMapper:
             return ""
         else:
             account = org_client.get_account(account_id=account.identifier)
-            return f"{account.name} ({account.identifier}) {region_name} {account.slack_handle.lstrip('@')}"
+            slack_header = NotificationMapper._convert_text_to_slack_block_kit(
+                account.name, account.identifier, region_name, account.slack_handle.lstrip("@")
+            )
+            return slack_header
+            # return f"{account.name} ({account.identifier}) {region_name} {account.slack_handle.lstrip('@')}"
 
     @staticmethod
     def _find_channels(notification: Finding, mappings: Set[NotificationMappingConfig]) -> Set[str]:
