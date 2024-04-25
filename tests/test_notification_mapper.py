@@ -21,21 +21,21 @@ findings_c = finding(
 
 msg_a = SlackMessage(
     channels=["central", "channel-2"],
-    header="aaa (111) test-region-name @team-a",
+    header="aaa (111) test-region-name team-a",
     title="item-a",
     text="a-1\na-2",
     color="#ff4d4d",
 )
 msg_b = SlackMessage(
     channels=["central", "channel-1"],
-    header="bbb (222) test-region-name @team-a",
+    header="bbb (222) test-region-name team-a",
     title="item-b",
     text="finding b",
     color="#ff4d4d",
 )
 msg_c = SlackMessage(
     channels=["central", "channel-1", "channel-2"],
-    header="ccc (333) test-region-name @team-b",
+    header="ccc (333) test-region-name team-b",
     title="item-c",
     text="finding c",
     color="#ffffff",
@@ -55,7 +55,7 @@ class TestNotificationMapper(TestCase):
         mock_client.get_account.side_effect = lambda account_id: Account(
             name=({"111": "aaa", "222": "bbb", "333": "ccc"}[account_id]),
             identifier=account_id,
-            slack_handle=({"111": "@team-a", "222": "@team-a", "333": "@team-b"}[account_id]),
+            slack_handle=({"111": "team-a", "222": "team-a", "333": "team-b"}[account_id]),
         )
 
         slack_messages = NotificationMapper().do_map(all_findings, mappings, mock_client)
@@ -74,7 +74,7 @@ class TestNotificationMapper(TestCase):
         mock_client.get_account.side_effect = lambda account_id: Account(
             name=({"111": "aaa", "222": "bbb", "333": "ccc"}[account_id]),
             identifier=account_id,
-            slack_handle={"111": "@team-a", "222": "@team-a", "333": "@team-b"}[account_id],
+            slack_handle={"111": "team-a", "222": "team-a", "333": "team-b"}[account_id],
         )
 
         slack_messages = NotificationMapper().do_map(all_findings, mappings, mock_client)

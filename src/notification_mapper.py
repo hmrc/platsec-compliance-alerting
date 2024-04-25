@@ -32,7 +32,7 @@ class NotificationMapper:
             return ""
         else:
             account = org_client.get_account(account_id=account.identifier)
-            return f"{account.name} ({account.identifier}) {region_name} @{account.slack_handle.lstrip('@')}"
+            return f"{account.name} ({account.identifier}) {region_name} {account.slack_handle.lstrip('@')}"
 
     @staticmethod
     def _find_channels(notification: Finding, mappings: Set[NotificationMappingConfig]) -> Set[str]:
