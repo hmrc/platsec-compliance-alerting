@@ -19,9 +19,6 @@ class SlackMessage(Notification):
         self.text = text
         self.color = color
 
-    # def _convert_to_slack_block_kit(self, input_text) -> str:
-    #     return
-
     def to_dict(self) -> Dict[str, Any]:
         return {
             "channelLookup": {
@@ -29,7 +26,7 @@ class SlackMessage(Notification):
                 "slackChannels": self.channels,
             },
             "displayName": self.title,
-            "emoji": ":fire-on-fire:",
+            "emoji": ":this-is-fine:",
             "text": self.header,
             "attachments": [
                 {
