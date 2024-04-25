@@ -85,7 +85,7 @@ def test_main_sns_event(
         compliance_item_type="compliance-item-type",
         item="item",
         findings={"Words of Advice"},
-        account=Account(identifier="111222333444", name="", slack_handle="@some-team-name"),
+        account=Account(identifier="111222333444", name="", slack_handle="some-team-name"),
         region_name="region",
     )
     mock_compliance_alerter.return_value.send.return_value = Mock()
@@ -109,7 +109,7 @@ def test_main_s3_event(
         compliance_item_type="compliance-item-type",
         item="item",
         findings={"Words of Advice"},
-        account=Account(identifier="111222333444", name="", slack_handle="@some-team-name"),
+        account=Account(identifier="111222333444", name="", slack_handle="some-team-name"),
         region_name="region",
     )
     mock_compliance_alerter.return_value.send.return_value = Mock()
@@ -136,12 +136,12 @@ def test_send(helper_test_config: Any) -> None:
         item="item",
         findings={"Words of Advice"},
         account=Account(
-            identifier=helper_test_config.account_id, name="test-account-name", slack_handle="@some-team-name"
+            identifier=helper_test_config.account_id, name="test-account-name", slack_handle="some-team-name"
         ),
         region_name="region",
     )
     ca.send(notifier=SlackNotifier(config=ca.config), payloads={finding})
-    _assert_slack_message_sent("@some-team-name")
+    _assert_slack_message_sent("some-team-name")
 
 
 def test_compliance_alerter_main_s3_audit(helper_test_config: Any) -> None:
@@ -157,7 +157,7 @@ def test_compliance_alerter_main_s3_audit(helper_test_config: Any) -> None:
     ca.send(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("the-alerting-channel")
     _assert_slack_message_sent("bad-bucket")
-    _assert_slack_message_sent("@some-team-name")
+    _assert_slack_message_sent("some-team-name")
 
 
 def test_compliance_alerter_main_github_audit(helper_test_config: Any) -> None:
@@ -203,7 +203,7 @@ def test_compliance_alerter_main_vpc_audit(helper_test_config: Any) -> None:
     ca.send(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("the-alerting-channel")
     _assert_slack_message_sent("VPC flow logs compliance enforcement success")
-    _assert_slack_message_sent("@some-team-name")
+    _assert_slack_message_sent("some-team-name")
 
 
 def test_compliance_alerter_main_vpc_peering_audit(helper_test_config: Any) -> None:
@@ -219,7 +219,7 @@ def test_compliance_alerter_main_vpc_peering_audit(helper_test_config: Any) -> N
     ca.send(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("vpc-peering-alerts")
     _assert_slack_message_sent("vpc peering connection with unknown account")
-    _assert_slack_message_sent("@some-team-name")
+    _assert_slack_message_sent("some-team-name")
 
 
 def test_compliance_alerter_main_password_policy_audit(helper_test_config: Any) -> None:
@@ -235,7 +235,7 @@ def test_compliance_alerter_main_password_policy_audit(helper_test_config: Any) 
     ca.send(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("the-alerting-channel")
     _assert_slack_message_sent("password policy compliance enforcement success")
-    _assert_slack_message_sent("@some-team-name")
+    _assert_slack_message_sent("some-team-name")
 
 
 def test_codepipeline_sns_event(helper_test_config: Any) -> None:
@@ -254,7 +254,7 @@ def test_codepipeline_sns_event(helper_test_config: Any) -> None:
     findings = ca.build_sns_event_findings(test_event)
     ca.send(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("codepipeline-alerts")
-    _assert_slack_message_sent("@some-team-name")
+    _assert_slack_message_sent("some-team-name")
 
 
 def test_codebuild_sns_event(helper_test_config: Any) -> None:
@@ -273,7 +273,7 @@ def test_codebuild_sns_event(helper_test_config: Any) -> None:
     findings = ca.build_sns_event_findings(test_event)
     ca.send(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("codebuild-alerts")
-    _assert_slack_message_sent("@some-team-name")
+    _assert_slack_message_sent("some-team-name")
 
 
 def test_slack_notification_for_aws_health_sns_event(helper_test_config: Any) -> None:
@@ -296,7 +296,7 @@ def test_slack_notification_for_aws_health_sns_event(helper_test_config: Any) ->
     findings = ca.build_sns_event_findings(test_event)
     ca.send(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("the-health-channel")
-    _assert_slack_message_sent("@some-team-name")
+    _assert_slack_message_sent("some-team-name")
 
 
 def test_slack_notification_for_aws_health_sns_event_with_nontarget_event_type(helper_test_config: Any) -> None:
@@ -389,7 +389,7 @@ def test_grant_user_access_lambda_sns_event(helper_test_config: Any, _org_client
     findings = ca.build_sns_event_findings(test_event)
     ca.send(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("grant-user-access-lambda-alerts")
-    _assert_slack_message_sent("@some-team-name")
+    _assert_slack_message_sent("some-team-name")
 
 
 def test_guardduty_sns_event(helper_test_config: Any, _org_client: BaseClient) -> None:
@@ -419,7 +419,7 @@ def test_guardduty_sns_event(helper_test_config: Any, _org_client: BaseClient) -
     _assert_slack_message_sent_to_channel("guardduty-alerts")
     _assert_slack_message_sent_to_channel("the-alerting-channel")
     _assert_slack_message_sent("sub-account-name")
-    _assert_slack_message_sent("@some-team-name")
+    _assert_slack_message_sent("some-team-name")
 
 
 def test_unknown_sns_event(helper_test_config: Any) -> None:
@@ -552,7 +552,7 @@ def _setup_org_sub_account(org_client: BaseClient, account_name: str = "test-acc
     org_client.tag_resource(
         ResourceId=account_id,
         Tags=[
-            {"Key": "team_slack_handle", "Value": "@some-team-name"},
+            {"Key": "team_slack_handle", "Value": "some-team-name"},
         ],
     )
     return org_client
