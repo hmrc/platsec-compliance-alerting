@@ -32,7 +32,7 @@ class SlackMessage(Notification):
                 {
                     "color": self.color,
                     "title": self.title,
-                    "text": self.text,
+                    "text": f"{self.text}, @platsec",
                 }
             ],
         }
