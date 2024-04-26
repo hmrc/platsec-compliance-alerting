@@ -40,7 +40,7 @@ class SlackMessage(Notification):
             },
             "displayName": self.title,
             "emoji": ":this-is-fine:",
-            "blocks": self.header,
+            "blocks": [self.header],
             "attachments": [
                 {
                     "color": self.color,

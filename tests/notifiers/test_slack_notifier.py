@@ -62,8 +62,7 @@ def _assert_payload_correct() -> None:
         },
         "displayName": "a-title",
         "emoji": ":this-is-fine:",
-        # "blocks": helper_expected_block("a-header"),
-        "blocks": "a-header",
+        "blocks": ["a-header"],
         "attachments": [
             {
                 "color": "#c1e7c6",
@@ -74,7 +73,7 @@ def _assert_payload_correct() -> None:
     } == json.loads(httpretty.last_request().body)
 
 
-def _assert_message_request_sent(msg_header: str) -> None:
+def _assert_message_request_sent(msg_header: list[str]) -> None:
     assert msg_header in [req.parsed_body["blocks"] for req in httpretty.latest_requests()]
 
 
@@ -107,9 +106,9 @@ def test_send_messages(caplog: Any) -> None:
     with caplog.at_level(logging.INFO):
         _create_slack_notifier().send_messages(messages)
 
-    _assert_message_request_sent("success-header-1")
-    _assert_message_request_sent("success-header-2")
-    _assert_message_request_sent("failure-header")
+    _assert_message_request_sent(["success-header-1"])
+    _assert_message_request_sent(["success-header-2"])
+    _assert_message_request_sent(["failure-header"])
     assert "failure-header" in caplog.text
     assert "500" in caplog.text
     assert "success-header-1" not in caplog.text
@@ -134,9 +133,3 @@ def test_slack_failure() -> None:
         _create_slack_notifier().send_message(SLACK_MESSAGE)
 
     assert sne.match("'channel-a', 'channel-b'")
-
-
-# E       assert ('success-header-1' in
-#                 [['success-header-1', '{"type": "section", "text": {"type": "mrkdwn", "text": "text"}}'],
-#                  ['success-header-1', '{"type... "mrkdwn", "text": "text"}}'],
-#                  ['success-header-2', '{"type": "section", "text": {"type": "mrkdwn", "text": "text"}}']])
