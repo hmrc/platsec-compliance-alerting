@@ -18,6 +18,13 @@ TEST_SLACK_API_URL = "https://fake-api-url.com/"
 API_V2_KEY = "testapiv2key"
 
 
+# def helper_expected_block(text):
+#     block_header = {"type": "section",
+#                     "text": {"type": "mrkdwn", "text": "a-header"}}
+#     block_body = {"type": "section", "text": {"type": "mrkdwn", "text": text}}
+#     return json.loads(block_header, block_body)
+
+
 def _create_slack_notifier() -> SlackNotifier:
     slack_notifier_config = SlackNotifierConfig(API_V2_KEY, TEST_SLACK_API_URL)
     return SlackNotifier(Mock(get_slack_notifier_config=Mock(return_value=slack_notifier_config)))
@@ -55,7 +62,8 @@ def _assert_payload_correct() -> None:
         },
         "displayName": "a-title",
         "emoji": ":this-is-fine:",
-        "text": "a-header",
+        # "blocks": helper_expected_block("a-header"),
+        "blocks": "a-header",
         "attachments": [
             {
                 "color": "#c1e7c6",
@@ -67,7 +75,7 @@ def _assert_payload_correct() -> None:
 
 
 def _assert_message_request_sent(msg_header: str) -> None:
-    assert msg_header in [req.parsed_body["text"] for req in httpretty.latest_requests()]
+    assert msg_header in [req.parsed_body["blocks"] for req in httpretty.latest_requests()]
 
 
 @httpretty.activate  # type: ignore
@@ -126,3 +134,9 @@ def test_slack_failure() -> None:
         _create_slack_notifier().send_message(SLACK_MESSAGE)
 
     assert sne.match("'channel-a', 'channel-b'")
+
+
+# E       assert ('success-header-1' in
+#                 [['success-header-1', '{"type": "section", "text": {"type": "mrkdwn", "text": "text"}}'],
+#                  ['success-header-1', '{"type... "mrkdwn", "text": "text"}}'],
+#                  ['success-header-2', '{"type": "section", "text": {"type": "mrkdwn", "text": "text"}}']])
