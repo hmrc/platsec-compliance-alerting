@@ -62,7 +62,7 @@ def _assert_payload_correct() -> None:
         },
         "displayName": "a-title",
         "emoji": ":this-is-fine:",
-        "blocks": ["a-header"],
+        "blocks": ["a-header", '{"type": "section", "text": {"type": "mrkdwn", "text": "a-text"}}'],
         "attachments": [
             {
                 "color": "#c1e7c6",
@@ -106,9 +106,13 @@ def test_send_messages(caplog: Any) -> None:
     with caplog.at_level(logging.INFO):
         _create_slack_notifier().send_messages(messages)
 
-    _assert_message_request_sent(["success-header-1"])
-    _assert_message_request_sent(["success-header-2"])
-    _assert_message_request_sent(["failure-header"])
+    _assert_message_request_sent(
+        ["success-header-1", '{"type": "section", "text": {"type": "mrkdwn", "text": "text"}}']
+    )
+    _assert_message_request_sent(
+        ["success-header-2", '{"type": "section", "text": {"type": "mrkdwn", "text": "text"}}']
+    )
+    _assert_message_request_sent(["failure-header", '{"type": "section", "text": {"type": "mrkdwn", "text": "text"}}'])
     assert "failure-header" in caplog.text
     assert "500" in caplog.text
     assert "success-header-1" not in caplog.text
