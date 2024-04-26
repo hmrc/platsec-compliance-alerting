@@ -1,7 +1,6 @@
 import logging
 from typing import Any
 from unittest.mock import Mock
-import json
 
 import httpretty
 import json

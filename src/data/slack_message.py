@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Any, Dict, List
-import json
+
+# import json
 
 from src.data.notification import Notification
 
@@ -20,18 +21,18 @@ class SlackMessage(Notification):
         self.text = text
         self.color = color
 
-    @staticmethod
-    def text_to_blocks(report_text):
-        block_section = json.dumps({
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": report_text
-                    }
-            })
-        return block_section
+    # @staticmethod
+    # def text_to_blocks(report_text):
+    #     block_section = json.dumps({
+    #                 "type": "section",
+    #                 "text": {
+    #                     "type": "mrkdwn",
+    #                     "text": report_text
+    #                 }
+    #         })
+    #     return block_section
 
-    def to_dict(self) -> Any:
+    def to_dict(self) -> Dict[str, Any]:
         return {
             "channelLookup": {
                 "by": "slack-channel",
