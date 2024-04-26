@@ -18,13 +18,6 @@ TEST_SLACK_API_URL = "https://fake-api-url.com/"
 API_V2_KEY = "testapiv2key"
 
 
-# def helper_expected_block(text):
-#     block_header = {"type": "section",
-#                     "text": {"type": "mrkdwn", "text": "a-header"}}
-#     block_body = {"type": "section", "text": {"type": "mrkdwn", "text": text}}
-#     return json.loads(block_header, block_body)
-
-
 def _create_slack_notifier() -> SlackNotifier:
     slack_notifier_config = SlackNotifierConfig(API_V2_KEY, TEST_SLACK_API_URL)
     return SlackNotifier(Mock(get_slack_notifier_config=Mock(return_value=slack_notifier_config)))

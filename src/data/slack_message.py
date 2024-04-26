@@ -21,7 +21,7 @@ class SlackMessage(Notification):
         self.color = color
 
     @staticmethod
-    def text_to_blocks(report_text):
+    def text_to_blocks(report_text: str) -> str:
         block_section = json.dumps({"type": "section", "text": {"type": "mrkdwn", "text": report_text}})
         return block_section
 
