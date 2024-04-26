@@ -33,7 +33,7 @@ class SlackMessage(Notification):
             },
             "displayName": self.title,
             "emoji": ":this-is-fine:",
-            "blocks": [
+            "text": [
                 self.header,
                 SlackMessage.text_to_blocks(self.text),
             ],
