@@ -18,13 +18,6 @@ TEST_SLACK_API_URL = "https://fake-api-url.com/"
 API_V2_KEY = "testapiv2key"
 
 
-# def helper_expected_block(text):
-#     block_header = {"type": "section",
-#                     "text": {"type": "mrkdwn", "text": "a-header"}}
-#     block_body = {"type": "section", "text": {"type": "mrkdwn", "text": text}}
-#     return json.loads(block_header, block_body)
-
-
 def _create_slack_notifier() -> SlackNotifier:
     slack_notifier_config = SlackNotifierConfig(API_V2_KEY, TEST_SLACK_API_URL)
     return SlackNotifier(Mock(get_slack_notifier_config=Mock(return_value=slack_notifier_config)))
@@ -62,7 +55,7 @@ def _assert_payload_correct() -> None:
         },
         "displayName": "a-title",
         "emoji": ":this-is-fine:",
-        "blocks": ["a-header"],
+        "blocks": ["a-header", '{"type": "section", "text": {"type": "mrkdwn", "text": "a-text"}}'],
         "attachments": [
             {
                 "color": "#c1e7c6",
@@ -106,9 +99,13 @@ def test_send_messages(caplog: Any) -> None:
     with caplog.at_level(logging.INFO):
         _create_slack_notifier().send_messages(messages)
 
-    _assert_message_request_sent(["success-header-1"])
-    _assert_message_request_sent(["success-header-2"])
-    _assert_message_request_sent(["failure-header"])
+    _assert_message_request_sent(
+        ["success-header-1", '{"type": "section", "text": {"type": "mrkdwn", "text": "text"}}']
+    )
+    _assert_message_request_sent(
+        ["success-header-2", '{"type": "section", "text": {"type": "mrkdwn", "text": "text"}}']
+    )
+    _assert_message_request_sent(["failure-header", '{"type": "section", "text": {"type": "mrkdwn", "text": "text"}}'])
     assert "failure-header" in caplog.text
     assert "500" in caplog.text
     assert "success-header-1" not in caplog.text
