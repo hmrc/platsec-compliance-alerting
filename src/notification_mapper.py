@@ -29,14 +29,10 @@ class NotificationMapper:
     @staticmethod
     def _convert_text_to_slack_block_kit(account_name: str, account_id: str, region: str, team_handle: str) -> str:
         output_block_kit = {
-            "blocks": [
-                {
-                    "type": "section",
-                    "text": {"type": "mrkdwn", "text": f"{account_name} ({account_id}), {region} @{team_handle}"},
-                },
-                {"type": "divider"},
-            ]
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": f"{account_name} ({account_id}), {region} @{team_handle}"},
         }
+
         return json.dumps(output_block_kit)
 
     def build_header(self, org_client: AwsOrgClient, region_name: Optional[str], account: Optional[Account]) -> str:

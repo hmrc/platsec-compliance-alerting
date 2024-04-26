@@ -24,16 +24,11 @@ findings_c = finding(
 def helper_test_header_message(test_account: str, test_account_id: str, test_region: str, test_team_handle: str) -> str:
     return json.dumps(
         {
-            "blocks": [
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": f"{test_account} ({test_account_id}), {test_region} @{test_team_handle}",
-                    },
-                },
-                {"type": "divider"},
-            ]
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": f"{test_account} ({test_account_id}), {test_region} @{test_team_handle}",
+            },
         }
     )
 
