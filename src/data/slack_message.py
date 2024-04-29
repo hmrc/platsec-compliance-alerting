@@ -37,6 +37,7 @@ class SlackMessage(Notification):
                 self.header,
                 SlackMessage.text_to_blocks(self.text),
             ],
+            "text": "",
             "attachments": [
                 {
                     "color": self.color,

@@ -56,6 +56,7 @@ def _assert_payload_correct() -> None:
         "displayName": "a-title",
         "emoji": ":this-is-fine:",
         "blocks": ["a-header", '{"type": "section", "text": {"type": "mrkdwn", "text": "a-text"}}'],
+        "text": "",
         "attachments": [
             {
                 "color": "#c1e7c6",
