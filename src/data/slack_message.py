@@ -33,10 +33,11 @@ class SlackMessage(Notification):
             },
             "displayName": self.title,
             "emoji": ":this-is-fine:",
-            "text": [
+            "blocks": [
                 self.header,
                 SlackMessage.text_to_blocks(self.text),
             ],
+            "text": "",
             "attachments": [
                 {
                     "color": self.color,
