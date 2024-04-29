@@ -55,7 +55,7 @@ def _assert_payload_correct() -> None:
         },
         "displayName": "a-title",
         "emoji": ":this-is-fine:",
-        "text": ["a-header", '{"type": "section", "text": {"type": "mrkdwn", "text": "a-text"}}'],
+        "blocks": ["a-header", '{"type": "section", "text": {"type": "mrkdwn", "text": "a-text"}}'],
         "attachments": [
             {
                 "color": "#c1e7c6",
@@ -67,7 +67,7 @@ def _assert_payload_correct() -> None:
 
 
 def _assert_message_request_sent(msg_header: list[str]) -> None:
-    assert msg_header in [req.parsed_body["text"] for req in httpretty.latest_requests()]
+    assert msg_header in [req.parsed_body["blocks"] for req in httpretty.latest_requests()]
 
 
 @httpretty.activate  # type: ignore
