@@ -21,7 +21,7 @@ findings_c = finding(
 )
 
 
-def helper_test_header_message(
+def helper_test_heading_message(
     test_account: str, test_account_id: str, test_region: str, test_team_handle: str
 ) -> Dict[str, Any]:
     return {
@@ -35,21 +35,21 @@ def helper_test_header_message(
 
 msg_a = SlackMessage(
     channels=["central", "channel-2"],
-    header=helper_test_header_message("aaa", "111", "test-region-name", "team-a"),
+    heading=helper_test_heading_message("aaa", "111", "test-region-name", "team-a"),
     title="item-a",
     text="a-1\na-2",
     color="#ff4d4d",
 )
 msg_b = SlackMessage(
     channels=["central", "channel-1"],
-    header=helper_test_header_message("bbb", "222", "test-region-name", "team-a"),
+    heading=helper_test_heading_message("bbb", "222", "test-region-name", "team-a"),
     title="item-b",
     text="finding b",
     color="#ff4d4d",
 )
 msg_c = SlackMessage(
     channels=["central", "channel-1", "channel-2"],
-    header=helper_test_header_message("ccc", "333", "test-region-name", "team-b"),
+    heading=helper_test_heading_message("ccc", "333", "test-region-name", "team-b"),
     title="item-c",
     text="finding c",
     color="#ffffff",

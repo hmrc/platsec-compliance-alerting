@@ -15,7 +15,7 @@ class NotificationMapper:
             [
                 SlackMessage(
                     channels=sorted(NotificationMapper._find_channels(notification, mappings)),
-                    header=self.build_header(org_client, notification.region_name, notification.account),
+                    heading=self.build_heading(org_client, notification.region_name, notification.account),
                     title=notification.item,
                     text=NotificationMapper._create_message_text(notification),
                     color=notification.severity,
@@ -25,7 +25,7 @@ class NotificationMapper:
             key=lambda msg: (msg.title),
         )
 
-    def build_header(
+    def build_heading(
         self, org_client: AwsOrgClient, region_name: Optional[str], account: Optional[Account]
     ) -> Dict[str, Any]:
         if region_name is None:
