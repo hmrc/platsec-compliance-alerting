@@ -12,14 +12,13 @@ from src.data.slack_message import SlackMessage
 from src.notifiers.slack_notifier import SlackNotifier
 
 
-def slack_header_helper(header_value: str) -> Dict[str, Any]:
-    return {"type": "section", "text": {"type": "mrkdwn", "text": header_value}}
+def slack_heading_helper(heading_value: str) -> Dict[str, Any]:
+    return {"type": "section", "text": {"type": "mrkdwn", "text": heading_value}}
 
 
-msg_content = {"type": "section", "text": {"type": "mrkdwn", "text": "a-text"}}
 TEST_COLOUR = "some-colour"
 SLACK_MESSAGE = SlackMessage(
-    ["channel-a", "channel-b"], slack_header_helper("a-header"), "a-title", "a-text", "#c1e7c6"
+    ["channel-a", "channel-b"], slack_heading_helper("a-heading"), "a-title", "a-text", "#c1e7c6"
 )
 TEST_SLACK_API_URL = "https://fake-api-url.com/"
 API_V2_KEY = "testapiv2key"
@@ -62,20 +61,19 @@ def _assert_payload_correct() -> None:
         },
         "displayName": "a-title",
         "emoji": ":this-is-fine:",
-        "blocks": [slack_header_helper("a-header"), msg_content],
+        "blocks": [slack_heading_helper("a-heading"), {"type": "divider"}],
         "text": "",
         "attachments": [
             {
                 "color": "#c1e7c6",
-                "title": "a-title",
                 "text": "a-text",
             }
         ],
     } == json.loads(httpretty.last_request().body)
 
 
-def _assert_message_request_sent(msg_header: list[Dict[str, Any]]) -> None:
-    assert msg_header in [req.parsed_body["blocks"] for req in httpretty.latest_requests()]
+def _assert_message_request_sent(msg_heading: list[Dict[str, Any]]) -> None:
+    assert msg_heading in [req.parsed_body["blocks"] for req in httpretty.latest_requests()]
 
 
 @httpretty.activate  # type: ignore
@@ -90,7 +88,7 @@ def test_send_message() -> None:
 def test_send_message_with_no_channel() -> None:
     _register_slack_api_success()
     _create_slack_notifier().send_message(
-        SlackMessage(["", ""], {"text": "a-header"}, "a-title", "a-text", TEST_COLOUR)
+        SlackMessage(["", ""], {"text": "a-heading"}, "a-title", "a-text", TEST_COLOUR)
     )
     assert len(httpretty.latest_requests()) == 0, "Message should not have been sent"
 
@@ -101,20 +99,20 @@ def test_send_messages(caplog: Any) -> None:
     _register_slack_api_failure(500)
     _register_slack_api_success()
     messages = [
-        SlackMessage(["channel"], {"text": "success-header-1"}, "title", "a-text", TEST_COLOUR),
-        SlackMessage(["channel"], {"text": "failure-header"}, "title", "a-text", TEST_COLOUR),
-        SlackMessage(["channel"], {"text": "success-header-2"}, "title", "a-text", TEST_COLOUR),
+        SlackMessage(["channel"], {"text": "success-heading-1"}, "title", "a-text", TEST_COLOUR),
+        SlackMessage(["channel"], {"text": "failure-heading"}, "title", "a-text", TEST_COLOUR),
+        SlackMessage(["channel"], {"text": "success-heading-2"}, "title", "a-text", TEST_COLOUR),
     ]
     with caplog.at_level(logging.INFO):
         _create_slack_notifier().send_messages(messages)
 
-    _assert_message_request_sent([{"text": "success-header-1"}, msg_content])
-    _assert_message_request_sent([{"text": "failure-header"}, msg_content])
-    _assert_message_request_sent([{"text": "success-header-2"}, msg_content])
-    assert "failure-header" in caplog.text
+    _assert_message_request_sent([{"text": "success-heading-1"}, {"type": "divider"}])
+    _assert_message_request_sent([{"text": "failure-heading"}, {"type": "divider"}])
+    _assert_message_request_sent([{"text": "success-heading-2"}, {"type": "divider"}])
+    assert "failure-heading" in caplog.text
     assert "500" in caplog.text
-    assert "success-header-1" not in caplog.text
-    assert "success-header-2" not in caplog.text
+    assert "success-heading-1" not in caplog.text
+    assert "success-heading-2" not in caplog.text
 
 
 @httpretty.activate  # type: ignore
