@@ -1,6 +1,6 @@
 from unittest import TestCase
 from unittest.mock import Mock
-import json
+from typing import Dict, Any
 
 from src.clients.aws_org_client import AwsOrgClient
 from src.config.notification_mapping_config import NotificationMappingConfig
@@ -21,16 +21,16 @@ findings_c = finding(
 )
 
 
-def helper_test_header_message(test_account: str, test_account_id: str, test_region: str, test_team_handle: str) -> str:
-    return json.dumps(
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": f"{test_account} ({test_account_id}), {test_region} @{test_team_handle}",
-            },
-        }
-    )
+def helper_test_header_message(
+    test_account: str, test_account_id: str, test_region: str, test_team_handle: str
+) -> Dict[str, Any]:
+    return {
+        "type": "section",
+        "text": {
+            "type": "mrkdwn",
+            "text": f"{test_account} ({test_account_id}), {test_region} @{test_team_handle}",
+        },
+    }
 
 
 msg_a = SlackMessage(
