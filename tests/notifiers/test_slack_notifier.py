@@ -16,7 +16,6 @@ def slack_header_helper(header_value: str) -> Dict[str, Any]:
     return {"type": "section", "text": {"type": "mrkdwn", "text": header_value}}
 
 
-msg_content = {"type": "section", "text": {"type": "mrkdwn", "text": "a-text"}}
 TEST_COLOUR = "some-colour"
 SLACK_MESSAGE = SlackMessage(
     ["channel-a", "channel-b"], slack_header_helper("a-header"), "a-title", "a-text", "#c1e7c6"
@@ -62,7 +61,7 @@ def _assert_payload_correct() -> None:
         },
         "displayName": "a-title",
         "emoji": ":this-is-fine:",
-        "blocks": [slack_header_helper("a-header"), msg_content],
+        "blocks": [slack_header_helper("a-header"), {"type": "divider"}],
         "text": "",
         "attachments": [
             {
@@ -108,9 +107,9 @@ def test_send_messages(caplog: Any) -> None:
     with caplog.at_level(logging.INFO):
         _create_slack_notifier().send_messages(messages)
 
-    _assert_message_request_sent([{"text": "success-header-1"}, msg_content])
-    _assert_message_request_sent([{"text": "failure-header"}, msg_content])
-    _assert_message_request_sent([{"text": "success-header-2"}, msg_content])
+    _assert_message_request_sent([{"text": "success-header-1"}, {"type": "divider"}])
+    _assert_message_request_sent([{"text": "failure-header"}, {"type": "divider"}])
+    _assert_message_request_sent([{"text": "success-header-2"}, {"type": "divider"}])
     assert "failure-header" in caplog.text
     assert "500" in caplog.text
     assert "success-header-1" not in caplog.text

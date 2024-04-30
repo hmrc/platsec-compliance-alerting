@@ -29,7 +29,9 @@ class SlackMessage(Notification):
             "emoji": ":this-is-fine:",
             "blocks": [
                 self.header,
-                {"type": "section", "text": {"type": "mrkdwn", "text": self.text}},
+                {"type": "divider"},
+                # {"type": "section", "text": {"type": "mrkdwn", "text": self.text}},   # FOR FUTURE USE AS
+                # Attachments block is considered legacy by Slack and may be deprecated
             ],
             "text": "",
             "attachments": [
