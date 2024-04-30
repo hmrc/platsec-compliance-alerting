@@ -66,7 +66,6 @@ def _assert_payload_correct() -> None:
         "attachments": [
             {
                 "color": "#c1e7c6",
-                "title": "a-title",
                 "text": "a-text",
             }
         ],

@@ -37,7 +37,6 @@ class SlackMessage(Notification):
             "attachments": [
                 {
                     "color": self.color,
-                    "title": self.title,
                     "text": self.text,
                 }
             ],
