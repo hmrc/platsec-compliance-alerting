@@ -49,6 +49,7 @@ PUBLIC_QUERY_KEY = "public_query_audit"
 EC2_KEY = "ec2_audit"
 SSM_AUDIT_REPORT_KEY = "ssm_audit"
 PASSWORD_POLICY_KEY = "password_policy_audit"
+SLACK_USERNAME_KEY = "the-slack-username-key"
 SLACK_API_URL = "https://the-slack-api-url.com"
 SLACK_V2_API_KEY = "the-slack-v2-api-key"
 PAGERDUTY_SERVICE = "the-pagerduty-service"
@@ -504,6 +505,7 @@ def _setup_environment(monkeypatch: Any) -> None:
         "GUARDDUTY_RUNBOOK_URL": "the-gd-runbook",
         "PASSWORD_POLICY_AUDIT_REPORT_KEY": PASSWORD_POLICY_KEY,
         "SLACK_API_URL": SLACK_API_URL,
+        "SLACK_USERNAME_KEY": SLACK_USERNAME_KEY,
         "SLACK_V2_API_KEY": SLACK_V2_API_KEY,
         "SSM_READ_ROLE": "the-ssm-read-role",
         "VPC_AUDIT_REPORT_KEY": VPC_KEY,
@@ -529,6 +531,7 @@ def _ssm_client() -> Iterator[BaseClient]:
 
 
 def _setup_ssm_parameters(ssm_client: BaseClient) -> BaseClient:
+    ssm_client.put_parameter(Name=SLACK_USERNAME_KEY, Value="the-slack-username", Type="SecureString")
     ssm_client.put_parameter(Name=SLACK_V2_API_KEY, Value="the-slack-v2-api-key", Type="SecureString")
     ssm_client.put_parameter(
         Name=f"{PAGERDUTY_SSM_PARAMETER_STORE_PREFIX}{PAGERDUTY_SERVICE}",
