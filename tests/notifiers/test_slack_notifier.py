@@ -20,12 +20,13 @@ TEST_COLOUR = "some-colour"
 SLACK_MESSAGE = SlackMessage(
     ["channel-a", "channel-b"], slack_heading_helper("a-heading"), "a-title", "a-text", "#c1e7c6"
 )
+USER = "user"
 TEST_SLACK_API_URL = "https://fake-api-url.com/"
 API_V2_KEY = "testapiv2key"
 
 
 def _create_slack_notifier() -> SlackNotifier:
-    slack_notifier_config = SlackNotifierConfig(API_V2_KEY, TEST_SLACK_API_URL)
+    slack_notifier_config = SlackNotifierConfig(USER, API_V2_KEY, TEST_SLACK_API_URL)
     return SlackNotifier(Mock(get_slack_notifier_config=Mock(return_value=slack_notifier_config)))
 
 
