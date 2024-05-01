@@ -28,7 +28,7 @@ def helper_test_heading_message(
         "type": "section",
         "text": {
             "type": "mrkdwn",
-            "text": f"{test_account} ({test_account_id}), {test_region} @{test_team_handle}",
+            "text": f"{test_account} ({test_account_id}), {test_region} {test_team_handle}",
         },
     }
 

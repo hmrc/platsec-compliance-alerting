@@ -38,7 +38,7 @@ class NotificationMapper:
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"{account.name} ({account.identifier}), {region_name} @{account.slack_handle.lstrip('@')}",
+                    "text": f"{account.name} ({account.identifier}), {region_name} {account.slack_handle}",
                 },
             }
 
