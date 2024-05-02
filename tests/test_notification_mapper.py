@@ -1,6 +1,7 @@
 from unittest import TestCase
 from unittest.mock import Mock
 from typing import Dict, Any
+import pytest
 
 from src.clients.aws_org_client import AwsOrgClient
 from src.config.notification_mapping_config import NotificationMappingConfig
@@ -12,6 +13,7 @@ from src.notification_mapper import NotificationMapper
 from tests.test_types_generator import account, finding
 
 
+SLACK_EMOJI = ":test-emoji:"
 findings_a = finding(
     severity=Severity.HIGH, item="item-a", findings={"a-1", "a-2"}, account=account(identifier="111", name="bbb")
 )
@@ -19,6 +21,15 @@ findings_b = finding(item="item-b", findings={"finding b"}, account=account(iden
 findings_c = finding(
     severity=Severity.LOW, item="item-c", findings={"finding c"}, account=account(identifier="333", name="ccc")
 )
+
+
+@pytest.fixture(autouse=True)
+def _setup_environment(monkeypatch: Any) -> None:
+    env_vars = {
+        "SLACK_EMOJI": SLACK_EMOJI,
+    }
+    for key, value in env_vars.items():
+        monkeypatch.setenv(key, value)
 
 
 def helper_test_heading_message(
@@ -39,6 +50,7 @@ msg_a = SlackMessage(
     title="item-a",
     text="a-1\na-2",
     color="#ff4d4d",
+    emoji=":test-emoji:",
 )
 msg_b = SlackMessage(
     channels=["central", "channel-1"],
@@ -46,6 +58,7 @@ msg_b = SlackMessage(
     title="item-b",
     text="finding b",
     color="#ff4d4d",
+    emoji=":test-emoji:",
 )
 msg_c = SlackMessage(
     channels=["central", "channel-1", "channel-2"],
@@ -53,6 +66,7 @@ msg_c = SlackMessage(
     title="item-c",
     text="finding c",
     color="#ffffff",
+    emoji=":test-emoji:",
 )
 
 

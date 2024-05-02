@@ -18,14 +18,24 @@ def slack_heading_helper(heading_value: str) -> Dict[str, Any]:
 
 TEST_COLOUR = "some-colour"
 SLACK_MESSAGE = SlackMessage(
-    ["channel-a", "channel-b"], slack_heading_helper("a-heading"), "a-title", "a-text", "#c1e7c6"
+    ["channel-a", "channel-b"],
+    slack_heading_helper("a-heading"),
+    "a-title",
+    "a-text",
+    "#c1e7c6",
+    ":test-emoji:",
 )
 TEST_SLACK_API_URL = "https://fake-api-url.com/"
 API_V2_KEY = "testapiv2key"
+SLACK_EMOJI = ":test-emoji:"
 
 
 def _create_slack_notifier() -> SlackNotifier:
-    slack_notifier_config = SlackNotifierConfig(API_V2_KEY, TEST_SLACK_API_URL)
+    slack_notifier_config = SlackNotifierConfig(
+        API_V2_KEY,
+        TEST_SLACK_API_URL,
+        SLACK_EMOJI,
+    )
     return SlackNotifier(Mock(get_slack_notifier_config=Mock(return_value=slack_notifier_config)))
 
 
@@ -60,7 +70,7 @@ def _assert_payload_correct() -> None:
             "slackChannels": ["channel-a", "channel-b"],
         },
         "displayName": "a-title",
-        "emoji": ":this-is-fine:",
+        "emoji": ":test-emoji:",
         "blocks": [slack_heading_helper("a-heading"), {"type": "divider"}],
         "text": "",
         "attachments": [
@@ -88,7 +98,7 @@ def test_send_message() -> None:
 def test_send_message_with_no_channel() -> None:
     _register_slack_api_success()
     _create_slack_notifier().send_message(
-        SlackMessage(["", ""], {"text": "a-heading"}, "a-title", "a-text", TEST_COLOUR)
+        SlackMessage(["", ""], {"text": "a-heading"}, "a-title", "a-text", TEST_COLOUR, ":test-emoji:")
     )
     assert len(httpretty.latest_requests()) == 0, "Message should not have been sent"
 
@@ -99,9 +109,9 @@ def test_send_messages(caplog: Any) -> None:
     _register_slack_api_failure(500)
     _register_slack_api_success()
     messages = [
-        SlackMessage(["channel"], {"text": "success-heading-1"}, "title", "a-text", TEST_COLOUR),
-        SlackMessage(["channel"], {"text": "failure-heading"}, "title", "a-text", TEST_COLOUR),
-        SlackMessage(["channel"], {"text": "success-heading-2"}, "title", "a-text", TEST_COLOUR),
+        SlackMessage(["channel"], {"text": "success-heading-1"}, "title", "a-text", TEST_COLOUR, ":test-emoji:"),
+        SlackMessage(["channel"], {"text": "failure-heading"}, "title", "a-text", TEST_COLOUR, ":test-emoji:"),
+        SlackMessage(["channel"], {"text": "success-heading-2"}, "title", "a-text", TEST_COLOUR, ":test-emoji:"),
     ]
     with caplog.at_level(logging.INFO):
         _create_slack_notifier().send_messages(messages)

@@ -43,6 +43,7 @@ MOCK_CLIENTS: Dict[str, Any] = {
         ("PASSWORD_POLICY_AUDIT_REPORT_KEY", Config(**MOCK_CLIENTS).get_password_policy_audit_report_key),
         ("SLACK_API_URL", Config(**MOCK_CLIENTS).get_slack_api_url),
         ("SLACK_V2_API_KEY", Config(**MOCK_CLIENTS).get_slack_v2_api_key),
+        ("SLACK_EMOJI", Config(**MOCK_CLIENTS).get_slack_emoji),
         ("SSM_READ_ROLE", Config(**MOCK_CLIENTS).get_ssm_read_role),
         ("ORG_ACCOUNT", Config(**MOCK_CLIENTS).get_org_account),
         ("ORG_READ_ROLE", Config(**MOCK_CLIENTS).get_org_read_role),
@@ -120,13 +121,17 @@ def test_get_ignorable_report_keys(monkeypatch: Any) -> None:
 def test_get_slack_notifier_config(monkeypatch: Any) -> None:
     monkeypatch.setenv("SLACK_API_URL", "the-url")
     monkeypatch.setenv("SLACK_V2_API_KEY", "some-test-api-v2-key")
+    monkeypatch.setenv("SLACK_EMOJI", ":test-emoji:")
     ssm_client = Mock().return_value
     ssm_client.get_parameter.side_effect = lambda x: {
         "some-test-api-v2-key": "some-test-api-v2-key",
     }[x]
     MOCK_CLIENTS["ssm_client"] = ssm_client
 
-    assert SlackNotifierConfig("some-test-api-v2-key", "the-url") == Config(**MOCK_CLIENTS).get_slack_notifier_config()
+    assert (
+        SlackNotifierConfig("some-test-api-v2-key", "the-url", ":test-emoji:")
+        == Config(**MOCK_CLIENTS).get_slack_notifier_config()
+    )
 
 
 @patch("src.config.config.Config._fetch_config_files")
