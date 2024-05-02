@@ -5,6 +5,7 @@ from src.data.account import Account
 from src.data.finding import Finding
 from src.config.notification_mapping_config import NotificationMappingConfig
 from src.data.slack_message import SlackMessage
+from src.config.config import Config
 
 
 class NotificationMapper:
@@ -19,10 +20,12 @@ class NotificationMapper:
                     title=notification.item,
                     text=NotificationMapper._create_message_text(notification),
                     color=notification.severity,
+                    emoji=Config.get_slack_emoji(),
                 )
                 for notification in notifications
             ],
             key=lambda msg: (msg.title),
+            # key=lambda msg: (msg.heading["text"]["text"], msg.channels),
         )
 
     def build_heading(

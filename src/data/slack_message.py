@@ -11,13 +11,23 @@ class SlackMessage(Notification):
     title: str
     text: str
     color: str
+    emoji: str
 
-    def __init__(self, channels: List[str], heading: Dict[str, Any], title: str, text: str, color: str):
+    def __init__(
+        self,
+        channels: List[str],
+        heading: Dict[str, Any],
+        title: str,
+        text: str,
+        color: str,
+        emoji: str,
+    ):
         self.channels = list(filter(None, channels))
         self.heading = heading
         self.title = title
         self.text = text
         self.color = color
+        self.emoji = emoji
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -26,7 +36,7 @@ class SlackMessage(Notification):
                 "slackChannels": self.channels,
             },
             "displayName": self.title,
-            "emoji": ":this-is-fine:",
+            "emoji": self.emoji,
             "blocks": [
                 self.heading,
                 {"type": "divider"},

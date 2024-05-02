@@ -51,6 +51,7 @@ SSM_AUDIT_REPORT_KEY = "ssm_audit"
 PASSWORD_POLICY_KEY = "password_policy_audit"
 SLACK_API_URL = "https://the-slack-api-url.com"
 SLACK_V2_API_KEY = "the-slack-v2-api-key"
+SLACK_EMOJI = ":test-emoji:"
 PAGERDUTY_SERVICE = "the-pagerduty-service"
 PAGERDUTY_API_URL = "https://the-pagerduty-api-url.com"
 PAGERDUTY_SERVICE_ROUTING_KEY = f"{PAGERDUTY_SERVICE}-routing-key"
@@ -505,6 +506,7 @@ def _setup_environment(monkeypatch: Any) -> None:
         "PASSWORD_POLICY_AUDIT_REPORT_KEY": PASSWORD_POLICY_KEY,
         "SLACK_API_URL": SLACK_API_URL,
         "SLACK_V2_API_KEY": SLACK_V2_API_KEY,
+        "SLACK_EMOJI": SLACK_EMOJI,
         "SSM_READ_ROLE": "the-ssm-read-role",
         "VPC_AUDIT_REPORT_KEY": VPC_KEY,
         "PUBLIC_QUERY_AUDIT_REPORT_KEY": PUBLIC_QUERY_KEY,
