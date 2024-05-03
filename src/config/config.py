@@ -128,6 +128,10 @@ class Config:
     def get_slack_emoji() -> str:
         return Config._get_env("SLACK_EMOJI")
 
+    @staticmethod
+    def get_service_name() -> str:
+        return Config._get_env("SERVICE_NAME")
+
     @classmethod
     def get_ssm_read_role(self) -> str:
         return self._get_env("SSM_READ_ROLE")
@@ -145,6 +149,7 @@ class Config:
             api_v2_key=self.ssm_client.get_parameter(self.get_slack_v2_api_key()),
             api_url=self.get_slack_api_url(),
             emoji=Config.get_slack_emoji(),
+            source=Config.get_service_name(),
         )
 
     @classmethod
