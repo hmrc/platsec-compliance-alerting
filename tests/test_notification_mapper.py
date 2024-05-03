@@ -14,6 +14,7 @@ from tests.test_types_generator import account, finding
 
 
 SLACK_EMOJI = ":test-emoji:"
+SERVICE_NAME = "test-service"
 findings_a = finding(
     severity=Severity.HIGH, item="item-a", findings={"a-1", "a-2"}, account=account(identifier="111", name="bbb")
 )
@@ -27,6 +28,7 @@ findings_c = finding(
 def _setup_environment(monkeypatch: Any) -> None:
     env_vars = {
         "SLACK_EMOJI": SLACK_EMOJI,
+        "SERVICE_NAME": SERVICE_NAME,
     }
     for key, value in env_vars.items():
         monkeypatch.setenv(key, value)
@@ -51,6 +53,7 @@ msg_a = SlackMessage(
     text="a-1\na-2",
     color="#ff4d4d",
     emoji=":test-emoji:",
+    source="test-service",
 )
 msg_b = SlackMessage(
     channels=["central", "channel-1"],
@@ -59,6 +62,7 @@ msg_b = SlackMessage(
     text="finding b",
     color="#ff4d4d",
     emoji=":test-emoji:",
+    source="test-service",
 )
 msg_c = SlackMessage(
     channels=["central", "channel-1", "channel-2"],
@@ -67,6 +71,7 @@ msg_c = SlackMessage(
     text="finding c",
     color="#ffffff",
     emoji=":test-emoji:",
+    source="test-service",
 )
 
 

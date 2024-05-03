@@ -21,11 +21,11 @@ class NotificationMapper:
                     text=NotificationMapper._create_message_text(notification),
                     color=notification.severity,
                     emoji=Config.get_slack_emoji(),
+                    source=Config.get_service_name(),
                 )
                 for notification in notifications
             ],
-            key=lambda msg: (msg.title),
-            # key=lambda msg: (msg.heading["text"]["text"], msg.channels),
+            key=lambda msg: msg.title,
         )
 
     def build_heading(
