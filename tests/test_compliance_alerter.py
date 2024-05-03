@@ -158,7 +158,7 @@ def test_compliance_alerter_main_s3_audit(helper_test_config: Any) -> None:
     findings = ca.build_audit_report_findings(build_event(S3_KEY))
     ca.send(notifier=SlackNotifier(config=ca.config), payloads=findings)
     _assert_slack_message_sent_to_channel("the-alerting-channel")
-    # _assert_slack_message_sent("bad-bucket")
+    _assert_slack_message_sent("has S3 buckets that do not comply with the policy")
     _assert_slack_message_sent("some-team-name")
 
 
