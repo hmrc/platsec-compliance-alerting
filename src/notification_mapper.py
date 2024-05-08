@@ -1,4 +1,4 @@
-from typing import List, Set, Optional, Dict, Any
+from typing import List, Set, Optional
 
 from src.clients.aws_org_client import AwsOrgClient
 from src.data.account import Account
@@ -25,25 +25,17 @@ class NotificationMapper:
                 )
                 for notification in notifications
             ],
-            key=lambda msg: msg.title,
+            key=lambda msg: (msg.heading, msg.title),
         )
 
-    def build_heading(
-        self, org_client: AwsOrgClient, region_name: Optional[str], account: Optional[Account]
-    ) -> Dict[str, Any]:
+    def build_heading(self, org_client: AwsOrgClient, region_name: Optional[str], account: Optional[Account]) -> str:
         if region_name is None:
             region_name = ""
         if account is None:
-            return {}
+            return ""
         else:
             account = org_client.get_account(account_id=account.identifier)
-            return {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": f"{account.name} ({account.identifier}), {region_name} {account.slack_handle}",
-                },
-            }
+            return f"{account.name} ({account.identifier}) {region_name} {account.slack_handle}"
 
     @staticmethod
     def _find_channels(notification: Finding, mappings: Set[NotificationMappingConfig]) -> Set[str]:

@@ -7,7 +7,7 @@ from src.data.notification import Notification
 @dataclass
 class SlackMessage(Notification):
     channels: List[str]
-    heading: Dict[str, Any]
+    heading: str
     title: str
     text: str
     color: str
@@ -17,7 +17,7 @@ class SlackMessage(Notification):
     def __init__(
         self,
         channels: List[str],
-        heading: Dict[str, Any],
+        heading: str,
         title: str,
         text: str,
         color: str,
@@ -41,7 +41,13 @@ class SlackMessage(Notification):
             "displayName": self.source,
             "emoji": self.emoji,
             "blocks": [
-                self.heading,
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": self.heading,
+                    },
+                },
                 {"type": "divider"},
                 # {"type": "section", "text": {"type": "mrkdwn", "text": self.text}},   # FOR FUTURE USE AS
                 # Attachments block is considered legacy by Slack and may be deprecated

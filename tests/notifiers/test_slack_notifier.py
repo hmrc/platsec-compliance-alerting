@@ -12,14 +12,10 @@ from src.data.slack_message import SlackMessage
 from src.notifiers.slack_notifier import SlackNotifier
 
 
-def slack_heading_helper(heading_value: str) -> Dict[str, Any]:
-    return {"type": "section", "text": {"type": "mrkdwn", "text": heading_value}}
-
-
 TEST_COLOUR = "some-colour"
 SLACK_MESSAGE = SlackMessage(
     ["channel-a", "channel-b"],
-    slack_heading_helper("a-heading"),
+    "a-heading",
     "a-title",
     "a-text",
     "#c1e7c6",
@@ -74,7 +70,7 @@ def _assert_payload_correct() -> None:
         },
         "displayName": "test-service",
         "emoji": ":test-emoji:",
-        "blocks": [slack_heading_helper("a-heading"), {"type": "divider"}],
+        "blocks": [{"text": {"text": "a-heading", "type": "mrkdwn"}, "type": "section"}, {"type": "divider"}],
         "text": "",
         "attachments": [
             {
@@ -102,7 +98,7 @@ def test_send_message() -> None:
 def test_send_message_with_no_channel() -> None:
     _register_slack_api_success()
     _create_slack_notifier().send_message(
-        SlackMessage(["", ""], {"text": "a-heading"}, "a-title", "a-text", TEST_COLOUR, ":test-emoji:", "test-service")
+        SlackMessage(["", ""], "a-heading", "a-title", "a-text", TEST_COLOUR, ":test-emoji:", "test-service")
     )
     assert len(httpretty.latest_requests()) == 0, "Message should not have been sent"
 
@@ -113,22 +109,22 @@ def test_send_messages(caplog: Any) -> None:
     _register_slack_api_failure(500)
     _register_slack_api_success()
     messages = [
-        SlackMessage(
-            ["channel"], {"text": "success-heading-1"}, "title", "a-text", TEST_COLOUR, ":test-emoji:", "test-service"
-        ),
-        SlackMessage(
-            ["channel"], {"text": "failure-heading"}, "title", "a-text", TEST_COLOUR, ":test-emoji:", "test-service"
-        ),
-        SlackMessage(
-            ["channel"], {"text": "success-heading-2"}, "title", "a-text", TEST_COLOUR, ":test-emoji:", "test-service"
-        ),
+        SlackMessage(["channel"], "success-heading-1", "title", "a-text", TEST_COLOUR, ":test-emoji:", "test-service"),
+        SlackMessage(["channel"], "failure-heading", "title", "a-text", TEST_COLOUR, ":test-emoji:", "test-service"),
+        SlackMessage(["channel"], "success-heading-2", "title", "a-text", TEST_COLOUR, ":test-emoji:", "test-service"),
     ]
     with caplog.at_level(logging.INFO):
         _create_slack_notifier().send_messages(messages)
 
-    _assert_message_request_sent([{"text": "success-heading-1"}, {"type": "divider"}])
-    _assert_message_request_sent([{"text": "failure-heading"}, {"type": "divider"}])
-    _assert_message_request_sent([{"text": "success-heading-2"}, {"type": "divider"}])
+    _assert_message_request_sent(
+        [{"text": {"text": "success-heading-1", "type": "mrkdwn"}, "type": "section"}, {"type": "divider"}]
+    )
+    _assert_message_request_sent(
+        [{"text": {"text": "failure-heading", "type": "mrkdwn"}, "type": "section"}, {"type": "divider"}]
+    )
+    _assert_message_request_sent(
+        [{"text": {"text": "success-heading-2", "type": "mrkdwn"}, "type": "section"}, {"type": "divider"}]
+    )
     assert "failure-heading" in caplog.text
     assert "500" in caplog.text
     assert "success-heading-1" not in caplog.text
