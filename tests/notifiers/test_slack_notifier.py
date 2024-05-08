@@ -80,6 +80,7 @@ def _assert_payload_correct() -> None:
             {
                 "color": "#c1e7c6",
                 "text": "a-text",
+                "title": "a-title",
             }
         ],
     } == json.loads(httpretty.last_request().body)
