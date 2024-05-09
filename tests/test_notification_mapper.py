@@ -1,6 +1,6 @@
 from unittest import TestCase
 from unittest.mock import Mock
-from typing import Dict, Any
+from typing import Any
 import pytest
 
 from src.clients.aws_org_client import AwsOrgClient
@@ -34,21 +34,9 @@ def _setup_environment(monkeypatch: Any) -> None:
         monkeypatch.setenv(key, value)
 
 
-def helper_test_heading_message(
-    test_account: str, test_account_id: str, test_region: str, test_team_handle: str
-) -> Dict[str, Any]:
-    return {
-        "type": "section",
-        "text": {
-            "type": "mrkdwn",
-            "text": f"{test_account} ({test_account_id}), {test_region} {test_team_handle}",
-        },
-    }
-
-
 msg_a = SlackMessage(
     channels=["central", "channel-2"],
-    heading=helper_test_heading_message("aaa", "111", "test-region-name", "team-a"),
+    heading="aaa (111) test-region-name team-a",
     title="item-a",
     text="a-1\na-2",
     color="#ff4d4d",
@@ -57,7 +45,7 @@ msg_a = SlackMessage(
 )
 msg_b = SlackMessage(
     channels=["central", "channel-1"],
-    heading=helper_test_heading_message("bbb", "222", "test-region-name", "team-a"),
+    heading="bbb (222) test-region-name team-a",
     title="item-b",
     text="finding b",
     color="#ff4d4d",
@@ -66,7 +54,7 @@ msg_b = SlackMessage(
 )
 msg_c = SlackMessage(
     channels=["central", "channel-1", "channel-2"],
-    heading=helper_test_heading_message("ccc", "333", "test-region-name", "team-b"),
+    heading="ccc (333) test-region-name team-b",
     title="item-c",
     text="finding c",
     color="#ffffff",
