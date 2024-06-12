@@ -1,11 +1,11 @@
-from moto import mock_organizations
+from moto import mock_aws
 
 from src.clients.aws_org_client import AwsOrgClient
 
 import boto3
 
 
-@mock_organizations  # type: ignore
+@mock_aws
 def test_get_account_details() -> None:
     client = boto3.client("organizations")
 
@@ -27,7 +27,7 @@ def test_get_account_details() -> None:
     assert result.slack_handle == "@platsec"
 
 
-@mock_organizations  # type: ignore
+@mock_aws
 def test_get_slack_handle() -> None:
     client = boto3.client("organizations")
 
@@ -48,7 +48,7 @@ def test_get_slack_handle() -> None:
     assert result == "@platsec"
 
 
-@mock_organizations  # type: ignore
+@mock_aws
 def test_get_account_details_when_missing_tags() -> None:
     client = boto3.client("organizations")
 
@@ -64,7 +64,7 @@ def test_get_account_details_when_missing_tags() -> None:
     assert result.slack_handle == "owning-team-not-found"
 
 
-@mock_organizations  # type: ignore
+@mock_aws
 def test_get_account_details_fails() -> None:
     client = boto3.client("organizations")
 

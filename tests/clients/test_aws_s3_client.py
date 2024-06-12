@@ -1,5 +1,5 @@
 from unittest import TestCase
-from moto import mock_s3
+from moto import mock_aws
 
 import boto3
 
@@ -11,7 +11,7 @@ keys = [f"key_{index}" for index in range(10)]
 obj = '[{"key": "val1"}, {"key": "val2"}]'
 
 
-@mock_s3
+@mock_aws
 class TestAwsS3Client(TestCase):
     def setUp(self) -> None:
         self.client = AwsS3Client(boto3.client("s3", region_name="us-east-1"))

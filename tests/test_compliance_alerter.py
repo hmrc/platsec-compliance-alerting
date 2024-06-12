@@ -12,7 +12,7 @@ import pytest
 import json
 
 from botocore.client import BaseClient
-from moto import mock_s3, mock_ssm, mock_organizations
+from moto import mock_aws
 
 from src import compliance_alerter
 from src.compliance_alerter import ComplianceAlerter
@@ -528,7 +528,7 @@ def _setup_environment(monkeypatch: Any) -> None:
 
 @pytest.fixture(autouse=True)
 def _ssm_client() -> Iterator[BaseClient]:
-    with mock_ssm():
+    with mock_aws():
         yield boto3.client("ssm")
 
 
@@ -544,7 +544,7 @@ def _setup_ssm_parameters(ssm_client: BaseClient) -> BaseClient:
 
 @pytest.fixture(autouse=True)
 def _org_client() -> Iterator[BaseClient]:
-    with mock_organizations():
+    with mock_aws():
         yield boto3.client("organizations")
 
 
@@ -564,7 +564,7 @@ def _setup_org_sub_account(org_client: BaseClient, account_name: str = "test-acc
 
 @pytest.fixture(autouse=True)
 def _config_s3_client() -> Iterator[BaseClient]:
-    with mock_s3():
+    with mock_aws():
         yield boto3.client("s3")
 
 
@@ -648,7 +648,7 @@ def setup_config_bucket(s3_client: BaseClient) -> BaseClient:
 
 @pytest.fixture(autouse=True)
 def _report_s3_client() -> Iterator[BaseClient]:
-    with mock_s3():
+    with mock_aws():
         yield boto3.client("s3")
 
 

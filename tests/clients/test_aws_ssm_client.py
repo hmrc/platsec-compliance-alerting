@@ -1,5 +1,5 @@
 from unittest import TestCase
-from moto import mock_ssm
+from moto import mock_aws
 
 import boto3
 
@@ -7,7 +7,7 @@ from src.clients.aws_ssm_client import AwsSsmClient
 from src.data.exceptions import AwsClientException
 
 
-@mock_ssm
+@mock_aws
 class TestAwsSsmClient(TestCase):
     def setUp(self) -> None:
         self.client = AwsSsmClient(boto3.client("ssm", region_name="us-east-1"))
