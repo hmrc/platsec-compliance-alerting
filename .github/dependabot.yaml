@@ -5,6 +5,8 @@ registries:
     url: https://pypi.org/simple
 updates:
   - package-ecosystem: "pip"
+    registries:
+      - pypi 
     directory: "/"
     schedule:
       interval: "daily"
