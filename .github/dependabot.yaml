@@ -5,6 +5,7 @@ registries:
     url: https://pypi.org/simple
 updates:
   - package-ecosystem: "pip"
+    insecure-external-code-execution: allow
     registries:
       - pypi 
     directory: "/"
