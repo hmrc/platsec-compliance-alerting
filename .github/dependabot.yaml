@@ -1,6 +1,12 @@
 version: 2
+registries:
+  pypi:
+    type: python-index
+    url: https://pypi.org/simple
 updates:
   - package-ecosystem: "pip"
+    registries:
+      - pypi 
     directory: "/"
     schedule:
       interval: "daily"
