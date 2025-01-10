@@ -71,6 +71,7 @@ def _assert_payload_correct() -> None:
         "displayName": "test-service",
         "emoji": ":test-emoji:",
         "blocks": [{"text": {"text": "a-heading", "type": "mrkdwn"}, "type": "section"}, {"type": "divider"}],
+        "callbackChannel": "team-platsec-alerts",
         "text": "",
         "attachments": [
             {
@@ -112,6 +113,7 @@ def test_send_messages(caplog: Any) -> None:
         SlackMessage(["channel"], "success-heading-1", "title", "a-text", TEST_COLOUR, ":test-emoji:", "test-service"),
         SlackMessage(["channel"], "failure-heading", "title", "a-text", TEST_COLOUR, ":test-emoji:", "test-service"),
         SlackMessage(["channel"], "success-heading-2", "title", "a-text", TEST_COLOUR, ":test-emoji:", "test-service"),
+        SlackMessage(["channel"], "", "title", "a-text", TEST_COLOUR, ":test-emoji:", "test-service"),
     ]
     with caplog.at_level(logging.INFO):
         _create_slack_notifier().send_messages(messages)
@@ -124,6 +126,9 @@ def test_send_messages(caplog: Any) -> None:
     )
     _assert_message_request_sent(
         [{"text": {"text": "success-heading-2", "type": "mrkdwn"}, "type": "section"}, {"type": "divider"}]
+    )
+    _assert_message_request_sent(
+        [{"text": {"text": "Unknown Service", "type": "mrkdwn"}, "type": "section"}, {"type": "divider"}]
     )
     assert "failure-heading" in caplog.text
     assert "500" in caplog.text

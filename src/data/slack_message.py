@@ -25,7 +25,7 @@ class SlackMessage(Notification):
         source: str,
     ):
         self.channels = list(filter(None, channels))
-        self.heading = heading
+        self.heading = heading if heading else "Unknown Service"
         self.title = title
         self.text = text
         self.color = color
@@ -53,6 +53,7 @@ class SlackMessage(Notification):
                 # Attachments block is considered legacy by Slack and may be deprecated
             ],
             "text": "",
+            "callbackChannel": "team-platsec-alerts",
             "attachments": [
                 {
                     "color": self.color,
