@@ -28,10 +28,12 @@ class GithubWebhookCompliance(Analyser):
         webhookURL = webhook["config"]["url"]
 
         if self._is_insecure_url(webhook):
-            findings.add(f"webhook `{webhookURL}` is set to insecure_url for `{repository}`")
+            self.logger.info(f"webhook '{webhookURL}' is set to insecure_url for '{repository}'")
+            findings.add(f"webhook is set to insecure_url for `{repository}`")
 
         if not self._in_ignore_host_list(webhookURL):
-            findings.add(f"webhook `{webhookURL}` is unknown for `{repository}`")
+            self.logger.info(f"webhook '{webhookURL}' is unknown for '{repository}'")
+            findings.add(f"webhook is unknown for `{repository}`")
 
         if len(findings) > 0:
             if webhookURL in self.webhooks:
