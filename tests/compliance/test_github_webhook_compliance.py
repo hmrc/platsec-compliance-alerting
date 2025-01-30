@@ -69,7 +69,7 @@ def test_check() -> None:
             compliance_item_type="github_repository_webhook",
             item="https://known-host.com",
             findings={
-                "webhook `https://known-host.com` is set to insecure_url for `repository-with-insecure-url`",
+                "webhook is set to insecure_url for `repository-with-insecure-url`",
             },
         ),
         finding(
@@ -79,8 +79,8 @@ def test_check() -> None:
             compliance_item_type="github_repository_webhook",
             item="https://unknown-host.com",
             findings={
-                "webhook `https://unknown-host.com` is unknown for `repository-with-2-unknown-urls`",
-                "webhook `https://unknown-host.com` is unknown for `repository-with-unknown-url`",
+                "webhook is unknown for `repository-with-2-unknown-urls`",
+                "webhook is unknown for `repository-with-unknown-url`",
             },
         ),
     }
