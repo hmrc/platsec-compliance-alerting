@@ -1,64 +1,65 @@
-SHELL := /bin/bash
-PYTHON_COVERAGE_FAIL_UNDER_PERCENT = 100
+.EXPORT_ALL_VARIABLES:
+
+SHELL = /bin/bash
+.SHELLFLAGS = -euo pipefail -c
+
+.PHONY: $(MAKECMDGOALS)
+
 PYTHON_VERSION = $(shell head -1 .python-version)
-PIP_PIPENV_VERSION = $(shell head -1 .pipenv-version)
-GROUP_ID ?= $(shell id -g)
-USER_ID ?= $(shell id -u)
 PYTHON_SRC = *.py src/ tests/
-PROJECT_ROOT = $(PWD)
 
-ifdef CI_MODE
-	DOCKER = docker build \
-		--target dev \
-		--file lambda.Dockerfile \
-		--tag test-run:ci . \
-		--build-arg PYTHON_VERSION=$(PYTHON_VERSION) \
-		--build-arg PIP_PIPENV_VERSION=$(PIP_PIPENV_VERSION) \
-		&& docker run test-run:ci
-else
-	DOCKER = docker build \
+POETRY_DOCKER = docker run \
+	--interactive \
+	--rm \
+	build:local poetry run
+
+POETRY_DOCKER_MOUNT = docker run \
+	--interactive \
+	--rm \
+	--volume "$(PWD)/prowler_scanner:/build/prowler_scanner:z" \
+	--volume "$(PWD)/custom_checks:/build/custom_checks:z" \
+	--volume "$(PWD)/tests:/build/tests:z" \
+	build:local poetry run
+
+python:
+	docker build --target dev \
 		--file Dockerfile \
-                --build-arg PYTHON_VERSION=$(PYTHON_VERSION) \
-                --build-arg PIP_PIPENV_VERSION=$(PIP_PIPENV_VERSION) \
-                --build-arg "user_id=${USER_ID}" \
-                --build-arg "group_id=${GROUP_ID}" \
-                --build-arg "home=${HOME}" \
-                --build-arg "workdir=${PWD}" \
-		--tag test-run:local . \
-		&& docker run \
-		--interactive \
-		--rm \
-		--env "PYTHONWARNINGS=ignore:ResourceWarning" \
-		--volume "$(PWD):${PWD}:z" \
-		--workdir "${PWD}" \
-		test-run:local
-endif
+		--build-arg PYTHON_VERSION=$(PYTHON_VERSION) \
+		--tag build:local .
 
-.PHONY: fmt
-fmt:
-	@$(DOCKER) pipenv run black --line-length=120 $(PYTHON_SRC)
+install-poetry:
+	curl -sSL https://install.python-poetry.org | python -
 
-.PHONY:
-fmt-check:
-	@$(DOCKER) pipenv run black --line-length=120 --check $(PYTHON_SRC)
+init:
+	@echo "if you do not have poetry installed please run 'make install-poetry'"
+	poetry install
+	poetry run pre-commit autoupdate
 
-.PHONY: static-check
-static-check:
-	$(DOCKER) pipenv run flake8 --max-line-length=120 --max-complexity=10 $(PYTHON_SRC)
-	$(DOCKER) pipenv run mypy --show-error-codes --namespace-packages --strict $(PYTHON_SRC)
+lint: python
+	@$(POETRY_DOCKER) ruff check $(PYTHON_SRC)
+
+fmt-check: python
+	@$(POETRY_DOCKER_MOUNT) ruff format --check --line-length 120 $(PYTHON_SRC)
+
+fmt: python
+	@$(POETRY_DOCKER_MOUNT) ruff check --fix $(PYTHON_SRC)
+	@$(POETRY_DOCKER_MOUNT) ruff format --line-length 120 $(PYTHON_SRC)
+
+mypy: python
+	@$(POETRY_DOCKER) mypy --strict $(PYTHON_SRC)
+
+python-test: python
+	@$(POETRY_DOCKER) pytest \
+		-v \
+		-p no:cacheprovider \
+		--no-header \
+		--cov=src \
+		--cov-report "term-missing:skip-covered" \
+		--no-cov-on-fail \
+		--cov-fail-under=100
 
 .PHONY: all-checks test
-all-checks test: python-test fmt-check static-check md-check clean-up
-
-.PHONY: python-test
-python-test:
-	$(DOCKER) pipenv run pytest \
-		--cov=src \
-		--cov-fail-under=$(PYTHON_COVERAGE_FAIL_UNDER_PERCENT) \
-		--no-cov-on-fail \
-		--cov-report "term-missing:skip-covered" \
-		--no-header \
-		tests
+all-checks test: python-test lint fmt-check mypy md-check clean-up
 
 REMARK_LINT_VERSION = 0.3.5
 md-check:
@@ -70,11 +71,10 @@ md-fix:
 	@docker run --pull missing --rm -i -v $(PWD):/lint/input:rw ghcr.io/zemanlx/remark-lint:${REMARK_LINT_VERSION} . -o
 
 container-release:
-	docker build \
-		--file lambda.Dockerfile \
-		--tag container-release:local . \
+	docker build --target lambda \
+		--file Dockerfile \
 		--build-arg PYTHON_VERSION=$(PYTHON_VERSION) \
-		--build-arg PIP_PIPENV_VERSION=$(PIP_PIPENV_VERSION)
+		--tag container-release:local .
 
 .PHONY: clean-up
 clean-up:
