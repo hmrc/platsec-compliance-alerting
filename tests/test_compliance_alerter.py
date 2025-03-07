@@ -548,8 +548,17 @@ def _org_client() -> Iterator[BaseClient]:
         yield boto3.client("organizations")
 
 
+def _organization_exists(org_client: BaseClient) -> bool:
+    try:
+        org_client.describe_organization()
+    except org_client.exceptions.AWSOrganizationsNotInUseException:
+        return False
+    return True
+
+
 def _setup_org_sub_account(org_client: BaseClient, account_name: str = "test-account-name") -> BaseClient:
-    org_client.create_organization(FeatureSet="ALL")
+    if not _organization_exists(org_client=org_client):
+        org_client.create_organization(FeatureSet="ALL")
     account_id = org_client.create_account(AccountName=account_name, Email="example@example.com")[
         "CreateAccountStatus"
     ]["AccountId"]
