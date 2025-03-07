@@ -1,45 +1,35 @@
-ARG PYTHON_VERSION
+ARG PYTHON_VERSION=latest
 
-FROM python:${PYTHON_VERSION}-alpine AS linter-base
-RUN apk add --no-cache shadow
-# UID of current user who runs the build
-ARG user_id
-# GID of current user who runs the build
-ARG group_id
-# HOME of current user who runs the build
-ARG home
-# change GID for dialout group which collides with MacOS staff GID (20) and
-# create group and user to match permmisions of current who runs the build
-ARG workdir
-WORKDIR ${workdir}
-RUN groupmod -g 64 dialout \
-    && addgroup -S \
-    -g "${group_id}" \
-    union \
-    && groupmod -g 2999 ping \
-    && mkdir -p "${home}" \
-    && adduser -S \
-    -u "${user_id}" \
-    -h "${home}" \
-    -s "/bin/bash" \
-    -G union \
-    builder \
-    && chown -R builder:union "${workdir}"
+FROM python:${PYTHON_VERSION}-slim AS base
 
-FROM linter-base AS pipenv
-ARG PIP_PIPENV_VERSION
-RUN apk add --no-cache \
-    bash \
-    cargo \
-    gcc \
-    libc-dev \
-    libffi-dev \
-    make \
-    openssl-dev \
-    && pip install --index-url https://artefacts.tax.service.gov.uk/artifactory/api/pypi/pips/simple/ pipenv==${PIP_PIPENV_VERSION}
-USER builder
-# Install Python dependencies so they are cached
-ARG workdir
-WORKDIR ${workdir}
-COPY --chown=builder:union Pipfile Pipfile.lock ./
-RUN pipenv install --ignore-pipfile --dev
+WORKDIR /build
+
+RUN sed -i 's/http:/https:/g' /etc/apt/sources.list.d/*
+RUN apt update && apt -y upgrade && apt -y install curl
+
+RUN pip install \
+    --index-url https://artefacts.tax.service.gov.uk/artifactory/api/pypi/pips/simple \
+    --no-cache-dir \
+    poetry==2.1.1
+
+COPY pyproject.toml poetry.lock ./
+
+# create our virtualenvv in the current folder and allow non root users (such as the lambda runner) to read the config file
+RUN poetry config virtualenvs.in-project true --local && chmod +r poetry.toml
+
+
+#---- dev ----
+FROM base AS dev
+RUN poetry install --no-root --with=dev
+COPY . .
+
+
+#---- lambda ----
+FROM  base AS lambda
+
+COPY handler.py .
+COPY src/ src/
+RUN poetry install --no-root --without=dev
+
+ENTRYPOINT ["poetry", "run", "python", "-m", "awslambdaric" ]
+CMD ["handler.handler"]

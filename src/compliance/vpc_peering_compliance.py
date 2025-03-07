@@ -31,4 +31,4 @@ class VpcPeeringCompliance(Analyser):
         return set(filter(None, {self._is_unknown(pcx["requester"]), self._is_unknown(pcx["accepter"])}))
 
     def _is_unknown(self, acc: Dict[str, str]) -> Optional[str]:
-        return f'vpc peering connection with unknown account {acc["identifier"]}' if acc["name"] == "unknown" else None
+        return f"vpc peering connection with unknown account {acc['identifier']}" if acc["name"] == "unknown" else None
