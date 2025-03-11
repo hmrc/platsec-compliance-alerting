@@ -5,7 +5,9 @@ FROM python:${PYTHON_VERSION}-slim AS base
 WORKDIR /build
 
 RUN sed -i 's/http:/https:/g' /etc/apt/sources.list.d/*
-RUN apt update && apt -y upgrade && apt -y install curl
+RUN apt update && \
+    apt -y upgrade && \
+    apt -y install curl cmake
 
 RUN pip install \
     --index-url https://artefacts.tax.service.gov.uk/artifactory/api/pypi/pips/simple \
