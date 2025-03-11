@@ -16,6 +16,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
 boto3 = "^1.37.8"
+awslambdaric = "^3.0.0"
 requests = "^2.32.3"
 
 [tool.poetry.group.dev.dependencies]
