@@ -2,7 +2,7 @@
 name = "platsec-compliance-alerting"
 version = "0.1.0"
 description = "Analyses Platsec AWS Scanner reports and alerts on non-compliant resources"
-authors = ["Your Name <you@example.com>"]
+authors = ["Team Platsec<platsec@digital.hmrc.gov.uk>"]
 license = "Apache-2.0"
 readme = "README.md"
 
@@ -12,10 +12,10 @@ requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
-python = ">=3.13.5"
+python = ">=3.13"
 boto3 = "^1.37.8"
 awslambdaric = "^3.0.0"
-requests = "^2.32.4"
+requests = "^2.32.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"
