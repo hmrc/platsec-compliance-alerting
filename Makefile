@@ -59,7 +59,7 @@ python-test: python
 		--cov-fail-under=100
 
 .PHONY: all-checks test
-all-checks test: python-test lint fmt-check mypy md-check clean-up
+all-checks test: lint md-check fmt-check mypy python-test clean-up
 
 REMARK_LINT_VERSION = 0.3.5
 md-check:
