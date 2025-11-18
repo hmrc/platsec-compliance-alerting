@@ -92,6 +92,7 @@ class ComplianceAlerter:
             message = json.loads(record["Sns"]["Message"])
             type = message.get("detailType") or message.get("detail-type")
             if type == CodePipeline.Type:
+                logging.getLogger(__name__).info(f"Received '{type}'. Event")
                 findings.add(CodePipeline().create_finding(message))
             elif type == CodeBuild.Type:
                 findings.add(CodeBuild().create_finding(message))
