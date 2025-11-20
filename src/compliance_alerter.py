@@ -38,14 +38,21 @@ def main(event: Dict[str, Any]) -> None:
 
     if compliance_alerter.is_sns_event(event=event):
         compliance_alerter.logger.info("SNS event received")
-        compliance_alerter.send(
-            notifier=SlackNotifier(config=compliance_alerter.config),
-            payloads=compliance_alerter.build_sns_event_findings(event=event),
-        )
-        compliance_alerter.send(
-            notifier=PagerDutyNotifier(config=compliance_alerter.config),
-            payloads=compliance_alerter.build_pagerduty_payloads(event=event),
-        )
+        if compliance_alerter.is_manual_approval(event=event):
+            compliance_alerter.logger.info("Manual approval event received")
+            compliance_alerter.send(
+                notifier=SlackNotifier(config=compliance_alerter.config),
+                payloads=compliance_alerter.build_sns_approval_event_findings(event=event),
+            )
+        else:
+            compliance_alerter.send(
+                notifier=SlackNotifier(config=compliance_alerter.config),
+                payloads=compliance_alerter.build_sns_event_findings(event=event),
+            )
+            compliance_alerter.send(
+                notifier=PagerDutyNotifier(config=compliance_alerter.config),
+                payloads=compliance_alerter.build_pagerduty_payloads(event=event),
+            )
 
     if compliance_alerter.is_s3_event(event=event):
         compliance_alerter.logger.info("S3 event received")
@@ -80,6 +87,10 @@ class ComplianceAlerter:
     def is_s3_event(event: Dict[str, Any]) -> bool:
         return ComplianceAlerter.event_source(event=event) == "aws:s3"
 
+    @staticmethod
+    def is_manual_approval(event: Dict[str, Any]) -> bool:
+        return "approval" in event.get("Records", [{}])[0].get("Sns", {}).get("Message", {})
+
     def fetch(self, event: Dict[str, Any]) -> Audit:
         return AuditFetcher().fetch_audit(self.config.get_report_s3_client(), event)
 
@@ -88,6 +99,13 @@ class ComplianceAlerter:
 
     def build_audit_report_findings(self, event: Dict[str, Any]) -> Set[Finding]:
         return self.analyse(self.fetch(event))
+
+    def build_sns_approval_event_findings(self, event: Dict[str, Any]) -> Set[Finding]:
+        findings: Set[Finding] = set()
+        for record in event["Records"]:
+            message = json.loads(record["Sns"]["Message"])
+            findings.add(CodePipeline().create_approval_finding(message))
+        return findings
 
     def build_sns_event_findings(self, event: Dict[str, Any]) -> Set[Finding]:
         findings: Set[Finding] = set()

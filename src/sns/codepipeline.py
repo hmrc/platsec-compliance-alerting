@@ -3,6 +3,8 @@ from typing import Dict, Any, Set, Sequence
 from src.data.account import Account
 from src.data.finding import Finding
 
+platsec_ci_account = "987972305662"
+
 
 class CodePipeline:
     Type: str = "CodePipeline Pipeline Execution State Change"
@@ -30,6 +32,35 @@ class CodePipeline:
             account=account,
             region_name=region,
             item=title,
+            findings=findings,
+        )
+
+    # {
+    #     "region": "eu-west-2",
+    #     "consoleLink": "https://console.aws.amazon.com/codesuite/codepipeline/pipelines/compliance-alerting/view?region=eu-west-2",
+    #     "approval": {
+    #         "pipelineName": "compliance-alerting", "stageName": "Approve_Production", "actionName": "Approve_Production", "token": "a7b432e8-3c05-4efd-b9a6-6c0e4fa85e39",
+    #         "expires": "2025-11-27T10:46Z", "externalEntityLink": "https://github.com/org/repo/commit/abcde12345",
+    #         "approvalReviewLink": "https://console.aws.amazon.com/codesuite/codepipeline/pipelines/repo/view?region=eu-west-2#/Approve_Production/Approve_Production/approve/uuid4",
+    #         "customData": "commit message"
+    #     }
+    # }
+    @staticmethod
+    def create_approval_finding(message: Dict[str, Any]) -> Finding:
+        account = Account(identifier=platsec_ci_account)
+        pipeline_name = message["approval"]["pipelineName"]
+        stage_name = message["approval"]["stageName"]
+
+        findings = set()
+        findings.add(f"<{message['consoleLink']}|pipeline link>")
+        findings.add(f"The AWS CodePipeline {pipeline_name} pipeline is awaiting manual approval.")
+
+        return Finding(
+            compliance_item_type="codepipeline",
+            account=account,
+            region_name=message["region"],
+            item=f"{pipeline_name} {stage_name}",
+            description=f"Manual approval for {pipeline_name} pipeline",
             findings=findings,
         )
 

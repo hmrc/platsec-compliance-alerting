@@ -76,6 +76,12 @@ def test_is_s3_event() -> None:
     assert ca.is_s3_event(_sns_event()) is False
 
 
+def test_is_manual_approval_event() -> None:
+    ca = ComplianceAlerter(Mock())
+    assert ca.is_manual_approval(_ma_event()) is True
+    assert ca.is_manual_approval(_sns_event()) is False
+
+
 @patch("src.compliance_alerter.AwsClientFactory.get_s3_client")
 @patch("src.compliance_alerter.AwsClientFactory.get_ssm_client")
 @patch("src.compliance_alerter.AwsClientFactory.get_org_client")
@@ -93,8 +99,10 @@ def test_main_sns_event(
     mock_compliance_alerter.return_value.send.return_value = Mock()
     _mock = mock_compliance_alerter.return_value
     _mock.is_sns_event.return_value = True
+    _mock.is_manual_approval.return_value = False
     _mock.build_sns_event_findings.return_value = {finding}
     _mock.send.return_value = Mock()
+
     compliance_alerter.main(load_json_resource("codebuild_event.json"))
 
     _mock.send.assert_any_call(notifier=ANY, payloads={finding})
@@ -574,11 +582,14 @@ def _setup_org_sub_account(org_client: BaseClient, account_name: str = "test-acc
 @pytest.fixture(autouse=True)
 def _config_s3_client() -> Iterator[BaseClient]:
     with mock_aws():
-        yield boto3.client("s3")
+        yield boto3.client("s3", region_name="eu-west-2")
 
 
 def setup_config_bucket(s3_client: BaseClient) -> BaseClient:
-    s3_client.create_bucket(Bucket=CONFIG_BUCKET)
+    s3_client.create_bucket(
+        Bucket=CONFIG_BUCKET,
+        CreateBucketConfiguration={"LocationConstraint": "eu-west-2"},
+    )
     s3_client.put_object(
         Bucket=CONFIG_BUCKET, Key="filters/a", Body=json.dumps([{"item": "mischievous-bucket", "reason": "because"}])
     )
@@ -784,3 +795,7 @@ def _s3_event() -> Dict[str, Any]:
 
 def _sns_event() -> Dict[str, Any]:
     return {"Records": [{"EventVersion": "1.0", "EventSource": "aws:sns", "Sns": {}}]}
+
+
+def _ma_event() -> Dict[str, Any]:
+    return {"Records": [{"EventVersion": "2.1", "eventSource": "aws:sns", "Sns": {"Message": {"approval": {}}}}]}

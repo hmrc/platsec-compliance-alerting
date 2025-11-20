@@ -2,9 +2,10 @@
 name = "platsec-compliance-alerting"
 version = "0.1.0"
 description = "Analyses Platsec AWS Scanner reports and alerts on non-compliant resources"
-authors = ["Team Platsec<platsec@digital.hmrc.gov.uk>"]
+authors = ["Team Platsec <platsec@digital.hmrc.gov.uk>"]
 license = "Apache-2.0"
 readme = "README.md"
+package-mode = false
 
 
 [build-system]
