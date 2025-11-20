@@ -37,6 +37,7 @@ def main(event: Dict[str, Any]) -> None:
     )
 
     if compliance_alerter.is_sns_event(event=event):
+        compliance_alerter.logger.info("SNS event received")
         compliance_alerter.send(
             notifier=SlackNotifier(config=compliance_alerter.config),
             payloads=compliance_alerter.build_sns_event_findings(event=event),
@@ -47,6 +48,7 @@ def main(event: Dict[str, Any]) -> None:
         )
 
     if compliance_alerter.is_s3_event(event=event):
+        compliance_alerter.logger.info("S3 event received")
         compliance_alerter.send(
             notifier=SlackNotifier(config=compliance_alerter.config),
             payloads=compliance_alerter.build_audit_report_findings(event=event),
@@ -57,6 +59,7 @@ class ComplianceAlerter:
     def __init__(self, config: Config) -> None:
         self.config = config
         self.logger = Config.configure_logging()
+        self.logger.info("ComplianceAlerter initialised")
 
     @staticmethod
     def event_source(event: Dict[str, Any]) -> str:
@@ -91,7 +94,6 @@ class ComplianceAlerter:
         for record in event["Records"]:
             message = json.loads(record["Sns"]["Message"])
             type = message.get("detailType") or message.get("detail-type")
-            logging.getLogger(__name__).warning(f"Received '{type}'. Event")
             if type == CodePipeline.Type:
                 findings.add(CodePipeline().create_finding(message))
             elif type == CodeBuild.Type:
@@ -103,7 +105,9 @@ class ComplianceAlerter:
             elif type == AwsHealth.Type and AwsHealth().is_a_target_event_type(message):
                 findings.add(AwsHealth().create_finding(message))
             else:
-                logging.getLogger(__name__).warning(f"Received unknown event with detailType '{type}'. Ignoring...")
+                self.logger.warning(f"Received unknown event with detailType '{type}'. Ignoring...")
+                self.logger.info(f"Full event: {json.dumps(message)}")
+
         return findings
 
     def build_pagerduty_payloads(self, event: Dict[str, Any]) -> Set[PagerDutyPayload]:
