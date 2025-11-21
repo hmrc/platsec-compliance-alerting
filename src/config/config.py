@@ -168,6 +168,9 @@ class Config:
     def get_notification_mappings(self) -> Set[NotificationMappingConfig]:
         return self._fetch_config_files("mappings/", NotificationMappingConfig.from_dict)
 
+    def get_ci_account_id(self) -> str:
+        return self._get_env("CI_ACCOUNT_ID")
+
     @staticmethod
     def _get_env(key: str) -> str:
         try:

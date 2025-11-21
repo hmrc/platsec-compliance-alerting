@@ -37,7 +37,6 @@ def main(event: Dict[str, Any]) -> None:
     )
 
     if compliance_alerter.is_sns_event(event=event):
-        compliance_alerter.logger.info("SNS event received")
         compliance_alerter.send(
             notifier=SlackNotifier(config=compliance_alerter.config),
             payloads=compliance_alerter.build_sns_event_findings(event=event),
@@ -91,21 +90,25 @@ class ComplianceAlerter:
 
     def build_sns_event_findings(self, event: Dict[str, Any]) -> Set[Finding]:
         findings: Set[Finding] = set()
+        ci_account_id = self.config.get_ci_account_id()
         for record in event["Records"]:
             message = json.loads(record["Sns"]["Message"])
-            type = message.get("detailType") or message.get("detail-type")
-            if type == CodePipeline.Type:
+            detail_type = message.get("detailType") or message.get("detail-type")
+            if "approval" in message:
+                self.logger.info("Manual approval event received")
+                findings.add(CodePipeline().create_approval_finding(message, ci_account_id))
+            elif detail_type == CodePipeline.Type:
                 findings.add(CodePipeline().create_finding(message))
-            elif type == CodeBuild.Type:
+            elif detail_type == CodeBuild.Type:
                 findings.add(CodeBuild().create_finding(message))
-            elif type == GuardDuty.Type:
+            elif detail_type == GuardDuty.Type:
                 findings.add(GuardDuty(self.config).create_finding(message))
-            elif type == GrantUserAccessLambda.Type:
+            elif detail_type == GrantUserAccessLambda.Type:
                 findings.add(GrantUserAccessLambda().create_finding(message))
-            elif type == AwsHealth.Type and AwsHealth().is_a_target_event_type(message):
+            elif detail_type == AwsHealth.Type and AwsHealth().is_a_target_event_type(message):
                 findings.add(AwsHealth().create_finding(message))
             else:
-                self.logger.warning(f"Received unknown event with detailType '{type}'. Ignoring...")
+                self.logger.warning(f"Received unknown event with detailType '{detail_type}'. Ignoring...")
                 self.logger.info(f"Full event: {json.dumps(message)}")
 
         return findings
@@ -114,13 +117,13 @@ class ComplianceAlerter:
         payloads: Set[PagerDutyPayload] = set()
         for record in event["Records"]:
             message = json.loads(record["Sns"]["Message"])
-            type = message.get("detailType") or message.get("detail-type")
-            if type == AwsHealth.Type and AwsHealth().is_a_target_event_type(message):
+            detail_type = message.get("detailType") or message.get("detail-type")
+            if detail_type == AwsHealth.Type and AwsHealth().is_a_target_event_type(message):
                 payloads.add(AwsHealth().create_pagerduty_event_payload(message))
             else:
                 # A "warning" log level will get unnecessarily noisy.
                 logging.getLogger(__name__).debug(
-                    f"PagerDuty notification is not supported for event with detailType '{type}'. Ignoring..."
+                    f"PagerDuty notification is not supported for event with detailType '{detail_type}'. Ignoring..."
                 )
         return payloads
 

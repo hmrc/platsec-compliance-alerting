@@ -33,6 +33,35 @@ class CodePipeline:
             findings=findings,
         )
 
+    # {
+    #     "region": "eu-west-2",
+    #     "consoleLink": "https://console.aws.amazon.com/codesuite/codepipeline/pipelines/compliance-alerting/view?region=eu-west-2",
+    #     "approval": {
+    #         "pipelineName": "compliance-alerting", "stageName": "Approve_Production", "actionName": "Approve_Production", "token": "a7b432e8-3c05-4efd-b9a6-6c0e4fa85e39",
+    #         "expires": "2025-11-27T10:46Z", "externalEntityLink": "https://github.com/org/repo/commit/abcde12345",
+    #         "approvalReviewLink": "https://console.aws.amazon.com/codesuite/codepipeline/pipelines/repo/view?region=eu-west-2#/Approve_Production/Approve_Production/approve/uuid4",
+    #         "customData": "commit message"
+    #     }
+    # }
+    @staticmethod
+    def create_approval_finding(message: Dict[str, Any], ci_account_id: str) -> Finding:
+        account = Account(identifier=ci_account_id)
+        pipeline_name = message["approval"]["pipelineName"]
+        stage_name = message["approval"]["stageName"]
+
+        findings = set()
+        findings.add(f"<{message['consoleLink']}|pipeline link>")
+        findings.add(f"The AWS CodePipeline {pipeline_name} pipeline is awaiting manual approval.")
+
+        return Finding(
+            compliance_item_type="codepipeline",
+            account=account,
+            region_name=message["region"],
+            item=f"{pipeline_name} {stage_name}",
+            description=f"Manual approval for {pipeline_name} pipeline",
+            findings=findings,
+        )
+
     @staticmethod
     def generate_error_messages(failed_actions: Sequence[Dict[str, str]]) -> Set[str]:
         return set(map(lambda e: e["additionalInformation"], failed_actions))

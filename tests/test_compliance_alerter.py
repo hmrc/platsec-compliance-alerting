@@ -240,6 +240,23 @@ def test_compliance_alerter_main_password_policy_audit(helper_test_config: Any) 
     _assert_slack_message_sent("some-team-name")
 
 
+def test_codepipeline_sns_event_with_manual_approval(helper_test_config: Any, monkeypatch: Any) -> None:
+    test_event = load_json_resource("codepipeline_approval_event.json")
+    monkeypatch.setenv("CI_ACCOUNT_ID", helper_test_config.account_id)
+    ca = compliance_alerter.ComplianceAlerter(
+        config=Config(
+            config_s3_client=helper_test_config.config_s3_client,
+            report_s3_client=helper_test_config.report_s3_client,
+            ssm_client=helper_test_config.ssm_client,
+            org_client=helper_test_config.org_client,
+        )
+    )
+    findings = ca.build_sns_event_findings(test_event)
+    ca.send(notifier=SlackNotifier(config=ca.config), payloads=findings)
+    _assert_slack_message_sent_to_channel("codepipeline-alerts")
+    _assert_slack_message_sent("some-team-name")
+
+
 def test_codepipeline_sns_event(helper_test_config: Any) -> None:
     test_event = set_event_account_id(
         account_id=helper_test_config.account_id,
@@ -494,6 +511,7 @@ def _setup_environment(monkeypatch: Any) -> None:
         "AWS_SECRET_ACCESS_KEY": "the-secret-access-key",
         "AWS_DEFAULT_REGION": "us-east-1",
         "AWS_ACCOUNT": "111222333444",
+        "CI_ACCOUNT_ID": "",
         "CENTRAL_CHANNEL": CHANNEL,
         "CONFIG_BUCKET": CONFIG_BUCKET,
         "CONFIG_BUCKET_READ_ROLE": "the-config-bucket-read-role",
@@ -574,11 +592,14 @@ def _setup_org_sub_account(org_client: BaseClient, account_name: str = "test-acc
 @pytest.fixture(autouse=True)
 def _config_s3_client() -> Iterator[BaseClient]:
     with mock_aws():
-        yield boto3.client("s3")
+        yield boto3.client("s3", region_name="eu-west-2")
 
 
 def setup_config_bucket(s3_client: BaseClient) -> BaseClient:
-    s3_client.create_bucket(Bucket=CONFIG_BUCKET)
+    s3_client.create_bucket(
+        Bucket=CONFIG_BUCKET,
+        CreateBucketConfiguration={"LocationConstraint": "eu-west-2"},
+    )
     s3_client.put_object(
         Bucket=CONFIG_BUCKET, Key="filters/a", Body=json.dumps([{"item": "mischievous-bucket", "reason": "because"}])
     )
@@ -747,6 +768,8 @@ def build_event(report_key: str) -> Dict[str, Any]:
 
 def _assert_slack_message_sent(message: str) -> None:
     message_requests = httpretty.latest_requests()
+    for message_request in message_requests:
+        print(message_request.body.decode("utf-8"))
     assert any(message in message_request.body.decode("utf-8") for message_request in message_requests)
 
 
@@ -784,3 +807,7 @@ def _s3_event() -> Dict[str, Any]:
 
 def _sns_event() -> Dict[str, Any]:
     return {"Records": [{"EventVersion": "1.0", "EventSource": "aws:sns", "Sns": {}}]}
+
+
+def _ma_event() -> Dict[str, Any]:
+    return {"Records": [{"EventVersion": "2.1", "eventSource": "aws:sns", "Sns": {"Message": {"approval": {}}}}]}
