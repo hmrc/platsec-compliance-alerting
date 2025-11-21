@@ -76,12 +76,6 @@ def test_is_s3_event() -> None:
     assert ca.is_s3_event(_sns_event()) is False
 
 
-def test_is_manual_approval_event() -> None:
-    ca = ComplianceAlerter(Mock())
-    assert ca.is_manual_approval(_ma_event()) is True
-    assert ca.is_manual_approval(_sns_event()) is False
-
-
 @patch("src.compliance_alerter.AwsClientFactory.get_s3_client")
 @patch("src.compliance_alerter.AwsClientFactory.get_ssm_client")
 @patch("src.compliance_alerter.AwsClientFactory.get_org_client")
@@ -99,10 +93,8 @@ def test_main_sns_event(
     mock_compliance_alerter.return_value.send.return_value = Mock()
     _mock = mock_compliance_alerter.return_value
     _mock.is_sns_event.return_value = True
-    _mock.is_manual_approval.return_value = False
     _mock.build_sns_event_findings.return_value = {finding}
     _mock.send.return_value = Mock()
-
     compliance_alerter.main(load_json_resource("codebuild_event.json"))
 
     _mock.send.assert_any_call(notifier=ANY, payloads={finding})
@@ -758,6 +750,8 @@ def build_event(report_key: str) -> Dict[str, Any]:
 
 def _assert_slack_message_sent(message: str) -> None:
     message_requests = httpretty.latest_requests()
+    for message_request in message_requests:
+        print(message_request.body.decode("utf-8"))
     assert any(message in message_request.body.decode("utf-8") for message_request in message_requests)
 
 
