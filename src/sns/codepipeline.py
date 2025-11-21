@@ -3,8 +3,6 @@ from typing import Dict, Any, Set, Sequence
 from src.data.account import Account
 from src.data.finding import Finding
 
-platsec_ci_account = "987972305662"
-
 
 class CodePipeline:
     Type: str = "CodePipeline Pipeline Execution State Change"
