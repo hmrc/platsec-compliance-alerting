@@ -240,6 +240,23 @@ def test_compliance_alerter_main_password_policy_audit(helper_test_config: Any) 
     _assert_slack_message_sent("some-team-name")
 
 
+def test_codepipeline_sns_event_with_manual_approval(helper_test_config: Any, monkeypatch: Any) -> None:
+    test_event = load_json_resource("codepipeline_approval_event.json")
+    monkeypatch.setenv("CI_ACCOUNT_ID", helper_test_config.account_id)
+    ca = compliance_alerter.ComplianceAlerter(
+        config=Config(
+            config_s3_client=helper_test_config.config_s3_client,
+            report_s3_client=helper_test_config.report_s3_client,
+            ssm_client=helper_test_config.ssm_client,
+            org_client=helper_test_config.org_client,
+        )
+    )
+    findings = ca.build_sns_event_findings(test_event)
+    ca.send(notifier=SlackNotifier(config=ca.config), payloads=findings)
+    _assert_slack_message_sent_to_channel("codepipeline-alerts")
+    _assert_slack_message_sent("some-team-name")
+
+
 def test_codepipeline_sns_event(helper_test_config: Any) -> None:
     test_event = set_event_account_id(
         account_id=helper_test_config.account_id,
@@ -494,6 +511,7 @@ def _setup_environment(monkeypatch: Any) -> None:
         "AWS_SECRET_ACCESS_KEY": "the-secret-access-key",
         "AWS_DEFAULT_REGION": "us-east-1",
         "AWS_ACCOUNT": "111222333444",
+        "CI_ACCOUNT_ID": "",
         "CENTRAL_CHANNEL": CHANNEL,
         "CONFIG_BUCKET": CONFIG_BUCKET,
         "CONFIG_BUCKET_READ_ROLE": "the-config-bucket-read-role",

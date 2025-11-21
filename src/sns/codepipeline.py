@@ -46,8 +46,8 @@ class CodePipeline:
     #     }
     # }
     @staticmethod
-    def create_approval_finding(message: Dict[str, Any]) -> Finding:
-        account = Account(identifier=platsec_ci_account)
+    def create_approval_finding(message: Dict[str, Any], ci_account_id: str) -> Finding:
+        account = Account(identifier=ci_account_id)
         pipeline_name = message["approval"]["pipelineName"]
         stage_name = message["approval"]["stageName"]
 

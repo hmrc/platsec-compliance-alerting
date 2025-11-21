@@ -90,12 +90,13 @@ class ComplianceAlerter:
 
     def build_sns_event_findings(self, event: Dict[str, Any]) -> Set[Finding]:
         findings: Set[Finding] = set()
+        ci_account_id = self.config.get_ci_account_id()
         for record in event["Records"]:
             message = json.loads(record["Sns"]["Message"])
             detail_type = message.get("detailType") or message.get("detail-type")
             if "approval" in message:
                 self.logger.info("Manual approval event received")
-                findings.add(CodePipeline().create_approval_finding(message))
+                findings.add(CodePipeline().create_approval_finding(message, ci_account_id))
             elif detail_type == CodePipeline.Type:
                 findings.add(CodePipeline().create_finding(message))
             elif detail_type == CodeBuild.Type:

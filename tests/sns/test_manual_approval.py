@@ -7,10 +7,10 @@ from tests.sns import load_json_resource
 
 def test_event_to_findings() -> None:
     message = json.loads(load_json_resource("codepipeline_approval_event.json")["Records"][0]["Sns"]["Message"])
-
-    finding = CodePipeline().create_approval_finding(message)
+    account_id = "987972305662"
+    finding = CodePipeline().create_approval_finding(message, account_id)
     assert finding.account
-    assert finding.account.identifier == "987972305662"
+    assert finding.account.identifier == account_id
     assert finding.compliance_item_type == "codepipeline"
     assert finding.item == "test-pipeline Approve_Production"
     assert len(finding.findings) == 2
