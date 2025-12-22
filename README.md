@@ -20,6 +20,11 @@ This Python program is meant to run as an AWS Lambda function that requires the 
 * `SSM_READ_ROLE`: name of an IAM role that can read SSM parameters
 * `VPC_AUDIT_REPORT_KEY`: name of audit reports that should trigger a VPC compliance check
 
+### Configuration files
+
+They are stored in the bucket `CONFIG_BUCKET` and sourced from 
+https://github.com/hmrc/platsec-terraform/tree/main/terraform/modules/lambda_compliance_alerting/mappings
+
 ### Alert mapping
 
 ```json
